@@ -20,12 +20,12 @@
         android:text="भारतीय संस्कृति, मंदिर और ज्ञान"
         android:textSize="16sp" />
 
-    <Button
-        android:id="@+id/rajaButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="👑 भारत के राजा और योद्धा"
-        android:textSize="18sp" />
-
+<Button
+    android:id="@+id/btnRaja"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="30dp"
+    android:text="👑 भारत के राजा और योद्धा"
+    android:textSize="18sp" />
+    
 </LinearLayout>
