@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF8E7">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🛕 SanskritiSathi"
+            android:textAlignment="center"
+            android:textColor="#8B4513"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:padding="12dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="भारतीय संस्कृति • मंदिर • देवी-देवता"
+            android:textAlignment="center"
+            android:textColor="#6D4C41"
+            android:textSize="16sp"
+            android:paddingBottom="20dp" />
+
+        <Button
+            android:id="@+id/btnKrishna"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🦚 भगवान श्री कृष्ण"
+            android:textSize="17sp" />
+
+        <Button
+            android:id="@+id/btnShiva"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="🔱 भगवान शिव"
+            android:textSize="17sp" />
+
+        <Button
+            android:id="@+id/btnRam"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="🏹 भगवान श्री राम"
+            android:textSize="17sp" />
+
+        <Button
+            android:id="@+id/btnTemple"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="📍 मंदिर खोजें"
+            android:textSize="17sp" />
+
+        <Button
+            android:id="@+id/btnRss"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="📰 संस्कृति समाचार"
+            android:textSize="17sp" />
+
+        <TextView
+            android:id="@+id/infoText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="#FFFFFF"
+            android:padding="20dp"
+            android:text="ऊपर से कोई विषय चुनें।"
+            android:textColor="#3E2723"
+            android:textSize="17sp" />
+
+    </LinearLayout>
+
+</ScrollView>
