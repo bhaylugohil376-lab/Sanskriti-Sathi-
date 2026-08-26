@@ -3,14 +3,14 @@ package com.sanskritisathi.app;
 public class Raja {
 
     private String name;
-    private String period;
-    private String dynasty;
+    private String kingdom;
+    private String capital;
     private String description;
 
-    public Raja(String name, String period, String dynasty, String description) {
+    public Raja(String name, String kingdom, String capital, String description) {
         this.name = name;
-        this.period = period;
-        this.dynasty = dynasty;
+        this.kingdom = kingdom;
+        this.capital = capital;
         this.description = description;
     }
 
@@ -18,12 +18,12 @@ public class Raja {
         return name;
     }
 
-    public String getPeriod() {
-        return period;
+    public String getKingdom() {
+        return kingdom;
     }
 
-    public String getDynasty() {
-        return dynasty;
+    public String getCapital() {
+        return capital;
     }
 
     public String getDescription() {
