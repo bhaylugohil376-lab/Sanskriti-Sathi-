@@ -23,9 +23,9 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
-      - name: Build Debug APK with Gradle
+      - name: Build Debug APK
         run: gradle assembleDebug --stacktrace
 
       - name: Upload Debug APK
