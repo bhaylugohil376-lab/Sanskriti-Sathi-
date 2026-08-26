@@ -9,9 +9,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
+<activity
+    android:name=".RajaActivity"
+    android:exported="false" />
+
+
+
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
