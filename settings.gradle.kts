@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NoDemo"
-include(":app")
+rootProject.name = "SanskritiSathi"
+include ':app'
