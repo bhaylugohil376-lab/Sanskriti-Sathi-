@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        Button rajaButton = findViewById(R.id.rajaButton);
+        Button rajaButton = findViewById(R.id.btnRaja);
 
         rajaButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RajaActivity.class);
