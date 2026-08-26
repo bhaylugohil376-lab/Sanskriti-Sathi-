@@ -1,4 +1,3 @@
-
 package com.sanskritisathi.app;
 
 import java.util.ArrayList;
