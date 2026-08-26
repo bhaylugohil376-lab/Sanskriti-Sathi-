@@ -1,119 +1,49 @@
 package com.sanskritisathi.app;
 
-import java.util.ArrayList;
+import android.os.Bundle;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.List;
 
-public class RajaData {
+public class RajaActivity extends AppCompatActivity {
 
-    public static List<Raja> getAllRajas() {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-        List<Raja> list = new ArrayList<>();
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(24, 24, 24, 24);
 
-        list.add(new Raja(
-                "छत्रपति शिवाजी महाराज",
-                "मराठा साम्राज्य",
-                "रायगढ़",
-                "स्वराज्य की स्थापना और गुरिल्ला युद्धनीति के लिए प्रसिद्ध।"
-        ));
+        TextView title = new TextView(this);
+        title.setText("👑 भारत के राजा और योद्धा");
+        title.setTextSize(24);
+        title.setPadding(0, 0, 0, 24);
 
-        list.add(new Raja(
-                "महाराणा प्रताप",
-                "मेवाड़",
-                "चित्तौड़ / मेवाड़",
-                "मेवाड़ की स्वतंत्रता और हल्दीघाटी के युद्ध के लिए प्रसिद्ध।"
-        ));
+        layout.addView(title);
 
-        list.add(new Raja(
-                "सम्राट अशोक",
-                "मौर्य साम्राज्य",
-                "पाटलिपुत्र",
-                "मौर्य साम्राज्य के महान सम्राट, जिनके शासन के बाद बौद्ध धर्म का व्यापक प्रसार हुआ।"
-        ));
+        List<Raja> rajaList = RajaData.getAllRajas();
 
-        list.add(new Raja(
-                "सम्राट चंद्रगुप्त मौर्य",
-                "मौर्य साम्राज्य",
-                "पाटलिपुत्र",
-                "मौर्य साम्राज्य के संस्थापक और प्राचीन भारत के शक्तिशाली शासक।"
-        ));
+        for (Raja raja : rajaList) {
 
-        list.add(new Raja(
-                "समुद्रगुप्त",
-                "गुप्त साम्राज्य",
-                "पाटलिपुत्र",
-                "गुप्त काल के प्रसिद्ध सम्राट और कुशल सैन्य विजेता।"
-        ));
+            TextView item = new TextView(this);
 
-        list.add(new Raja(
-                "चंद्रगुप्त द्वितीय विक्रमादित्य",
-                "गुप्त साम्राज्य",
-                "उज्जैन",
-                "गुप्त साम्राज्य के प्रमुख शासक और कला-साहित्य के संरक्षक।"
-        ));
+            item.setText(
+                    "👑 " + raja.getName()
+                    + "\n🏰 राज्य: " + raja.getKingdom()
+                    + "\n📍 राजधानी: " + raja.getCapital()
+                    + "\n\n" + raja.getDescription()
+            );
 
-        list.add(new Raja(
-                "राजराज चोल प्रथम",
-                "चोल साम्राज्य",
-                "तंजावुर",
-                "दक्षिण भारत के महान चोल शासक और बृहदीश्वर मंदिर के निर्माण से जुड़े।"
-        ));
+            item.setTextSize(17);
+            item.setPadding(20, 20, 20, 20);
 
-        list.add(new Raja(
-                "राजेंद्र चोल प्रथम",
-                "चोल साम्राज्य",
-                "गंगैकोंडचोलपुरम",
-                "चोल साम्राज्य का विस्तार करने वाले प्रसिद्ध शासक।"
-        ));
+            layout.addView(item);
+        }
 
-        list.add(new Raja(
-                "कृष्णदेवराय",
-                "विजयनगर साम्राज्य",
-                "विजयनगर",
-                "विजयनगर साम्राज्य के महान शासक और साहित्य-कला के संरक्षक।"
-        ));
-
-        list.add(new Raja(
-                "पृथ्वीराज चौहान",
-                "चौहान वंश",
-                "अजमेर और दिल्ली",
-                "चौहान वंश के प्रसिद्ध शासक और मध्यकालीन भारत के प्रमुख राजाओं में से एक।"
-        ));
-
-        list.add(new Raja(
-                "राणा सांगा",
-                "मेवाड़",
-                "मेवाड़",
-                "मेवाड़ के शक्तिशाली शासक और राजपूत संघ के प्रमुख नेताओं में से एक।"
-        ));
-
-        list.add(new Raja(
-                "रानी दुर्गावती",
-                "गोंडवाना",
-                "गढ़ा-कटंगा",
-                "वीरता और साहस के लिए प्रसिद्ध गोंडवाना की शासिका।"
-        ));
-
-        list.add(new Raja(
-                "रानी अहिल्याबाई होलकर",
-                "होलकर राज्य",
-                "महेश्वर",
-                "प्रशासन, धर्मस्थलों के संरक्षण और जनकल्याण के लिए प्रसिद्ध शासिका।"
-        ));
-
-        list.add(new Raja(
-                "महाराजा रणजीत सिंह",
-                "सिख साम्राज्य",
-                "लाहौर",
-                "सिख साम्राज्य के संस्थापक और शक्तिशाली शासक।"
-        ));
-
-        list.add(new Raja(
-                "छत्रसाल बुंदेला",
-                "बुंदेलखंड",
-                "पन्ना",
-                "बुंदेलखंड के प्रसिद्ध योद्धा और शासक।"
-        ));
-
-        return list;
+        setContentView(layout);
     }
 }
