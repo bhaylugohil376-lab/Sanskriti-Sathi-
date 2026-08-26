@@ -20,7 +20,10 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
 
     @NonNull
     @Override
-    public RajaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RajaViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_raja, parent, false);
 
@@ -28,12 +31,17 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RajaViewHolder holder, int position) {
+    public void onBindViewHolder(
+            @NonNull RajaViewHolder holder,
+            int position) {
+
         Raja raja = rajaList.get(position);
 
         holder.rajaName.setText(raja.getName());
         holder.rajaDynasty.setText(raja.getDynasty());
         holder.rajaPeriod.setText(raja.getPeriod());
+        holder.rajaKingdom.setText("🏰 राज्य: " + raja.getKingdom());
+        holder.rajaCapital.setText("📍 राजधानी: " + raja.getCapital());
         holder.rajaDescription.setText(raja.getDescription());
     }
 
@@ -42,11 +50,13 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
         return rajaList.size();
     }
 
-    public static class RajaViewHolder extends RecyclerView.ViewHolder {
+    static class RajaViewHolder extends RecyclerView.ViewHolder {
 
         TextView rajaName;
         TextView rajaDynasty;
         TextView rajaPeriod;
+        TextView rajaKingdom;
+        TextView rajaCapital;
         TextView rajaDescription;
 
         public RajaViewHolder(@NonNull View itemView) {
@@ -55,6 +65,8 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
             rajaName = itemView.findViewById(R.id.rajaName);
             rajaDynasty = itemView.findViewById(R.id.rajaDynasty);
             rajaPeriod = itemView.findViewById(R.id.rajaPeriod);
+            rajaKingdom = itemView.findViewById(R.id.rajaKingdom);
+            rajaCapital = itemView.findViewById(R.id.rajaCapital);
             rajaDescription = itemView.findViewById(R.id.rajaDescription);
         }
     }
