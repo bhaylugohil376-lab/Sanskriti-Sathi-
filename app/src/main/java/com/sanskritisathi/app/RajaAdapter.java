@@ -8,14 +8,52 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder> {
 
     private final List<Raja> rajaList;
+    private final List<Raja> allRajas;
 
     public RajaAdapter(List<Raja> rajaList) {
         this.rajaList = rajaList;
+        this.allRajas = new ArrayList<>(rajaList);
+    }
+
+    // 🔍 Raja search/filter
+    public void filter(String text) {
+
+        String query = text == null ? "" : text.trim().toLowerCase();
+
+        rajaList.clear();
+
+        if (query.isEmpty()) {
+            rajaList.addAll(allRajas);
+        } else {
+
+            for (Raja raja : allRajas) {
+
+                String name = raja.getName();
+                String dynasty = raja.getDynasty();
+                String period = raja.getPeriod();
+                String kingdom = raja.getKingdom();
+                String capital = raja.getCapital();
+                String description = raja.getDescription();
+
+                if ((name != null && name.toLowerCase().contains(query))
+                        || (dynasty != null && dynasty.toLowerCase().contains(query))
+                        || (period != null && period.toLowerCase().contains(query))
+                        || (kingdom != null && kingdom.toLowerCase().contains(query))
+                        || (capital != null && capital.toLowerCase().contains(query))
+                        || (description != null && description.toLowerCase().contains(query))) {
+
+                    rajaList.add(raja);
+                }
+            }
+        }
+
+        notifyDataSetChanged();
     }
 
     @NonNull
