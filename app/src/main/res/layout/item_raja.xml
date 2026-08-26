@@ -1,47 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
     android:layout_marginBottom="12dp"
-    android:background="#FFF3E0">
+    android:background="#FFF8E1">
 
     <TextView
         android:id="@+id/rajaName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="छत्रपति शिवाजी महाराज"
-        android:textSize="20sp"
+        android:text="सम्राट अशोक"
+        android:textSize="21sp"
         android:textStyle="bold"
-        android:textColor="#8B4513" />
+        android:textColor="#8B4513"/>
 
     <TextView
         android:id="@+id/rajaDynasty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:text="मराठा साम्राज्य"
-        android:textSize="15sp"
-        android:textColor="#555555" />
+        android:text="मौर्य वंश"
+        android:textSize="16sp"/>
 
     <TextView
         android:id="@+id/rajaPeriod"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="मध्यकालीन भारत"
-        android:textSize="14sp"
-        android:textColor="#777777" />
+        android:text="ईसा पूर्व 268–232"
+        android:textSize="14sp"/>
+
+    <TextView
+        android:id="@+id/rajaKingdom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="🏰 राज्य: मौर्य साम्राज्य"
+        android:textSize="15sp"/>
+
+    <TextView
+        android:id="@+id/rajaCapital"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="📍 राजधानी: पाटलिपुत्र"
+        android:textSize="15sp"/>
 
     <TextView
         android:id="@+id/rajaDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="राजा की जानकारी यहाँ दिखाई जाएगी।"
-        android:textSize="15sp"
-        android:textColor="#333333" />
+        android:text="राजा के बारे में जानकारी"
+        android:textSize="14sp"/>
 
 </LinearLayout>
