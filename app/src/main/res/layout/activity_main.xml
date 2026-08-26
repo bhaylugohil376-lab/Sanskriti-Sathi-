@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="NoDemo"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ज्ञान • संस्कृति • जानकारी"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:paddingBottom="20dp" />
+
+        <Button
+            android:id="@+id/templeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🛕 Hindu Temples"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/videoButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎥 Upload Video"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/aboutButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ℹ️ About NoDemo"
+            android:layout_marginBottom="10dp" />
+
+        <Button
+            android:id="@+id/privacyButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔒 Privacy Policy"
+            android:layout_marginBottom="20dp" />
+
+        <TextView
+            android:id="@+id/contentText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="NoDemo में आपका स्वागत है!"
+            android:textSize="17sp"
+            android:padding="18dp" />
+
+    </LinearLayout>
+
+</ScrollView>
