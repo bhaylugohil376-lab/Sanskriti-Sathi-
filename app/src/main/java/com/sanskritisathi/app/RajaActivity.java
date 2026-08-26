@@ -1,33 +1,38 @@
 package com.sanskritisathi.app;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
+import java.util.ArrayList;
 import java.util.List;
 
-public class RajaActivity extends AppCompatActivity {
-
-    private RecyclerView rajaRecyclerView;
+public class RajaActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_raja);
+        ListView listView = new ListView(this);
+        listView.setPadding(16, 16, 16, 16);
 
-        rajaRecyclerView = findViewById(R.id.rajaRecyclerView);
-
-        rajaRecyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
-        );
+        setContentView(listView);
 
         List<Raja> rajaList = RajaData.getAllRajas();
 
-        RajaAdapter adapter = new RajaAdapter(rajaList);
+        ArrayList<String> names = new ArrayList<>();
 
-        rajaRecyclerView.setAdapter(adapter);
+        for (Raja raja : rajaList) {
+            names.add(raja.getName());
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                names
+        );
+
+        listView.setAdapter(adapter);
     }
 }
