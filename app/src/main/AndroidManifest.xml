@@ -29,6 +29,11 @@
             android:name=".DeviDevtaActivity"
             android:exported="false" />
 
+        <!-- Sanskriti News -->
+        <activity
+            android:name=".RssActivity"
+            android:exported="false" />
+
         <!-- Main Screen -->
         <activity
             android:name=".MainActivity"
