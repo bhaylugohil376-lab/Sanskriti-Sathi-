@@ -19,6 +19,11 @@
             android:name=".GitaActivity"
             android:exported="false" />
 
+        <!-- Devi & Devta Screen -->
+        <activity
+            android:name=".DeviDevtaActivity"
+            android:exported="false" />
+
         <!-- Main Screen -->
         <activity
             android:name=".MainActivity"
