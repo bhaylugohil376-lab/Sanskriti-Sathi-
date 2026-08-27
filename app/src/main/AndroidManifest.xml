@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:allowBackup="true"
-        android:label="Sanskriti-Sathi"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Sanskriti Sathi"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
+        <!-- Temple Screen -->
         <activity
-            android:name=".RajaActivity"
+            android:name=".TempleActivity"
             android:exported="false" />
 
+        <!-- Main Screen -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
