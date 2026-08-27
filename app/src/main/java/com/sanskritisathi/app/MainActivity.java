@@ -13,10 +13,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Raja Activity
         Button rajaButton = findViewById(R.id.rajaButton);
 
         rajaButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RajaActivity.class);
+            startActivity(intent);
+        });
+
+        // Temple Activity
+        Button templeButton = findViewById(R.id.templeButton);
+
+        templeButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, TempleActivity.class);
             startActivity(intent);
         });
     }
