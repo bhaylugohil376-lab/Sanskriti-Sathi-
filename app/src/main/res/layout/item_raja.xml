@@ -5,48 +5,25 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:layout_marginBottom="10dp">
+    android:layout_marginBottom="10dp"
+    android:background="#FFF3E0">
 
     <TextView
         android:id="@+id/rajaName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="21sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/rajaDynasty"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:textSize="16sp" />
-
-    <TextView
-        android:id="@+id/rajaPeriod"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textSize="15sp" />
-
-    <TextView
-        android:id="@+id/rajaKingdom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textSize="15sp" />
-
-    <TextView
-        android:id="@+id/rajaCapital"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textSize="15sp" />
+        android:text="Rama"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#E65100"
+        android:paddingBottom="6dp" />
 
     <TextView
         android:id="@+id/rajaDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="15sp" />
+        android:text="King of Ayodhya"
+        android:textSize="16sp"
+        android:textColor="#333333" />
 
 </LinearLayout>
