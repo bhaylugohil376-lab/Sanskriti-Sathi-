@@ -4,31 +4,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="12dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="👑 भारत के राजा और योद्धा"
-        android:textSize="24sp"
+        android:text="Indian Kings"
+        android:textSize="26sp"
         android:textStyle="bold"
         android:gravity="center"
-        android:padding="10dp" />
-
-    <EditText
-        android:id="@+id/searchRaja"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:hint="🔍 राजा, वंश, राज्य या राजधानी खोजें"
-        android:inputType="text"
-        android:padding="12dp" />
+        android:padding="16dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rajaRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="12dp" />
+        android:layout_weight="1" />
 
 </LinearLayout>
