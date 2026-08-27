@@ -23,34 +23,51 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="भारतीय संस्कृति और ज्ञान का साथी"
+            android:text="Indian Culture &amp; Knowledge"
             android:textSize="18sp"
             android:padding="8dp" />
 
         <Button
+            android:id="@+id/rajaButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🛕 मंदिर और तीर्थस्थल" />
+            android:text="👑 Indian Kings"
+            android:textSize="17sp" />
 
         <Button
+            android:id="@+id/templeButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📖 भगवद्गीता" />
+            android:text="🛕 Temples &amp; Pilgrimage"
+            android:textSize="17sp" />
 
         <Button
+            android:id="@+id/gitaButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🕉️ देवी-देवता" />
+            android:text="📖 Bhagavad Gita"
+            android:textSize="17sp" />
 
         <Button
+            android:id="@+id/deviDevtaButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📰 संस्कृति समाचार" />
+            android:text="🕉️ Devi &amp; Devta"
+            android:textSize="17sp" />
 
         <Button
+            android:id="@+id/rssButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ℹ️ About Sanskriti-Sathi" />
+            android:text="📰 Sanskriti News"
+            android:textSize="17sp" />
+
+        <Button
+            android:id="@+id/aboutButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ℹ️ About Sanskriti-Sathi"
+            android:textSize="17sp" />
 
     </LinearLayout>
 
