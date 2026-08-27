@@ -3,12 +3,14 @@ package com.sanskritisathi.app;
 public class Raja {
 
     private String name;
-    private String description;
+    private String period;
+    private String history;
     private int imageResId;
 
-    public Raja(String name, String description, int imageResId) {
+    public Raja(String name, String period, String history, int imageResId) {
         this.name = name;
-        this.description = description;
+        this.period = period;
+        this.history = history;
         this.imageResId = imageResId;
     }
 
@@ -16,8 +18,12 @@ public class Raja {
         return name;
     }
 
-    public String getDescription() {
-        return description;
+    public String getPeriod() {
+        return period;
+    }
+
+    public String getHistory() {
+        return history;
     }
 
     public int getImageResId() {
