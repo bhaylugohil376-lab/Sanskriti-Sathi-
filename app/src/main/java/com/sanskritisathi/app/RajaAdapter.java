@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +35,7 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
 
         holder.nameText.setText(raja.getName());
         holder.descriptionText.setText(raja.getDescription());
+        holder.imageView.setImageResource(raja.getImageResId());
     }
 
     @Override
@@ -43,12 +45,14 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
 
     static class RajaViewHolder extends RecyclerView.ViewHolder {
 
+        ImageView imageView;
         TextView nameText;
         TextView descriptionText;
 
         public RajaViewHolder(View itemView) {
             super(itemView);
 
+            imageView = itemView.findViewById(R.id.rajaImage);
             nameText = itemView.findViewById(R.id.rajaName);
             descriptionText = itemView.findViewById(R.id.rajaDescription);
         }
