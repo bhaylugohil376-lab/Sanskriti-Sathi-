@@ -1,37 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
     android:layout_margin="8dp"
-    android:background="#FFF3E0">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp">
 
-    <ImageView
-        android:id="@+id/rajaImage"
-        android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:scaleType="centerCrop"
-        android:contentDescription="King image" />
-
-    <TextView
-        android:id="@+id/rajaName"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Rama"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#E65100"
-        android:paddingTop="10dp"
-        android:paddingBottom="6dp" />
+        android:orientation="vertical"
+        android:padding="12dp">
 
-    <TextView
-        android:id="@+id/rajaDescription"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="King of Ayodhya"
-        android:textSize="16sp"
-        android:textColor="#333333" />
+        <ImageView
+            android:id="@+id/rajaImage"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Raja image" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/rajaName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:text="Raja Name" />
+
+        <TextView
+            android:id="@+id/rajaHistory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textSize="16sp"
+            android:text="Raja history"
+            android:lineSpacingExtra="4dp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
