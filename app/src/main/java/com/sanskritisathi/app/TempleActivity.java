@@ -1,39 +1,28 @@
 package com.sanskritisathi.app;
 
 import android.os.Bundle;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.ArrayList;
 
 public class TempleActivity extends AppCompatActivity {
-
-    private RecyclerView recyclerView;
-    private TempleAdapter adapter;
-    private ArrayList<Temple> templeList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_temple);
 
-        recyclerView = findViewById(R.id.templeRecyclerView);
+        TextView textView = new TextView(this);
 
-        recyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
+        textView.setText(
+                "🛕 Sanskriti Sathi\n\n" +
+                "Mandir aur Dharmik Sthal\n\n" +
+                "Yahan Bharat ke prasiddh mandiron, " +
+                "devi-devtaon aur dharmik sthalon ki jankari milegi."
         );
 
-        templeList = new ArrayList<>();
+        textView.setTextSize(20);
+        textView.setPadding(40, 60, 40, 40);
 
-        templeList.add(new Temple(
-                "Somnath Temple",
-                "Somnath Temple is one of the twelve Jyotirlinga shrines of Lord Shiva, located at Prabhas Patan in Gujarat.",
-                R.drawable.somnath
-        ));
-
-        adapter = new TempleAdapter(this, templeList);
-        recyclerView.setAdapter(adapter);
+        setContentView(textView);
     }
 }
