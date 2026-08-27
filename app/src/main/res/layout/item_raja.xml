@@ -5,8 +5,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:layout_marginBottom="10dp"
+    android:layout_margin="8dp"
     android:background="#FFF3E0">
+
+    <ImageView
+        android:id="@+id/rajaImage"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="King image" />
 
     <TextView
         android:id="@+id/rajaName"
@@ -16,6 +23,7 @@
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="#E65100"
+        android:paddingTop="10dp"
         android:paddingBottom="6dp" />
 
     <TextView
