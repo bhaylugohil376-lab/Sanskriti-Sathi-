@@ -7,22 +7,24 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
 public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder> {
 
-    private Context context;
-    private ArrayList<Raja> rajaList;
+    private final Context context;
+    private final ArrayList<Raja> rajaList;
 
     public RajaAdapter(Context context, ArrayList<Raja> rajaList) {
         this.context = context;
         this.rajaList = rajaList;
     }
 
+    @NonNull
     @Override
-    public RajaViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RajaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_raja, parent, false);
 
@@ -30,12 +32,12 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
     }
 
     @Override
-    public void onBindViewHolder(RajaViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RajaViewHolder holder, int position) {
         Raja raja = rajaList.get(position);
 
-        holder.nameText.setText(raja.getName());
-        holder.descriptionText.setText(raja.getDescription());
-        holder.imageView.setImageResource(raja.getImageResId());
+        holder.rajaImage.setImageResource(raja.getImageResId());
+        holder.rajaName.setText(raja.getName());
+        holder.rajaHistory.setText(raja.getHistory());
     }
 
     @Override
@@ -43,18 +45,18 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
         return rajaList.size();
     }
 
-    static class RajaViewHolder extends RecyclerView.ViewHolder {
+    public static class RajaViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView imageView;
-        TextView nameText;
-        TextView descriptionText;
+        ImageView rajaImage;
+        TextView rajaName;
+        TextView rajaHistory;
 
-        public RajaViewHolder(View itemView) {
+        public RajaViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            imageView = itemView.findViewById(R.id.rajaImage);
-            nameText = itemView.findViewById(R.id.rajaName);
-            descriptionText = itemView.findViewById(R.id.rajaDescription);
+            rajaImage = itemView.findViewById(R.id.rajaImage);
+            rajaName = itemView.findViewById(R.id.rajaName);
+            rajaHistory = itemView.findViewById(R.id.rajaHistory);
         }
     }
 }
