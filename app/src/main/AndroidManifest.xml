@@ -14,6 +14,11 @@
             android:name=".TempleActivity"
             android:exported="false" />
 
+        <!-- Bhagavad Gita Screen -->
+        <activity
+            android:name=".GitaActivity"
+            android:exported="false" />
+
         <!-- Main Screen -->
         <activity
             android:name=".MainActivity"
