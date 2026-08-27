@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="📖 Bhagavad Gita"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:padding="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="श्रीमद्भगवद्गीता&#10;&#10;भगवान श्री कृष्ण द्वारा अर्जुन को दिए गए ज्ञान और जीवन के महत्वपूर्ण संदेश।"
+            android:textSize="18sp"
+            android:padding="12dp" />
+
+    </LinearLayout>
+
+</ScrollView>
