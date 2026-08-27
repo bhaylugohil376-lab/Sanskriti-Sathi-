@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Raja Activity
+        // Indian Kings
         Button rajaButton = findViewById(R.id.rajaButton);
 
         rajaButton.setOnClickListener(v -> {
@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Temple Activity
+        // Temples
         Button templeButton = findViewById(R.id.templeButton);
 
         templeButton.setOnClickListener(v -> {
@@ -29,11 +29,19 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Bhagavad Gita Activity
+        // Bhagavad Gita
         Button gitaButton = findViewById(R.id.gitaButton);
 
         gitaButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, GitaActivity.class);
+            startActivity(intent);
+        });
+
+        // Devi & Devta
+        Button deviDevtaButton = findViewById(R.id.deviDevtaButton);
+
+        deviDevtaButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, DeviDevtaActivity.class);
             startActivity(intent);
         });
     }
