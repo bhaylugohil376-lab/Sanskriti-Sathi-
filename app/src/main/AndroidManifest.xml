@@ -4,13 +4,9 @@
 
     <application
         android:allowBackup="true"
-        android:label="Sanskriti Sathi"
+        android:label="Sanskriti-Sathi"
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
-
-        <activity
-            android:name=".RajaActivity"
-            android:exported="false" />
 
         <activity
             android:name=".MainActivity"
