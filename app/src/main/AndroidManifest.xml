@@ -34,6 +34,11 @@
             android:name=".RssActivity"
             android:exported="false" />
 
+        <!-- About Sanskriti-Sathi -->
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
+
         <!-- Main Screen -->
         <activity
             android:name=".MainActivity"
