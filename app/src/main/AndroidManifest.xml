@@ -9,6 +9,10 @@
         android:theme="@style/Theme.SanskritiSathi">
 
         <activity
+            android:name=".RajaActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
 
