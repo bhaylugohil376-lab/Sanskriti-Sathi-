@@ -28,5 +28,13 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, TempleActivity.class);
             startActivity(intent);
         });
+
+        // Bhagavad Gita Activity
+        Button gitaButton = findViewById(R.id.gitaButton);
+
+        gitaButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, GitaActivity.class);
+            startActivity(intent);
+        });
     }
 }
