@@ -20,62 +20,68 @@ public class RajaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_raja);
 
         recyclerView = findViewById(R.id.rajaRecyclerView);
-
-        recyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
-        );
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         rajaList = new ArrayList<>();
 
-        // Ancient Indian Kings
         rajaList.add(new Raja(
                 "Rama",
-                "King of Ayodhya and an important figure in the Ramayana."
+                "King of Ayodhya and an important figure in the Ramayana.",
+                R.drawable.rama
         ));
 
         rajaList.add(new Raja(
                 "Dasharatha",
-                "King of Ayodhya and father of Rama."
+                "King of Ayodhya and father of Rama.",
+                R.drawable.dasharatha
         ));
 
         rajaList.add(new Raja(
                 "Janaka",
-                "Wise King of Mithila and father of Sita."
+                "Wise King of Mithila and father of Sita.",
+                R.drawable.janaka
         ));
 
         rajaList.add(new Raja(
                 "Harishchandra",
-                "Legendary king remembered for his commitment to truth and righteousness."
+                "Legendary king remembered for truth and righteousness.",
+                R.drawable.harishchandra
         ));
 
         rajaList.add(new Raja(
                 "Yudhishthira",
-                "Eldest of the Pandavas and King of Hastinapura."
+                "Eldest of the Pandavas and King of Hastinapura.",
+                R.drawable.yudhishthira
         ));
 
         rajaList.add(new Raja(
                 "Krishna",
-                "A central figure in the Mahabharata and revered as a divine teacher."
+                "A central figure in the Mahabharata and revered as a divine teacher.",
+                R.drawable.krishna
         ));
 
         rajaList.add(new Raja(
                 "Chandragupta Maurya",
-                "Founder of the Maurya Empire and one of ancient India's major rulers."
+                "Founder of the Maurya Empire.",
+                R.drawable.chandragupta
         ));
 
         rajaList.add(new Raja(
                 "Ashoka",
-                "Mauryan emperor known for his later support of Buddhism and dhamma."
+                "Mauryan emperor known for his support of dhamma.",
+                R.drawable.ashoka
         ));
 
         rajaList.add(new Raja(
                 "Samudragupta",
-                "Gupta emperor remembered for his military campaigns and patronage of culture."
+                "Gupta emperor remembered for his military campaigns and patronage of culture.",
+                R.drawable.samudragupta
         ));
 
         rajaList.add(new Raja(
                 "Vikramaditya",
-                "A celebrated traditional Indian king associated with learning, justice and cultural heritage."
+                "A celebrated traditional Indian king associated with learning and justice.",
+                R.drawable.vikramaditya
         ));
 
         adapter = new RajaAdapter(this, rajaList);
