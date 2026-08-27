@@ -45,11 +45,19 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Sanskriti News (RSS)
+        // Sanskriti News
         Button rssButton = findViewById(R.id.rssButton);
 
         rssButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RssActivity.class);
+            startActivity(intent);
+        });
+
+        // About Sanskriti-Sathi
+        Button aboutButton = findViewById(R.id.aboutButton);
+
+        aboutButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AboutActivity.class);
             startActivity(intent);
         });
     }
