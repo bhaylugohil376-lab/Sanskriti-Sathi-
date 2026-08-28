@@ -25,75 +25,93 @@ public class DeviDevtaActivity extends AppCompatActivity {
         deviDevtaList = new ArrayList<>();
 
         deviDevtaList.add(new DeviDevta(
-                "Bhagwan Shiva",
-                "Bhagwan Shiva are an important deity in Hindu traditions and are associated with meditation, transformation and spiritual knowledge.",
+                "Shiva",
+                "A major Hindu deity traditionally associated with transformation, meditation and spiritual practice.",
                 R.drawable.shiva
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Bhagwan Vishnu",
-                "Bhagwan Vishnu is traditionally regarded as the preserver in the Hindu Trimurti.",
+                "Vishnu",
+                "A major Hindu deity traditionally associated with preservation and protection.",
                 R.drawable.vishnu
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Bhagwan Rama",
-                "Bhagwan Rama is a central figure of the Ramayana and is traditionally associated with dharma and righteous conduct.",
-                R.drawable.rama
+                "Brahma",
+                "A deity traditionally associated with creation in Hindu cosmology.",
+                R.drawable.brahma
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Bhagwan Krishna",
-                "Bhagwan Krishna is a central figure of the Mahabharata and the speaker of the Bhagavad Gita.",
-                R.drawable.krishna
-        ));
-
-        deviDevtaList.add(new DeviDevta(
-                "Bhagwan Ganesha",
-                "Bhagwan Ganesha is widely worshipped and is traditionally associated with wisdom, learning and auspicious beginnings.",
+                "Ganesha",
+                "A widely worshipped deity traditionally associated with wisdom, learning and auspicious beginnings.",
                 R.drawable.ganesha
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Bhagwan Hanuman",
-                "Bhagwan Hanuman is an important figure in the Ramayana and is traditionally associated with devotion, courage and strength.",
+                "Hanuman",
+                "A revered figure in the Ramayana tradition, associated with devotion, courage and service to Rama.",
                 R.drawable.hanuman
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Bhagwan Kartikeya",
-                "Bhagwan Kartikeya is traditionally associated with courage and is especially revered in many parts of India.",
-                R.drawable.kartikeya
+                "Krishna",
+                "A central figure in the Mahabharata and Bhagavad Gita and widely worshipped as a divine teacher.",
+                R.drawable.krishna
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Goddess Durga",
-                "Goddess Durga is widely revered as a powerful divine mother and is celebrated during festivals such as Navratri.",
+                "Rama",
+                "A major figure of the Ramayana, traditionally associated with dharma and righteous conduct.",
+                R.drawable.rama
+        ));
+
+        deviDevtaList.add(new DeviDevta(
+                "Durga",
+                "A revered Goddess traditionally associated with strength, protection and the triumph of good over evil.",
                 R.drawable.durga
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Goddess Lakshmi",
-                "Goddess Lakshmi is traditionally associated with prosperity, good fortune and well-being.",
+                "Lakshmi",
+                "A revered Goddess traditionally associated with prosperity, abundance and well-being.",
                 R.drawable.lakshmi
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Goddess Saraswati",
-                "Goddess Saraswati is traditionally associated with knowledge, learning, music and the arts.",
+                "Saraswati",
+                "A revered Goddess traditionally associated with knowledge, learning, music and arts.",
                 R.drawable.saraswati
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Goddess Parvati",
-                "Goddess Parvati is a major Hindu goddess and is traditionally regarded as the consort of Bhagwan Shiva.",
+                "Parvati",
+                "A major Goddess traditionally associated with motherhood, strength and devotion.",
                 R.drawable.parvati
         ));
 
         deviDevtaList.add(new DeviDevta(
-                "Surya Dev",
-                "Surya Dev is traditionally revered as the Sun deity and is associated with light and vitality.",
+                "Kali",
+                "A powerful form of the Goddess traditionally associated with time, transformation and protection.",
+                R.drawable.kali
+        ));
+
+        deviDevtaList.add(new DeviDevta(
+                "Radha",
+                "A central devotional figure in many Vaishnava traditions and especially associated with devotion to Krishna.",
+                R.drawable.radha
+        ));
+
+        deviDevtaList.add(new DeviDevta(
+                "Surya",
+                "The Sun deity, traditionally associated with light, vitality and the life-giving power of the Sun.",
                 R.drawable.surya
+        ));
+
+        deviDevtaList.add(new DeviDevta(
+                "Shani",
+                "A deity associated in Hindu tradition with Shani and the planet Saturn.",
+                R.drawable.shani
         ));
 
         adapter = new DeviDevtaAdapter(this, deviDevtaList);
