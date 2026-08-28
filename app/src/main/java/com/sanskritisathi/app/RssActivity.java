@@ -1,7 +1,5 @@
 package com.sanskritisathi.app;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -25,13 +23,9 @@ public class RssActivity extends AppCompatActivity {
     private final ExecutorService executor =
             Executors.newSingleThreadExecutor();
 
-    /*
-     * Yahan authorized/public RSS feed URL rakhenge.
-     * Final app mein sirf aisa feed use karna hai
-     * jiske terms commercial app use ko allow karte hon.
-     */
+    // PIB Official RSS Feed
     private static final String RSS_FEED_URL =
-            "PASTE_AUTHORIZED_RSS_FEED_URL_HERE";
+            "https://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +33,7 @@ public class RssActivity extends AppCompatActivity {
         setContentView(R.layout.activity_rss);
 
         recyclerView = findViewById(R.id.rssRecyclerView);
+
         recyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
         );
@@ -65,11 +60,12 @@ public class RssActivity extends AppCompatActivity {
                         (HttpURLConnection) url.openConnection();
 
                 connection.setRequestMethod("GET");
-                connection.setConnectTimeout(10000);
-                connection.setReadTimeout(10000);
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(15000);
+
                 connection.setRequestProperty(
                         "User-Agent",
-                        "SanskritiSathi/1.0"
+                        "Mozilla/5.0"
                 );
 
                 connection.connect();
@@ -80,6 +76,13 @@ public class RssActivity extends AppCompatActivity {
                             connection.getInputStream();
 
                     items = RssParser.parse(inputStream);
+
+                } else {
+
+                    throw new Exception(
+                            "HTTP Error: "
+                                    + connection.getResponseCode()
+                    );
                 }
 
                 connection.disconnect();
@@ -103,11 +106,13 @@ public class RssActivity extends AppCompatActivity {
 
                 for (RssItem item : finalItems) {
 
-                    rssList.add(new Rss(
-                            item.getTitle(),
-                            item.getDescription(),
-                            item.getLink()
-                    ));
+                    rssList.add(
+                            new Rss(
+                                    item.getTitle(),
+                                    item.getDescription(),
+                                    item.getLink()
+                            )
+                    );
                 }
 
                 adapter.notifyDataSetChanged();
@@ -118,6 +123,7 @@ public class RssActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         executor.shutdown();
     }
 }
