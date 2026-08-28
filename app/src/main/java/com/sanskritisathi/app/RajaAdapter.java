@@ -24,7 +24,10 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
 
     @NonNull
     @Override
-    public RajaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RajaViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
         View view = LayoutInflater.from(context)
                 .inflate(R.layout.item_raja, parent, false);
 
@@ -32,12 +35,23 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RajaViewHolder holder, int position) {
+    public void onBindViewHolder(
+            @NonNull RajaViewHolder holder,
+            int position) {
+
         Raja raja = rajaList.get(position);
 
-        holder.rajaImage.setImageResource(raja.getImageResId());
-        holder.rajaName.setText(raja.getName());
-        holder.rajaHistory.setText(raja.getHistory());
+        holder.rajaImage.setImageResource(
+                raja.getImageResId());
+
+        holder.rajaName.setText(
+                raja.getName());
+
+        holder.rajaPeriod.setText(
+                "Period: " + raja.getPeriod());
+
+        holder.rajaHistory.setText(
+                raja.getHistory());
     }
 
     @Override
@@ -45,18 +59,28 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
         return rajaList.size();
     }
 
-    public static class RajaViewHolder extends RecyclerView.ViewHolder {
+    public static class RajaViewHolder
+            extends RecyclerView.ViewHolder {
 
         ImageView rajaImage;
         TextView rajaName;
+        TextView rajaPeriod;
         TextView rajaHistory;
 
         public RajaViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            rajaImage = itemView.findViewById(R.id.rajaImage);
-            rajaName = itemView.findViewById(R.id.rajaName);
-            rajaHistory = itemView.findViewById(R.id.rajaHistory);
+            rajaImage = itemView.findViewById(
+                    R.id.rajaImage);
+
+            rajaName = itemView.findViewById(
+                    R.id.rajaName);
+
+            rajaPeriod = itemView.findViewById(
+                    R.id.rajaPeriod);
+
+            rajaHistory = itemView.findViewById(
+                    R.id.rajaHistory);
         }
     }
 }
