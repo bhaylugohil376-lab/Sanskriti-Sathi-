@@ -17,7 +17,10 @@ public class MainActivity extends AppCompatActivity {
         Button rajaButton = findViewById(R.id.rajaButton);
 
         rajaButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RajaActivity.class);
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    RajaActivity.class
+            );
             startActivity(intent);
         });
 
@@ -25,7 +28,10 @@ public class MainActivity extends AppCompatActivity {
         Button templeButton = findViewById(R.id.templeButton);
 
         templeButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, TempleActivity.class);
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    TempleActivity.class
+            );
             startActivity(intent);
         });
 
@@ -33,31 +39,44 @@ public class MainActivity extends AppCompatActivity {
         Button gitaButton = findViewById(R.id.gitaButton);
 
         gitaButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, GitaActivity.class);
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    GitaActivity.class
+            );
             startActivity(intent);
         });
 
         // Devi & Devta
-        Button deviDevtaButton = findViewById(R.id.deviDevtaButton);
+        Button deviDevtaButton =
+                findViewById(R.id.deviDevtaButton);
 
         deviDevtaButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, DeviDevtaActivity.class);
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    DeviDevtaActivity.class
+            );
             startActivity(intent);
         });
 
-        // Sanskriti News
+        // RSS News
         Button rssButton = findViewById(R.id.rssButton);
 
         rssButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RssActivity.class);
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    RssActivity.class
+            );
             startActivity(intent);
         });
 
-        // About Sanskriti-Sathi
+        // About
         Button aboutButton = findViewById(R.id.aboutButton);
 
         aboutButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AboutActivity.class);
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    AboutActivity.class
+            );
             startActivity(intent);
         });
     }
