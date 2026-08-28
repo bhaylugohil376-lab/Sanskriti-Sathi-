@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
@@ -9,34 +10,34 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
-        <!-- Indian Kings -->
-        <activity
-            android:name=".RajaActivity"
-            android:exported="false" />
-
-        <!-- Temples -->
+        <!-- Temple Screen -->
         <activity
             android:name=".TempleActivity"
             android:exported="false" />
 
-        <!-- Bhagavad Gita -->
+        <!-- Bhagavad Gita Screen -->
         <activity
             android:name=".GitaActivity"
             android:exported="false" />
 
-        <!-- Devi & Devta -->
+        <!-- Devi & Devta Screen -->
         <activity
             android:name=".DeviDevtaActivity"
             android:exported="false" />
 
-        <!-- Sanskriti News -->
+        <!-- RSS News Screen -->
         <activity
             android:name=".RssActivity"
             android:exported="false" />
 
-        <!-- About Sanskriti-Sathi -->
+        <!-- About Screen -->
         <activity
             android:name=".AboutActivity"
+            android:exported="false" />
+
+        <!-- Raja Screen -->
+        <activity
+            android:name=".RajaActivity"
             android:exported="false" />
 
         <!-- Main Screen -->
