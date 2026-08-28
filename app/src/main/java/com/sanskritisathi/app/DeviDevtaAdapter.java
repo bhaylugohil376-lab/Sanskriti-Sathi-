@@ -43,16 +43,16 @@ public class DeviDevtaAdapter
             @NonNull DeviDevtaViewHolder holder,
             int position) {
 
-        DeviDevta deviDevta = deviDevtaList.get(position);
+        DeviDevta item = deviDevtaList.get(position);
 
         holder.deviDevtaImage.setImageResource(
-                deviDevta.getImageResId());
+                item.getImageResId());
 
         holder.deviDevtaName.setText(
-                deviDevta.getName());
+                item.getName());
 
         holder.deviDevtaDescription.setText(
-                deviDevta.getDescription());
+                item.getDescription());
     }
 
     @Override
