@@ -20,6 +20,11 @@
             android:name=".GitaActivity"
             android:exported="false" />
 
+        <!-- Bhagavad Gita Detail Screen -->
+        <activity
+            android:name=".GitaDetailActivity"
+            android:exported="false" />
+
         <!-- Devi & Devta Screen -->
         <activity
             android:name=".DeviDevtaActivity"
