@@ -18,7 +18,7 @@
         <ImageView
             android:id="@+id/deviDevtaImage"
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="300dp"
             android:scaleType="centerCrop"
             android:contentDescription="Devi Devta image" />
 
@@ -26,19 +26,63 @@
             android:id="@+id/deviDevtaName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Shiva"
-            android:textSize="22sp"
+            android:layout_marginTop="14dp"
+            android:text="Devi Devta Name"
+            android:textSize="24sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/deviDevtaTradition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="परंपरा"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/deviDevtaDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Description"
-            android:textSize="16sp"
-            android:lineSpacingExtra="4dp" />
+            android:layout_marginTop="14dp"
+            android:text="विस्तृत विवरण"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp" />
+
+        <TextView
+            android:id="@+id/deviDevtaImportance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="महत्व"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp" />
+
+        <TextView
+            android:id="@+id/deviDevtaTemples"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="प्रमुख मंदिर / तीर्थ"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp" />
+
+        <TextView
+            android:id="@+id/deviDevtaFestivals"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="प्रमुख पर्व"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp" />
+
+        <TextView
+            android:id="@+id/deviDevtaStories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="प्रमुख कथाएँ"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp" />
 
     </LinearLayout>
 
