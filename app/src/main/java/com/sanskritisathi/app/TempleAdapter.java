@@ -10,17 +10,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class TempleAdapter
         extends RecyclerView.Adapter<TempleAdapter.TempleViewHolder> {
 
     private final Context context;
-    private final ArrayList<Temple> templeList;
+    private final List<Temple> templeList;
 
     public TempleAdapter(
             Context context,
-            ArrayList<Temple> templeList) {
+            List<Temple> templeList) {
 
         this.context = context;
         this.templeList = templeList;
@@ -33,7 +33,11 @@ public class TempleAdapter
             int viewType) {
 
         View view = LayoutInflater.from(context)
-                .inflate(R.layout.item_temple, parent, false);
+                .inflate(
+                        R.layout.item_temple,
+                        parent,
+                        false
+                );
 
         return new TempleViewHolder(view);
     }
@@ -46,16 +50,50 @@ public class TempleAdapter
         Temple temple = templeList.get(position);
 
         holder.templeImage.setImageResource(
-                temple.getImageResId());
+                temple.getImageResId()
+        );
 
         holder.templeName.setText(
-                temple.getName());
+                temple.getName()
+        );
 
         holder.templeLocation.setText(
-                "📍 " + temple.getLocation());
+                "स्थान: " + temple.getLocation()
+        );
 
-        holder.templeDescription.setText(
-                temple.getDescription());
+        holder.templeHistory.setText(
+                "इतिहास\n" + temple.getHistory()
+        );
+
+        holder.templeImportance.setText(
+                "धार्मिक महत्व\n" +
+                temple.getReligiousImportance()
+        );
+
+        holder.templeDeity.setText(
+                "मुख्य देवी/देवता\n" +
+                temple.getMainDeity()
+        );
+
+        holder.templeFestivals.setText(
+                "प्रमुख पर्व\n" +
+                temple.getFestivals()
+        );
+
+        holder.templeTraditions.setText(
+                "विशेष परंपराएँ\n" +
+                temple.getTraditions()
+        );
+
+        holder.templeArchitecture.setText(
+                "वास्तुकला\n" +
+                temple.getArchitecture()
+        );
+
+        holder.templeStories.setText(
+                "प्रमुख कथाएँ\n" +
+                temple.getStories()
+        );
     }
 
     @Override
@@ -69,22 +107,58 @@ public class TempleAdapter
         ImageView templeImage;
         TextView templeName;
         TextView templeLocation;
-        TextView templeDescription;
+        TextView templeHistory;
+        TextView templeImportance;
+        TextView templeDeity;
+        TextView templeFestivals;
+        TextView templeTraditions;
+        TextView templeArchitecture;
+        TextView templeStories;
 
-        public TempleViewHolder(@NonNull View itemView) {
+        public TempleViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
 
             templeImage = itemView.findViewById(
-                    R.id.templeImage);
+                    R.id.templeImage
+            );
 
             templeName = itemView.findViewById(
-                    R.id.templeName);
+                    R.id.templeName
+            );
 
             templeLocation = itemView.findViewById(
-                    R.id.templeLocation);
+                    R.id.templeLocation
+            );
 
-            templeDescription = itemView.findViewById(
-                    R.id.templeDescription);
+            templeHistory = itemView.findViewById(
+                    R.id.templeHistory
+            );
+
+            templeImportance = itemView.findViewById(
+                    R.id.templeImportance
+            );
+
+            templeDeity = itemView.findViewById(
+                    R.id.templeDeity
+            );
+
+            templeFestivals = itemView.findViewById(
+                    R.id.templeFestivals
+            );
+
+            templeTraditions = itemView.findViewById(
+                    R.id.templeTraditions
+            );
+
+            templeArchitecture = itemView.findViewById(
+                    R.id.templeArchitecture
+            );
+
+            templeStories = itemView.findViewById(
+                    R.id.templeStories
+            );
         }
     }
 }
