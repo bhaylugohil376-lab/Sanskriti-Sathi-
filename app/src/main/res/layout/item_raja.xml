@@ -15,38 +15,54 @@
         android:orientation="vertical"
         android:padding="12dp">
 
+        <!-- Large Raja Image -->
         <ImageView
             android:id="@+id/rajaImage"
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="300dp"
             android:scaleType="centerCrop"
             android:contentDescription="Raja image" />
 
+        <!-- Raja Name -->
         <TextView
             android:id="@+id/rajaName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="14dp"
             android:text="Raja Name"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
+        <!-- Period -->
         <TextView
             android:id="@+id/rajaPeriod"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:text="Period"
             android:textSize="16sp" />
 
+        <!-- Detailed History -->
         <TextView
             android:id="@+id/rajaHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="12dp"
             android:text="Raja history"
-            android:textSize="16sp"
-            android:lineSpacingExtra="4dp" />
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp"
+            android:justificationMode="inter_word" />
+
+        <!-- Wars -->
+        <TextView
+            android:id="@+id/rajaWars"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="युद्ध एवं संघर्ष"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp"
+            android:justificationMode="inter_word" />
 
     </LinearLayout>
 
