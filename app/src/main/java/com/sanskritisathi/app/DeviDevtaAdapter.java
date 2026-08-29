@@ -10,17 +10,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class DeviDevtaAdapter
         extends RecyclerView.Adapter<DeviDevtaAdapter.DeviDevtaViewHolder> {
 
     private final Context context;
-    private final ArrayList<DeviDevta> deviDevtaList;
+    private final List<DeviDevta> deviDevtaList;
 
     public DeviDevtaAdapter(
             Context context,
-            ArrayList<DeviDevta> deviDevtaList) {
+            List<DeviDevta> deviDevtaList) {
 
         this.context = context;
         this.deviDevtaList = deviDevtaList;
@@ -33,7 +33,11 @@ public class DeviDevtaAdapter
             int viewType) {
 
         View view = LayoutInflater.from(context)
-                .inflate(R.layout.item_devi_devta, parent, false);
+                .inflate(
+                        R.layout.item_devi_devta,
+                        parent,
+                        false
+                );
 
         return new DeviDevtaViewHolder(view);
     }
@@ -46,13 +50,36 @@ public class DeviDevtaAdapter
         DeviDevta item = deviDevtaList.get(position);
 
         holder.deviDevtaImage.setImageResource(
-                item.getImageResId());
+                item.getImageResId()
+        );
 
         holder.deviDevtaName.setText(
-                item.getName());
+                item.getName()
+        );
+
+        holder.deviDevtaTradition.setText(
+                "परंपरा: " + item.getTradition()
+        );
 
         holder.deviDevtaDescription.setText(
-                item.getDescription());
+                item.getDescription()
+        );
+
+        holder.deviDevtaImportance.setText(
+                "महत्व\n" + item.getImportance()
+        );
+
+        holder.deviDevtaTemples.setText(
+                "प्रमुख मंदिर / तीर्थ\n" + item.getTemples()
+        );
+
+        holder.deviDevtaFestivals.setText(
+                "प्रमुख पर्व\n" + item.getFestivals()
+        );
+
+        holder.deviDevtaStories.setText(
+                "प्रमुख कथाएँ\n" + item.getStories()
+        );
     }
 
     @Override
@@ -65,19 +92,57 @@ public class DeviDevtaAdapter
 
         ImageView deviDevtaImage;
         TextView deviDevtaName;
+        TextView deviDevtaTradition;
         TextView deviDevtaDescription;
+        TextView deviDevtaImportance;
+        TextView deviDevtaTemples;
+        TextView deviDevtaFestivals;
+        TextView deviDevtaStories;
 
-        public DeviDevtaViewHolder(@NonNull View itemView) {
+        public DeviDevtaViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
 
-            deviDevtaImage = itemView.findViewById(
-                    R.id.deviDevtaImage);
+            deviDevtaImage =
+                    itemView.findViewById(
+                            R.id.deviDevtaImage
+                    );
 
-            deviDevtaName = itemView.findViewById(
-                    R.id.deviDevtaName);
+            deviDevtaName =
+                    itemView.findViewById(
+                            R.id.deviDevtaName
+                    );
 
-            deviDevtaDescription = itemView.findViewById(
-                    R.id.deviDevtaDescription);
+            deviDevtaTradition =
+                    itemView.findViewById(
+                            R.id.deviDevtaTradition
+                    );
+
+            deviDevtaDescription =
+                    itemView.findViewById(
+                            R.id.deviDevtaDescription
+                    );
+
+            deviDevtaImportance =
+                    itemView.findViewById(
+                            R.id.deviDevtaImportance
+                    );
+
+            deviDevtaTemples =
+                    itemView.findViewById(
+                            R.id.deviDevtaTemples
+                    );
+
+            deviDevtaFestivals =
+                    itemView.findViewById(
+                            R.id.deviDevtaFestivals
+                    );
+
+            deviDevtaStories =
+                    itemView.findViewById(
+                            R.id.deviDevtaStories
+                    );
         }
     }
 }
