@@ -33,13 +33,40 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
+        <!-- Dynasty -->
+        <TextView
+            android:id="@+id/rajaDynasty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="वंश"
+            android:textSize="16sp" />
+
         <!-- Period -->
         <TextView
             android:id="@+id/rajaPeriod"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="Period"
+            android:layout_marginTop="4dp"
+            android:text="काल"
+            android:textSize="16sp" />
+
+        <!-- Kingdom -->
+        <TextView
+            android:id="@+id/rajaKingdom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="राज्य"
+            android:textSize="16sp" />
+
+        <!-- Capital -->
+        <TextView
+            android:id="@+id/rajaCapital"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="राजधानी"
             android:textSize="16sp" />
 
         <!-- Detailed History -->
@@ -47,8 +74,8 @@
             android:id="@+id/rajaHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Raja history"
+            android:layout_marginTop="14dp"
+            android:text="इतिहास"
             android:textSize="17sp"
             android:lineSpacingExtra="6dp"
             android:justificationMode="inter_word" />
@@ -59,8 +86,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:text="युद्ध एवं संघर्ष"
+            android:text="⚔️ युद्ध एवं संघर्ष"
             android:textSize="17sp"
+            android:textStyle="bold"
             android:lineSpacingExtra="6dp"
             android:justificationMode="inter_word" />
 
