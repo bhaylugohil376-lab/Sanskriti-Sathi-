@@ -41,17 +41,25 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
 
         Raja raja = rajaList.get(position);
 
+        // Large Raja image
         holder.rajaImage.setImageResource(
                 raja.getImageResId());
 
+        // English Raja name
         holder.rajaName.setText(
                 raja.getName());
 
+        // Period
         holder.rajaPeriod.setText(
                 "Period: " + raja.getPeriod());
 
+        // Detailed Hindi history
         holder.rajaHistory.setText(
                 raja.getHistory());
+
+        // Wars / opponents
+        holder.rajaWars.setText(
+                "युद्ध एवं संघर्ष\n" + raja.getWars());
     }
 
     @Override
@@ -66,6 +74,7 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
         TextView rajaName;
         TextView rajaPeriod;
         TextView rajaHistory;
+        TextView rajaWars;
 
         public RajaViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -81,6 +90,9 @@ public class RajaAdapter extends RecyclerView.Adapter<RajaAdapter.RajaViewHolder
 
             rajaHistory = itemView.findViewById(
                     R.id.rajaHistory);
+
+            rajaWars = itemView.findViewById(
+                    R.id.rajaWars);
         }
     }
 }
