@@ -1,6 +1,7 @@
 package com.sanskritisathi.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,28 +49,55 @@ public class GitaAdapter
 
         Gita gita = gitaList.get(position);
 
-        holder.chapter.setText(
-                gita.getChapter()
-        );
-
-        holder.title.setText(
-                gita.getTitle()
-        );
+        holder.chapter.setText(gita.getChapter());
+        holder.title.setText(gita.getTitle());
 
         holder.introduction.setText(
-                "परिचय\n" +
-                gita.getIntroduction()
+                "परिचय\n" + gita.getIntroduction()
         );
 
         holder.teachings.setText(
-                "मुख्य शिक्षाएँ\n" +
-                gita.getTeachings()
+                "मुख्य शिक्षाएँ\n" + gita.getTeachings()
         );
 
         holder.explanation.setText(
-                "सरल व्याख्या\n" +
-                gita.getExplanation()
+                "सरल व्याख्या\n" + gita.getExplanation()
         );
+
+        holder.itemView.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+                    context,
+                    GitaDetailActivity.class
+            );
+
+            intent.putExtra(
+                    GitaDetailActivity.EXTRA_CHAPTER,
+                    gita.getChapter()
+            );
+
+            intent.putExtra(
+                    GitaDetailActivity.EXTRA_TITLE,
+                    gita.getTitle()
+            );
+
+            intent.putExtra(
+                    GitaDetailActivity.EXTRA_INTRODUCTION,
+                    gita.getIntroduction()
+            );
+
+            intent.putExtra(
+                    GitaDetailActivity.EXTRA_TEACHINGS,
+                    gita.getTeachings()
+            );
+
+            intent.putExtra(
+                    GitaDetailActivity.EXTRA_EXPLANATION,
+                    gita.getExplanation()
+            );
+
+            context.startActivity(intent);
+        });
     }
 
     @Override
