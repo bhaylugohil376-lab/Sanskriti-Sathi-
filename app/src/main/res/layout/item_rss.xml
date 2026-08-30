@@ -24,21 +24,40 @@
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/rssSource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Source: Press Information Bureau (PIB)"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/rssDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="🕒 Date"
+            android:textSize="14sp" />
+
+        <TextView
             android:id="@+id/rssDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:text="News description"
             android:textSize="16sp"
             android:lineSpacingExtra="4dp" />
 
         <TextView
+            android:id="@+id/readNews"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Read More →"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="14dp"
+            android:text="Read Full News →"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true" />
 
     </LinearLayout>
 
