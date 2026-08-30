@@ -5,90 +5,89 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="6dp">
+    android:layout_margin="10dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="7dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="16dp">
 
-        <!-- Large Raja Image -->
         <ImageView
             android:id="@+id/rajaImage"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="280dp"
             android:scaleType="centerCrop"
             android:contentDescription="Raja image" />
 
-        <!-- Raja Name -->
         <TextView
             android:id="@+id/rajaName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="16dp"
             android:text="Raja Name"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:textColor="#212121" />
 
-        <!-- Dynasty -->
         <TextView
             android:id="@+id/rajaDynasty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:text="वंश"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="#555555" />
 
-        <!-- Period -->
         <TextView
             android:id="@+id/rajaPeriod"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="5dp"
             android:text="काल"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="#555555" />
 
-        <!-- Kingdom -->
         <TextView
             android:id="@+id/rajaKingdom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="5dp"
             android:text="राज्य"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="#555555" />
 
-        <!-- Capital -->
         <TextView
             android:id="@+id/rajaCapital"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="5dp"
             android:text="राजधानी"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="#555555" />
 
-        <!-- Detailed History -->
         <TextView
             android:id="@+id/rajaHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="18dp"
             android:text="इतिहास"
             android:textSize="17sp"
+            android:textColor="#333333"
             android:lineSpacingExtra="6dp"
             android:justificationMode="inter_word" />
 
-        <!-- Wars -->
         <TextView
             android:id="@+id/rajaWars"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:text="⚔️ युद्ध एवं संघर्ष"
             android:textSize="17sp"
             android:textStyle="bold"
+            android:textColor="#333333"
             android:lineSpacingExtra="6dp"
             android:justificationMode="inter_word" />
 
