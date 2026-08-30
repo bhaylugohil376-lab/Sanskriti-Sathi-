@@ -23,7 +23,6 @@ public class RssActivity extends AppCompatActivity {
     private final ExecutorService executor =
             Executors.newSingleThreadExecutor();
 
-    // PIB Official RSS Feed
     private static final String RSS_FEED_URL =
             "https://www.pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=1";
 
@@ -70,18 +69,21 @@ public class RssActivity extends AppCompatActivity {
 
                 connection.connect();
 
-                if (connection.getResponseCode() == 200) {
+                int responseCode =
+                        connection.getResponseCode();
 
-                    InputStream inputStream =
-                            connection.getInputStream();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
 
-                    items = RssParser.parse(inputStream);
+                    try (InputStream inputStream =
+                                 connection.getInputStream()) {
+
+                        items = RssParser.parse(inputStream);
+                    }
 
                 } else {
 
                     throw new Exception(
-                            "HTTP Error: "
-                                    + connection.getResponseCode()
+                            "HTTP Error: " + responseCode
                     );
                 }
 
@@ -110,7 +112,9 @@ public class RssActivity extends AppCompatActivity {
                             new Rss(
                                     item.getTitle(),
                                     item.getDescription(),
-                                    item.getLink()
+                                    item.getLink(),
+                                    item.getPubDate(),
+                                    "Press Information Bureau (PIB)"
                             )
                     );
                 }
@@ -124,6 +128,6 @@ public class RssActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        executor.shutdown();
+        executor.shutdownNow();
     }
 }
