@@ -4,17 +4,42 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#FFFDF7">
 
-    <!-- Raja Section Header -->
-    <TextView
+    <!-- Header -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:gravity="center"
-        android:padding="18dp"
-        android:text="👑 Indian Kings"
-        android:textSize="28sp"
-        android:textStyle="bold" />
+        android:padding="18dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="👑"
+            android:textSize="36sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="भारतीय राजा"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#212121" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:text="भारत के इतिहास और महान शासकों की जानकारी"
+            android:textSize="15sp"
+            android:textColor="#616161" />
+
+    </LinearLayout>
 
     <!-- Raja List -->
     <androidx.recyclerview.widget.RecyclerView
@@ -23,9 +48,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="16dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="18dp"
         android:scrollbars="vertical" />
 
 </LinearLayout>
