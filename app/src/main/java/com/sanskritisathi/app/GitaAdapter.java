@@ -11,32 +11,65 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class GitaAdapter extends RecyclerView.Adapter<GitaAdapter.GitaViewHolder> {
+public class GitaAdapter
+        extends RecyclerView.Adapter<GitaAdapter.GitaViewHolder> {
 
     private final Context context;
     private final ArrayList<Gita> gitaList;
 
-    public GitaAdapter(Context context, ArrayList<Gita> gitaList) {
+    public GitaAdapter(
+            Context context,
+            ArrayList<Gita> gitaList) {
+
         this.context = context;
         this.gitaList = gitaList;
     }
 
     @NonNull
     @Override
-    public GitaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public GitaViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
         View view = LayoutInflater.from(context)
-                .inflate(R.layout.item_gita, parent, false);
+                .inflate(
+                        R.layout.item_gita,
+                        parent,
+                        false
+                );
 
         return new GitaViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull GitaViewHolder holder, int position) {
+    public void onBindViewHolder(
+            @NonNull GitaViewHolder holder,
+            int position) {
+
         Gita gita = gitaList.get(position);
 
-        holder.chapter.setText(gita.getChapter());
-        holder.title.setText(gita.getTitle());
-        holder.description.setText(gita.getDescription());
+        holder.chapter.setText(
+                gita.getChapter()
+        );
+
+        holder.title.setText(
+                gita.getTitle()
+        );
+
+        holder.introduction.setText(
+                "परिचय\n" +
+                gita.getIntroduction()
+        );
+
+        holder.teachings.setText(
+                "मुख्य शिक्षाएँ\n" +
+                gita.getTeachings()
+        );
+
+        holder.explanation.setText(
+                "सरल व्याख्या\n" +
+                gita.getExplanation()
+        );
     }
 
     @Override
@@ -44,18 +77,39 @@ public class GitaAdapter extends RecyclerView.Adapter<GitaAdapter.GitaViewHolder
         return gitaList.size();
     }
 
-    public static class GitaViewHolder extends RecyclerView.ViewHolder {
+    public static class GitaViewHolder
+            extends RecyclerView.ViewHolder {
 
         TextView chapter;
         TextView title;
-        TextView description;
+        TextView introduction;
+        TextView teachings;
+        TextView explanation;
 
-        public GitaViewHolder(@NonNull View itemView) {
+        public GitaViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
 
-            chapter = itemView.findViewById(R.id.gitaChapter);
-            title = itemView.findViewById(R.id.gitaTitle);
-            description = itemView.findViewById(R.id.gitaDescription);
+            chapter = itemView.findViewById(
+                    R.id.gitaChapter
+            );
+
+            title = itemView.findViewById(
+                    R.id.gitaTitle
+            );
+
+            introduction = itemView.findViewById(
+                    R.id.gitaIntroduction
+            );
+
+            teachings = itemView.findViewById(
+                    R.id.gitaTeachings
+            );
+
+            explanation = itemView.findViewById(
+                    R.id.gitaExplanation
+            );
         }
     }
 }
