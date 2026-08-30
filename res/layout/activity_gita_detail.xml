@@ -32,10 +32,30 @@
             android:padding="10dp" />
 
         <TextView
-            android:id="@+id/detailDescription"
+            android:id="@+id/detailIntroduction"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Chapter description"
+            android:text="परिचय"
+            android:textSize="18sp"
+            android:lineSpacingExtra="6dp"
+            android:padding="10dp" />
+
+        <TextView
+            android:id="@+id/detailTeachings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="मुख्य शिक्षाएँ"
+            android:textSize="18sp"
+            android:lineSpacingExtra="6dp"
+            android:padding="10dp" />
+
+        <TextView
+            android:id="@+id/detailExplanation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="सरल व्याख्या"
             android:textSize="18sp"
             android:lineSpacingExtra="6dp"
             android:padding="10dp" />
