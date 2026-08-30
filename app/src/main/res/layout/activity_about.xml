@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -14,17 +15,100 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="🕉️ About Sanskriti-Sathi"
-            android:textSize="28sp"
+            android:text="🕉️ Sanskriti Sathi"
+            android:textSize="30sp"
             android:textStyle="bold"
             android:padding="16dp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Sanskriti-Sathi एक ज्ञान और संस्कृति आधारित ऐप है।&#10;&#10;इसका उद्देश्य भारतीय इतिहास, राजाओं, मंदिरों, भगवद्गीता, देवी-देवताओं और भारतीय संस्कृति से जुड़ी जानकारी को सरल तरीके से लोगों तक पहुँचाना है।&#10;&#10;यह ऐप सीखने और भारतीय विरासत को समझने के लिए बनाया गया है।"
+            android:text="भारतीय संस्कृति और ज्ञान का डिजिटल साथी"
+            android:gravity="center"
             android:textSize="18sp"
-            android:padding="12dp" />
+            android:textStyle="bold"
+            android:padding="10dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="हमारे बारे में"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Sanskriti Sathi एक भारतीय संस्कृति और ज्ञान आधारित मोबाइल ऐप है। इसका उद्देश्य भारत की ऐतिहासिक, धार्मिक और सांस्कृतिक विरासत से जुड़ी जानकारी को एक व्यवस्थित और सरल डिजिटल माध्यम में प्रस्तुत करना है।"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="📚 ऐप में क्या मिलेगा?"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="• 👑 भारतीय राजाओं और ऐतिहासिक व्यक्तित्वों की जानकारी&#10;&#10;• 🛕 प्रमुख मंदिरों का इतिहास, धार्मिक महत्व और वास्तुकला&#10;&#10;• 🕉️ देवी-देवताओं से संबंधित सांस्कृतिक एवं धार्मिक जानकारी&#10;&#10;• 📖 भगवद्गीता के 18 अध्यायों का अध्ययन&#10;&#10;• 📰 भारतीय संस्कृति और सार्वजनिक समाचारों के लिए RSS समाचार अनुभाग&#10;&#10;• 📱 भविष्य में सांस्कृतिक वीडियो और पोस्ट साझा करने की सुविधा"
+            android:textSize="17sp"
+            android:lineSpacingExtra="5dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="🎯 हमारा उद्देश्य"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="भारतीय इतिहास, साहित्य, धार्मिक परंपराओं और सांस्कृतिक विरासत को डिजिटल रूप में व्यवस्थित करना, ताकि विद्यार्थी और सामान्य उपयोगकर्ता इन विषयों को आसानी से पढ़ और समझ सकें।"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="ℹ️ जानकारी और स्रोत"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="ऐप में प्रकाशित जानकारी को यथासंभव विश्वसनीय ऐतिहासिक, धार्मिक और सार्वजनिक स्रोतों के आधार पर व्यवस्थित किया जाना चाहिए। समाचार अनुभाग में प्रदर्शित RSS सामग्री उसके मूल प्रकाशक के स्रोत से आती है।"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="🙏 धन्यवाद"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Sanskriti Sathi का उद्देश्य भारतीय संस्कृति और ज्ञान को एक उपयोगी डिजिटल अनुभव के रूप में प्रस्तुत करना है।"
+            android:textSize="17sp"
+            android:lineSpacingExtra="6dp"
+            android:paddingBottom="20dp" />
 
     </LinearLayout>
 
