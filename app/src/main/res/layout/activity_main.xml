@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="12dp">
 
         <!-- App Header -->
         <LinearLayout
@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="20dp">
+            android:padding="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -31,13 +31,13 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Sanskriti Sathi"
-                android:textSize="32sp"
+                android:textSize="30sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="5dp"
                 android:gravity="center"
                 android:text="भारतीय संस्कृति • इतिहास • ज्ञान"
                 android:textSize="16sp" />
@@ -50,18 +50,35 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="🙏 स्वागत है"
-            android:textSize="24sp"
+            android:textSize="23sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="भारत की समृद्ध संस्कृति, इतिहास, मंदिरों और आध्यात्मिक ज्ञान को एक ही स्थान पर जानें।"
+            android:text="भारत की संस्कृति, इतिहास, मंदिरों और आध्यात्मिक ज्ञान को एक ही स्थान पर जानें।"
             android:textSize="16sp"
             android:lineSpacingExtra="5dp" />
 
-        <!-- Section Title -->
+        <!-- Culture Feed -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:text="📱 Sanskriti Feed"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/culturePostRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:overScrollMode="never"
+            android:layout_marginTop="6dp" />
+
+        <!-- Explore -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,7 +134,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:minHeight="58dp"
-            android:text="📰  संस्कृत‍ि समाचार"
+            android:text="📰  संस्कृति समाचार"
             android:textSize="17sp" />
 
         <!-- About -->
@@ -136,9 +153,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:gravity="center"
-            android:padding="12dp"
+            android:padding="14dp"
             android:text="🇮🇳 ज्ञान • संस्कृति • विरासत"
-            android:textSize="15sp" />
+            android:textSize="15sp"
+            android:paddingBottom="24dp" />
 
     </LinearLayout>
 
