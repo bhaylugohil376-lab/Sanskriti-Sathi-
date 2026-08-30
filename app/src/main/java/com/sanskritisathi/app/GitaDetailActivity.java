@@ -9,7 +9,9 @@ public class GitaDetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_CHAPTER = "chapter";
     public static final String EXTRA_TITLE = "title";
-    public static final String EXTRA_DESCRIPTION = "description";
+    public static final String EXTRA_INTRODUCTION = "introduction";
+    public static final String EXTRA_TEACHINGS = "teachings";
+    public static final String EXTRA_EXPLANATION = "explanation";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,15 +20,37 @@ public class GitaDetailActivity extends AppCompatActivity {
 
         TextView chapter = findViewById(R.id.detailChapter);
         TextView title = findViewById(R.id.detailTitle);
-        TextView description = findViewById(R.id.detailDescription);
+        TextView introduction = findViewById(R.id.detailIntroduction);
+        TextView teachings = findViewById(R.id.detailTeachings);
+        TextView explanation = findViewById(R.id.detailExplanation);
 
-        String chapterText = getIntent().getStringExtra(EXTRA_CHAPTER);
-        String titleText = getIntent().getStringExtra(EXTRA_TITLE);
-        String descriptionText =
-                getIntent().getStringExtra(EXTRA_DESCRIPTION);
+        String chapterText =
+                getIntent().getStringExtra(EXTRA_CHAPTER);
+
+        String titleText =
+                getIntent().getStringExtra(EXTRA_TITLE);
+
+        String introductionText =
+                getIntent().getStringExtra(EXTRA_INTRODUCTION);
+
+        String teachingsText =
+                getIntent().getStringExtra(EXTRA_TEACHINGS);
+
+        String explanationText =
+                getIntent().getStringExtra(EXTRA_EXPLANATION);
 
         chapter.setText(chapterText);
         title.setText(titleText);
-        description.setText(descriptionText);
+        introduction.setText(
+                "परिचय\n\n" + introductionText
+        );
+
+        teachings.setText(
+                "मुख्य शिक्षाएँ\n\n" + teachingsText
+        );
+
+        explanation.setText(
+                "सरल व्याख्या\n\n" + explanationText
+        );
     }
 }
