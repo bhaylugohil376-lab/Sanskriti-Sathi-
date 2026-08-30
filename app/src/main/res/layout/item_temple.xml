@@ -5,20 +5,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="6dp">
+    android:layout_margin="10dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="7dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/templeImage"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="280dp"
             android:scaleType="centerCrop"
             android:contentDescription="Temple image" />
 
@@ -26,81 +26,100 @@
             android:id="@+id/templeName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="16dp"
             android:text="Temple Name"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:textColor="#212121" />
 
         <TextView
             android:id="@+id/templeLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="9dp"
             android:text="स्थान"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="#616161" />
 
         <TextView
             android:id="@+id/templeHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="18dp"
             android:text="इतिहास"
             android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            android:textColor="#333333"
+            android:lineSpacingExtra="6dp"
+            android:justificationMode="inter_word" />
 
         <TextView
             android:id="@+id/templeImportance"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:text="धार्मिक महत्व"
             android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:lineSpacingExtra="6dp"
+            android:justificationMode="inter_word" />
 
         <TextView
             android:id="@+id/templeDeity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:text="मुख्य देवी/देवता"
             android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
             android:lineSpacingExtra="6dp" />
 
         <TextView
             android:id="@+id/templeFestivals"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:text="प्रमुख पर्व"
             android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
             android:lineSpacingExtra="6dp" />
 
         <TextView
             android:id="@+id/templeTraditions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:text="विशेष परंपराएँ"
             android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
             android:lineSpacingExtra="6dp" />
 
         <TextView
             android:id="@+id/templeArchitecture"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:text="वास्तुकला"
             android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:lineSpacingExtra="6dp"
+            android:justificationMode="inter_word" />
 
         <TextView
             android:id="@+id/templeStories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="20dp"
             android:text="प्रमुख कथाएँ"
             android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:lineSpacingExtra="6dp"
+            android:justificationMode="inter_word" />
 
     </LinearLayout>
 
