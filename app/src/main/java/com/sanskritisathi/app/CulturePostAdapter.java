@@ -1,13 +1,16 @@
 package com.sanskritisathi.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -51,9 +54,6 @@ public class CulturePostAdapter
         holder.author.setText(post.getAuthor());
         holder.category.setText(post.getCategory());
         holder.caption.setText(post.getCaption());
-        holder.likeCount.setText(
-                "❤️ " + post.getLikeCount()
-        );
 
         holder.profileImage.setImageResource(
                 post.getProfileImageResId()
@@ -61,6 +61,163 @@ public class CulturePostAdapter
 
         holder.postImage.setImageResource(
                 post.getPostImageResId()
+        );
+
+        updateLikeUI(holder, post);
+        updateSaveUI(holder, post);
+
+        // ❤️ LIKE
+        holder.postLike.setOnClickListener(v -> {
+
+            post.toggleLike();
+
+            updateLikeUI(holder, post);
+        });
+
+        // 💬 COMMENT
+        holder.postComment.setOnClickListener(v -> {
+
+            showCommentDialog();
+        });
+
+        // ➤ SHARE
+        holder.postShare.setOnClickListener(v -> {
+
+            sharePost(post);
+        });
+
+        // 🔖 SAVE
+        holder.postSave.setOnClickListener(v -> {
+
+            post.toggleSaved();
+
+            updateSaveUI(holder, post);
+
+            if (post.isSaved()) {
+
+                Toast.makeText(
+                        context,
+                        "Post saved",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+            } else {
+
+                Toast.makeText(
+                        context,
+                        "Post unsaved",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+    }
+
+    private void updateLikeUI(
+            PostViewHolder holder,
+            CulturePost post) {
+
+        if (post.isLiked()) {
+
+            holder.postLike.setText("♥");
+
+        } else {
+
+            holder.postLike.setText("♡");
+        }
+
+        holder.likeCount.setText(
+                "❤️ " + post.getLikeCount() + " likes"
+        );
+    }
+
+    private void updateSaveUI(
+            PostViewHolder holder,
+            CulturePost post) {
+
+        if (post.isSaved()) {
+
+            holder.postSave.setText("🔖");
+
+        } else {
+
+            holder.postSave.setText("🔖");
+        }
+    }
+
+    private void showCommentDialog() {
+
+        EditText input = new EditText(context);
+
+        input.setHint("अपना comment लिखें");
+
+        input.setPadding(
+                30,
+                20,
+                30,
+                10
+        );
+
+        new AlertDialog.Builder(context)
+                .setTitle("💬 Comment")
+                .setView(input)
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
+                .setPositiveButton(
+                        "Post",
+                        (dialog, which) -> {
+
+                            String comment =
+                                    input.getText()
+                                            .toString()
+                                            .trim();
+
+                            if (!comment.isEmpty()) {
+
+                                Toast.makeText(
+                                        context,
+                                        "Comment added",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                            } else {
+
+                                Toast.makeText(
+                                        context,
+                                        "Comment खाली है",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        }
+                )
+                .show();
+    }
+
+    private void sharePost(CulturePost post) {
+
+        String shareText =
+                post.getCategory()
+                        + "\n\n"
+                        + post.getCaption()
+                        + "\n\n"
+                        + "Sanskriti Sathi";
+
+        Intent shareIntent =
+                new Intent(Intent.ACTION_SEND);
+
+        shareIntent.setType("text/plain");
+
+        shareIntent.putExtra(
+                Intent.EXTRA_TEXT,
+                shareText
+        );
+
+        context.startActivity(
+                Intent.createChooser(
+                        shareIntent,
+                        "Share Post"
+                )
         );
     }
 
@@ -72,41 +229,73 @@ public class CulturePostAdapter
     public static class PostViewHolder
             extends RecyclerView.ViewHolder {
 
-        ImageView profileImage;
-        ImageView postImage;
+        android.widget.ImageView profileImage;
+        android.widget.ImageView postImage;
+
         TextView author;
         TextView category;
         TextView caption;
         TextView likeCount;
+
+        TextView postLike;
+        TextView postComment;
+        TextView postShare;
+        TextView postSave;
 
         public PostViewHolder(
                 @NonNull View itemView) {
 
             super(itemView);
 
-            profileImage = itemView.findViewById(
-                    R.id.postProfileImage
-            );
+            profileImage =
+                    itemView.findViewById(
+                            R.id.postProfileImage
+                    );
 
-            postImage = itemView.findViewById(
-                    R.id.postImage
-            );
+            postImage =
+                    itemView.findViewById(
+                            R.id.postImage
+                    );
 
-            author = itemView.findViewById(
-                    R.id.postAuthor
-            );
+            author =
+                    itemView.findViewById(
+                            R.id.postAuthor
+                    );
 
-            category = itemView.findViewById(
-                    R.id.postCategory
-            );
+            category =
+                    itemView.findViewById(
+                            R.id.postCategory
+                    );
 
-            caption = itemView.findViewById(
-                    R.id.postCaption
-            );
+            caption =
+                    itemView.findViewById(
+                            R.id.postCaption
+                    );
 
-            likeCount = itemView.findViewById(
-                    R.id.postLikeCount
-            );
+            likeCount =
+                    itemView.findViewById(
+                            R.id.postLikeCount
+                    );
+
+            postLike =
+                    itemView.findViewById(
+                            R.id.postLike
+                    );
+
+            postComment =
+                    itemView.findViewById(
+                            R.id.postComment
+                    );
+
+            postShare =
+                    itemView.findViewById(
+                            R.id.postShare
+                    );
+
+            postSave =
+                    itemView.findViewById(
+                            R.id.postSave
+                    );
         }
     }
 }
