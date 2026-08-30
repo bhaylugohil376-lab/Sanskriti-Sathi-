@@ -4,12 +4,22 @@ public class Gita {
 
     private String chapter;
     private String title;
-    private String description;
+    private String introduction;
+    private String teachings;
+    private String explanation;
 
-    public Gita(String chapter, String title, String description) {
+    public Gita(
+            String chapter,
+            String title,
+            String introduction,
+            String teachings,
+            String explanation) {
+
         this.chapter = chapter;
         this.title = title;
-        this.description = description;
+        this.introduction = introduction;
+        this.teachings = teachings;
+        this.explanation = explanation;
     }
 
     public String getChapter() {
@@ -20,7 +30,15 @@ public class Gita {
         return title;
     }
 
-    public String getDescription() {
-        return description;
+    public String getIntroduction() {
+        return introduction;
+    }
+
+    public String getTeachings() {
+        return teachings;
+    }
+
+    public String getExplanation() {
+        return explanation;
     }
 }
