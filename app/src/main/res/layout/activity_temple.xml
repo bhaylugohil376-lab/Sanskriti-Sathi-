@@ -4,23 +4,53 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#FFFDF7">
 
-    <TextView
+    <!-- Temple Header -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:gravity="center"
-        android:padding="16dp"
-        android:text="🛕 Indian Temples"
-        android:textSize="28sp"
-        android:textStyle="bold" />
+        android:padding="18dp">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛕"
+            android:textSize="36sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="भारतीय मंदिर"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#212121" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:text="तीर्थ, इतिहास, परंपरा और मंदिर वास्तुकला"
+            android:textSize="15sp"
+            android:textColor="#616161" />
+
+    </LinearLayout>
+
+    <!-- Temple List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/templeRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
-        android:clipToPadding="false" />
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="18dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
 
 </LinearLayout>
