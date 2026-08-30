@@ -1,164 +1,86 @@
 package com.sanskritisathi.app;
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
+public class Temple {
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+    private String name;
+    private String location;
+    private String description;
+    private String history;
+    private String religiousImportance;
+    private String mainDeity;
+    private String festivals;
+    private String traditions;
+    private String architecture;
+    private String stories;
+    private int imageResId;
 
-import java.util.List;
+    public Temple(
+            String name,
+            String location,
+            String description,
+            String history,
+            String religiousImportance,
+            String mainDeity,
+            String festivals,
+            String traditions,
+            String architecture,
+            String stories,
+            int imageResId) {
 
-public class TempleAdapter
-        extends RecyclerView.Adapter<TempleAdapter.TempleViewHolder> {
-
-    private final Context context;
-    private final List<Temple> templeList;
-
-    public TempleAdapter(
-            Context context,
-            List<Temple> templeList) {
-
-        this.context = context;
-        this.templeList = templeList;
+        this.name = name;
+        this.location = location;
+        this.description = description;
+        this.history = history;
+        this.religiousImportance = religiousImportance;
+        this.mainDeity = mainDeity;
+        this.festivals = festivals;
+        this.traditions = traditions;
+        this.architecture = architecture;
+        this.stories = stories;
+        this.imageResId = imageResId;
     }
 
-    @NonNull
-    @Override
-    public TempleViewHolder onCreateViewHolder(
-            @NonNull ViewGroup parent,
-            int viewType) {
-
-        View view = LayoutInflater.from(context)
-                .inflate(
-                        R.layout.item_temple,
-                        parent,
-                        false
-                );
-
-        return new TempleViewHolder(view);
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public void onBindViewHolder(
-            @NonNull TempleViewHolder holder,
-            int position) {
-
-        Temple temple = templeList.get(position);
-
-        holder.templeImage.setImageResource(
-                temple.getImageResId()
-        );
-
-        holder.templeName.setText(
-                temple.getName()
-        );
-
-        holder.templeLocation.setText(
-                "स्थान: " + temple.getLocation()
-        );
-
-        holder.templeHistory.setText(
-                "इतिहास\n" + temple.getHistory()
-        );
-
-        holder.templeImportance.setText(
-                "धार्मिक महत्व\n" +
-                temple.getReligiousImportance()
-        );
-
-        holder.templeDeity.setText(
-                "मुख्य देवी/देवता\n" +
-                temple.getMainDeity()
-        );
-
-        holder.templeFestivals.setText(
-                "प्रमुख पर्व\n" +
-                temple.getFestivals()
-        );
-
-        holder.templeTraditions.setText(
-                "विशेष परंपराएँ\n" +
-                temple.getTraditions()
-        );
-
-        holder.templeArchitecture.setText(
-                "वास्तुकला\n" +
-                temple.getArchitecture()
-        );
-
-        holder.templeStories.setText(
-                "प्रमुख कथाएँ\n" +
-                temple.getStories()
-        );
+    public String getLocation() {
+        return location;
     }
 
-    @Override
-    public int getItemCount() {
-        return templeList.size();
+    public String getDescription() {
+        return description;
     }
 
-    public static class TempleViewHolder
-            extends RecyclerView.ViewHolder {
+    public String getHistory() {
+        return history;
+    }
 
-        ImageView templeImage;
-        TextView templeName;
-        TextView templeLocation;
-        TextView templeHistory;
-        TextView templeImportance;
-        TextView templeDeity;
-        TextView templeFestivals;
-        TextView templeTraditions;
-        TextView templeArchitecture;
-        TextView templeStories;
+    public String getReligiousImportance() {
+        return religiousImportance;
+    }
 
-        public TempleViewHolder(
-                @NonNull View itemView) {
+    public String getMainDeity() {
+        return mainDeity;
+    }
 
-            super(itemView);
+    public String getFestivals() {
+        return festivals;
+    }
 
-            templeImage = itemView.findViewById(
-                    R.id.templeImage
-            );
+    public String getTraditions() {
+        return traditions;
+    }
 
-            templeName = itemView.findViewById(
-                    R.id.templeName
-            );
+    public String getArchitecture() {
+        return architecture;
+    }
 
-            templeLocation = itemView.findViewById(
-                    R.id.templeLocation
-            );
+    public String getStories() {
+        return stories;
+    }
 
-            templeHistory = itemView.findViewById(
-                    R.id.templeHistory
-            );
-
-            templeImportance = itemView.findViewById(
-                    R.id.templeImportance
-            );
-
-            templeDeity = itemView.findViewById(
-                    R.id.templeDeity
-            );
-
-            templeFestivals = itemView.findViewById(
-                    R.id.templeFestivals
-            );
-
-            templeTraditions = itemView.findViewById(
-                    R.id.templeTraditions
-            );
-
-            templeArchitecture = itemView.findViewById(
-                    R.id.templeArchitecture
-            );
-
-            templeStories = itemView.findViewById(
-                    R.id.templeStories
-            );
-        }
+    public int getImageResId() {
+        return imageResId;
     }
 }
