@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?><ScrollView
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="#FFFDF7"
+android:fillViewport="true">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="18dp">
+
+    <!-- Chapter -->
+    <TextView
+        android:id="@+id/detailChapter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Chapter 1"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#E65100"
+        android:padding="8dp" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/detailTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="4dp"
+        android:text="Arjuna Vishada Yoga"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:padding="8dp" />
+
+    <!-- Introduction -->
+    <TextView
+        android:id="@+id/detailIntroduction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="परिचय"
+        android:textSize="18sp"
+        android:textColor="#212121"
+        android:lineSpacingExtra="6dp"
+        android:padding="8dp" />
+
+    <!-- Teachings -->
+    <TextView
+        android:id="@+id/detailTeachings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="मुख्य शिक्षाएँ"
+        android:textSize="18sp"
+        android:textColor="#212121"
+        android:lineSpacingExtra="6dp"
+        android:padding="8dp" />
+
+    <!-- Explanation -->
+    <TextView
+        android:id="@+id/detailExplanation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="सरल व्याख्या"
+        android:textSize="18sp"
+        android:textColor="#212121"
+        android:lineSpacingExtra="6dp"
+        android:padding="8dp" />
+
+</LinearLayout>
+
+</ScrollView>
