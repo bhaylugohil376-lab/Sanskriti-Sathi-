@@ -5,11 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="18dp"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="4dp">
 
     <LinearLayout
@@ -27,98 +24,109 @@
 
             <ImageView
                 android:id="@+id/postProfileImage"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:src="@drawable/ic_launcher_foreground"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
                 android:scaleType="centerCrop"
-                android:contentDescription="Profile image" />
+                android:src="@drawable/ic_launcher_foreground"
+                android:contentDescription="Profile" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="10dp">
+                android:paddingStart="10dp">
 
                 <TextView
                     android:id="@+id/postAuthor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Sanskriti Sathi"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/postCategory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="भारतीय संस्कृति"
+                    android:layout_marginTop="2dp"
+                    android:text="🕉️ भारतीय संस्कृति"
                     android:textSize="13sp" />
 
             </LinearLayout>
 
             <TextView
-                android:id="@+id/postMenu"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⋮"
-                android:textSize="28sp"
+                android:textSize="26sp"
                 android:padding="4dp" />
 
         </LinearLayout>
 
-        <!-- Post Image -->
+        <!-- Main Post Image -->
         <ImageView
             android:id="@+id/postImage"
             android:layout_width="match_parent"
             android:layout_height="280dp"
             android:scaleType="centerCrop"
-            android:contentDescription="Culture post image" />
+            android:src="@drawable/ic_launcher_foreground"
+            android:contentDescription="Culture Post" />
 
-        <!-- Action Row -->
+        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:paddingStart="12dp"
             android:paddingTop="8dp"
             android:paddingEnd="12dp">
 
             <TextView
                 android:id="@+id/postLike"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
                 android:text="♡"
                 android:textSize="30sp"
-                android:paddingEnd="18dp" />
+                android:clickable="true"
+                android:focusable="true" />
 
             <TextView
                 android:id="@+id/postComment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="○"
-                android:textSize="28sp"
-                android:paddingEnd="18dp" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="💬"
+                android:textSize="22sp"
+                android:clickable="true"
+                android:focusable="true" />
 
             <TextView
                 android:id="@+id/postShare"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
                 android:text="➤"
-                android:textSize="25sp" />
+                android:textSize="24sp"
+                android:clickable="true"
+                android:focusable="true" />
 
-            <Space
+            <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/postSave"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
                 android:text="🔖"
-                android:textSize="24sp" />
+                android:textSize="22sp"
+                android:clickable="true"
+                android:focusable="true" />
 
         </LinearLayout>
 
@@ -127,10 +135,10 @@
             android:id="@+id/postLikeCount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="12dp"
-            android:paddingTop="4dp"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
             android:text="0 likes"
-            android:textSize="14sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
         <!-- Caption -->
@@ -138,8 +146,8 @@
             android:id="@+id/postCaption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:text="भारतीय संस्कृति और हमारी समृद्ध विरासत..."
+            android:padding="14dp"
+            android:text="भारतीय संस्कृति और विरासत"
             android:textSize="16sp"
             android:lineSpacingExtra="4dp" />
 
