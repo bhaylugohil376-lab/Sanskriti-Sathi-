@@ -1,73 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
+
+        <!-- App Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🕉️"
+                android:textSize="42sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Sanskriti Sathi"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="भारतीय संस्कृति • इतिहास • ज्ञान"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <!-- Welcome -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="🙏 स्वागत है"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="🕉️ Sanskriti-Sathi"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:padding="16dp" />
+            android:layout_marginTop="6dp"
+            android:text="भारत की समृद्ध संस्कृति, इतिहास, मंदिरों और आध्यात्मिक ज्ञान को एक ही स्थान पर जानें।"
+            android:textSize="16sp"
+            android:lineSpacingExtra="5dp" />
 
+        <!-- Section Title -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Indian Culture &amp; Knowledge"
-            android:textSize="18sp"
-            android:padding="8dp" />
+            android:layout_marginTop="22dp"
+            android:text="📚 Explore Sanskriti"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
+        <!-- Raja -->
         <Button
             android:id="@+id/rajaButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="👑 Indian Kings"
+            android:layout_marginTop="10dp"
+            android:minHeight="58dp"
+            android:text="👑  भारतीय राजा और इतिहास"
             android:textSize="17sp" />
 
+        <!-- Temple -->
         <Button
             android:id="@+id/templeButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🛕 Temples &amp; Pilgrimage"
+            android:layout_marginTop="10dp"
+            android:minHeight="58dp"
+            android:text="🛕  मंदिर और तीर्थ"
             android:textSize="17sp" />
 
+        <!-- Gita -->
         <Button
             android:id="@+id/gitaButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📖 Bhagavad Gita"
+            android:layout_marginTop="10dp"
+            android:minHeight="58dp"
+            android:text="📖  भगवद्गीता — 18 अध्याय"
             android:textSize="17sp" />
 
+        <!-- Devi Devta -->
         <Button
             android:id="@+id/deviDevtaButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🕉️ Devi &amp; Devta"
+            android:layout_marginTop="10dp"
+            android:minHeight="58dp"
+            android:text="🕉️  देवी और देवता"
             android:textSize="17sp" />
 
+        <!-- RSS -->
         <Button
             android:id="@+id/rssButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📰 Sanskriti News"
+            android:layout_marginTop="10dp"
+            android:minHeight="58dp"
+            android:text="📰  संस्कृत‍ि समाचार"
             android:textSize="17sp" />
 
+        <!-- About -->
         <Button
             android:id="@+id/aboutButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ℹ️ About Sanskriti-Sathi"
+            android:layout_marginTop="10dp"
+            android:minHeight="58dp"
+            android:text="ℹ️  Sanskriti Sathi के बारे में"
             android:textSize="17sp" />
+
+        <!-- Footer -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="🇮🇳 ज्ञान • संस्कृति • विरासत"
+            android:textSize="15sp" />
 
     </LinearLayout>
 
