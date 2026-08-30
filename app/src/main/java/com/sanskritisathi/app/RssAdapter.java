@@ -13,12 +13,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public class RssAdapter extends RecyclerView.Adapter<RssAdapter.RssViewHolder> {
+public class RssAdapter
+        extends RecyclerView.Adapter<RssAdapter.RssViewHolder> {
 
     private final Context context;
     private final ArrayList<Rss> rssList;
 
-    public RssAdapter(Context context, ArrayList<Rss> rssList) {
+    public RssAdapter(
+            Context context,
+            ArrayList<Rss> rssList) {
+
         this.context = context;
         this.rssList = rssList;
     }
@@ -30,7 +34,11 @@ public class RssAdapter extends RecyclerView.Adapter<RssAdapter.RssViewHolder> {
             int viewType) {
 
         View view = LayoutInflater.from(context)
-                .inflate(R.layout.item_rss, parent, false);
+                .inflate(
+                        R.layout.item_rss,
+                        parent,
+                        false
+                );
 
         return new RssViewHolder(view);
     }
@@ -42,21 +50,45 @@ public class RssAdapter extends RecyclerView.Adapter<RssAdapter.RssViewHolder> {
 
         Rss rss = rssList.get(position);
 
-        holder.rssTitle.setText(rss.getTitle());
-        holder.rssDescription.setText(rss.getDescription());
+        holder.rssTitle.setText(
+                rss.getTitle()
+        );
 
-        holder.itemView.setOnClickListener(v -> {
+        holder.rssDescription.setText(
+                rss.getDescription()
+        );
+
+        holder.rssDate.setText(
+                "🕒 " + rss.getPubDate()
+        );
+
+        holder.rssSource.setText(
+                "Source: " + rss.getSource()
+        );
+
+        View.OnClickListener openNews = v -> {
 
             String link = rss.getLink();
 
-            if (link != null && !link.isEmpty()) {
-                Intent intent = new Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse(link)
-                );
-                context.startActivity(intent);
+            if (link != null && !link.trim().isEmpty()) {
+
+                try {
+
+                    Intent intent = new Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse(link)
+                    );
+
+                    context.startActivity(intent);
+
+                } catch (Exception ignored) {
+                    // No browser available
+                }
             }
-        });
+        };
+
+        holder.readNews.setOnClickListener(openNews);
+        holder.itemView.setOnClickListener(openNews);
     }
 
     @Override
@@ -69,15 +101,34 @@ public class RssAdapter extends RecyclerView.Adapter<RssAdapter.RssViewHolder> {
 
         TextView rssTitle;
         TextView rssDescription;
+        TextView rssDate;
+        TextView rssSource;
+        TextView readNews;
 
-        public RssViewHolder(@NonNull View itemView) {
+        public RssViewHolder(
+                @NonNull View itemView) {
+
             super(itemView);
 
             rssTitle = itemView.findViewById(
-                    R.id.rssTitle);
+                    R.id.rssTitle
+            );
 
             rssDescription = itemView.findViewById(
-                    R.id.rssDescription);
+                    R.id.rssDescription
+            );
+
+            rssDate = itemView.findViewById(
+                    R.id.rssDate
+            );
+
+            rssSource = itemView.findViewById(
+                    R.id.rssSource
+            );
+
+            readNews = itemView.findViewById(
+                    R.id.readNews
+            );
         }
     }
 }
