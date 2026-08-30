@@ -9,8 +9,8 @@ import java.util.ArrayList;
 
 public class RssParser {
 
-    public static ArrayList<RssItem> parse(InputStream inputStream)
-            throws Exception {
+    public static ArrayList<RssItem> parse(
+            InputStream inputStream) throws Exception {
 
         ArrayList<RssItem> items = new ArrayList<>();
 
@@ -20,61 +20,79 @@ public class RssParser {
         String title = "";
         String description = "";
         String link = "";
+        String pubDate = "";
 
         boolean insideItem = false;
 
-        int eventType = parser.getEventType();
+        try {
 
-        while (eventType != XmlPullParser.END_DOCUMENT) {
+            int eventType = parser.getEventType();
 
-            if (eventType == XmlPullParser.START_TAG) {
+            while (eventType != XmlPullParser.END_DOCUMENT) {
 
-                String tagName = parser.getName();
+                if (eventType == XmlPullParser.START_TAG) {
 
-                if (tagName.equalsIgnoreCase("item")) {
-                    insideItem = true;
-                    title = "";
-                    description = "";
-                    link = "";
+                    String tagName = parser.getName();
+
+                    if (tagName.equalsIgnoreCase("item")) {
+
+                        insideItem = true;
+
+                        title = "";
+                        description = "";
+                        link = "";
+                        pubDate = "";
+                    }
+
+                    else if (insideItem &&
+                            tagName.equalsIgnoreCase("title")) {
+
+                        title = parser.nextText();
+                    }
+
+                    else if (insideItem &&
+                            tagName.equalsIgnoreCase("description")) {
+
+                        description = parser.nextText();
+                    }
+
+                    else if (insideItem &&
+                            tagName.equalsIgnoreCase("link")) {
+
+                        link = parser.nextText();
+                    }
+
+                    else if (insideItem &&
+                            tagName.equalsIgnoreCase("pubDate")) {
+
+                        pubDate = parser.nextText();
+                    }
                 }
 
-                if (insideItem &&
-                        tagName.equalsIgnoreCase("title")) {
+                else if (eventType == XmlPullParser.END_TAG &&
+                        parser.getName().equalsIgnoreCase("item")) {
 
-                    title = parser.nextText();
+                    if (!title.trim().isEmpty()) {
+
+                        items.add(
+                                new RssItem(
+                                        title.trim(),
+                                        description.trim(),
+                                        link.trim(),
+                                        pubDate.trim()
+                                )
+                        );
+                    }
+
+                    insideItem = false;
                 }
 
-                if (insideItem &&
-                        tagName.equalsIgnoreCase("description")) {
-
-                    description = parser.nextText();
-                }
-
-                if (insideItem &&
-                        tagName.equalsIgnoreCase("link")) {
-
-                    link = parser.nextText();
-                }
+                eventType = parser.next();
             }
 
-            if (eventType == XmlPullParser.END_TAG &&
-                    parser.getName().equalsIgnoreCase("item")) {
-
-                if (!title.isEmpty()) {
-                    items.add(new RssItem(
-                            title.trim(),
-                            description.trim(),
-                            link.trim()
-                    ));
-                }
-
-                insideItem = false;
-            }
-
-            eventType = parser.next();
+        } finally {
+            inputStream.close();
         }
-
-        inputStream.close();
 
         return items;
     }
