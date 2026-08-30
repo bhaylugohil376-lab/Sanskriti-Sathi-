@@ -33,11 +33,29 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/gitaDescription"
+            android:id="@+id/gitaIntroduction"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Chapter description"
+            android:layout_marginTop="10dp"
+            android:text="परिचय"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp" />
+
+        <TextView
+            android:id="@+id/gitaTeachings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="मुख्य शिक्षाएँ"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp" />
+
+        <TextView
+            android:id="@+id/gitaExplanation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="सरल व्याख्या"
             android:textSize="16sp"
             android:lineSpacingExtra="4dp" />
 
