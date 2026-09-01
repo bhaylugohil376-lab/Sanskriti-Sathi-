@@ -8,7 +8,7 @@ public class CulturePostData {
 
         ArrayList<CulturePost> list = new ArrayList<>();
 
-        // Raja
+        // 👑 Raja
         list.add(new CulturePost(
                 "Sanskriti Sathi",
                 "👑 भारतीय राजा",
@@ -18,17 +18,17 @@ public class CulturePostData {
                 R.drawable.chandragupta
         ));
 
-        // Temple
+        // 🛕 Temple
         list.add(new CulturePost(
                 "Sanskriti Sathi",
                 "🛕 भारतीय मंदिर",
-                "भारत के प्राचीन मंदिरों की इतिहास, परंपरा और वास्तुकला को जानिए।",
+                "भारत के प्राचीन मंदिरों के इतिहास, परंपरा और वास्तुकला को जानिए।",
                 "0",
                 R.drawable.ic_launcher_foreground,
-                R.drawable.temple
+                R.drawable.somnath
         ));
 
-        // Devi Devta
+        // 🕉️ Devi Devta
         list.add(new CulturePost(
                 "Sanskriti Sathi",
                 "🕉️ देवी और देवता",
@@ -38,7 +38,7 @@ public class CulturePostData {
                 R.drawable.shiva
         ));
 
-        // Bhagavad Gita
+        // 📖 Bhagavad Gita
         list.add(new CulturePost(
                 "Sanskriti Sathi",
                 "📖 भगवद्गीता",
@@ -46,6 +46,16 @@ public class CulturePostData {
                 "0",
                 R.drawable.ic_launcher_foreground,
                 R.drawable.gita
+        ));
+
+        // 📰 RSS / Sanskriti Samachar
+        list.add(new CulturePost(
+                "Sanskriti Sathi",
+                "📰 संस्कृति समाचार",
+                "भारतीय संस्कृति, इतिहास और विरासत से जुड़ी महत्वपूर्ण जानकारी पढ़ें।",
+                "0",
+                R.drawable.ic_launcher_foreground,
+                R.drawable.rss
         ));
 
         return list;
