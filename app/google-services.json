@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "937091160310",
+    "project_id": "sanskriti-sathi",
+    "storage_bucket": "sanskriti-sathi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937091160310:android:cab4cf83b9f066873134d7",
+        "android_client_info": {
+          "package_name": "com.sanskritisathi.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsP-0UheZeeQDIlwbdpC6LcV8mbYW_0uQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
