@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -80,7 +81,7 @@ public class CulturePostAdapter
             showCommentDialog();
         });
 
-        // ➤ SHARE
+        // 📤 SHARE
         holder.postShare.setOnClickListener(v -> {
 
             sharePost(post);
@@ -112,6 +113,7 @@ public class CulturePostAdapter
         });
     }
 
+    // ❤️ Like UI
     private void updateLikeUI(
             PostViewHolder holder,
             CulturePost post) {
@@ -130,20 +132,22 @@ public class CulturePostAdapter
         );
     }
 
+    // 🔖 Save UI
     private void updateSaveUI(
             PostViewHolder holder,
             CulturePost post) {
 
         if (post.isSaved()) {
 
-            holder.postSave.setText("🔖");
+            holder.postSave.setText("🔖 Saved");
 
         } else {
 
-            holder.postSave.setText("🔖");
+            holder.postSave.setText("🔖 Save");
         }
     }
 
+    // 💬 Comment dialog
     private void showCommentDialog() {
 
         EditText input = new EditText(context);
@@ -194,6 +198,7 @@ public class CulturePostAdapter
                 .show();
     }
 
+    // 📤 Share
     private void sharePost(CulturePost post) {
 
         String shareText =
@@ -229,8 +234,8 @@ public class CulturePostAdapter
     public static class PostViewHolder
             extends RecyclerView.ViewHolder {
 
-        android.widget.ImageView profileImage;
-        android.widget.ImageView postImage;
+        ImageView profileImage;
+        ImageView postImage;
 
         TextView author;
         TextView category;
