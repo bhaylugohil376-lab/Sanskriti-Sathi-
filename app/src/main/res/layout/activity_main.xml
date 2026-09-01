@@ -87,6 +87,16 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
+        <!-- Culture -->
+        <Button
+            android:id="@+id/cultureButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:minHeight="58dp"
+            android:text="📸  भारतीय संस्कृति पोस्ट"
+            android:textSize="17sp" />
+
         <!-- Raja -->
         <Button
             android:id="@+id/rajaButton"
@@ -154,9 +164,9 @@
             android:layout_marginTop="24dp"
             android:gravity="center"
             android:padding="14dp"
+            android:paddingBottom="24dp"
             android:text="🇮🇳 ज्ञान • संस्कृति • विरासत"
-            android:textSize="15sp"
-            android:paddingBottom="24dp" />
+            android:textSize="15sp" />
 
     </LinearLayout>
 
