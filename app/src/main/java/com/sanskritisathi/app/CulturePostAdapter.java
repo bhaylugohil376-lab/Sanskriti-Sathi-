@@ -36,11 +36,12 @@ public class CulturePostAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(context).inflate(
-                R.layout.item_culture_post,
-                parent,
-                false
-        );
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(
+                        R.layout.item_culture_post,
+                        parent,
+                        false
+                );
 
         return new PostViewHolder(view);
     }
@@ -56,13 +57,19 @@ public class CulturePostAdapter
         holder.category.setText(post.getCategory());
         holder.caption.setText(post.getCaption());
 
-        holder.profileImage.setImageResource(
-                post.getProfileImageResId()
-        );
+        // Profile image
+        if (post.getProfileImageResId() != 0) {
+            holder.profileImage.setImageResource(
+                    post.getProfileImageResId()
+            );
+        }
 
-        holder.postImage.setImageResource(
-                post.getPostImageResId()
-        );
+        // Post image
+        if (post.getPostImageResId() != 0) {
+            holder.postImage.setImageResource(
+                    post.getPostImageResId()
+            );
+        }
 
         updateLikeUI(holder, post);
         updateSaveUI(holder, post);
@@ -119,11 +126,8 @@ public class CulturePostAdapter
             CulturePost post) {
 
         if (post.isLiked()) {
-
             holder.postLike.setText("♥");
-
         } else {
-
             holder.postLike.setText("♡");
         }
 
@@ -138,11 +142,8 @@ public class CulturePostAdapter
             CulturePost post) {
 
         if (post.isSaved()) {
-
             holder.postSave.setText("🔖 Saved");
-
         } else {
-
             holder.postSave.setText("🔖 Save");
         }
     }
@@ -172,10 +173,10 @@ public class CulturePostAdapter
                         "Post",
                         (dialog, which) -> {
 
-                            String comment =
-                                    input.getText()
-                                            .toString()
-                                            .trim();
+                            String comment = input
+                                    .getText()
+                                    .toString()
+                                    .trim();
 
                             if (!comment.isEmpty()) {
 
