@@ -1,17 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Sanskriti Sathi"
-        android:textSize="28sp"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-</LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="🕉️ Sanskriti Sathi"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:padding="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="भारतीय संस्कृति और ज्ञान का डिजिटल साथी"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:padding="10dp" />
+
+        <Button
+            android:id="@+id/rajaButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="👑 भारतीय राजा"
+            android:layout_marginTop="10dp" />
+
+        <Button
+            android:id="@+id/templeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🛕 भारतीय मंदिर" />
+
+        <Button
+            android:id="@+id/deviDevtaButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🕉️ देवी-देवता" />
+
+        <Button
+            android:id="@+id/gitaButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📖 भगवद्गीता" />
+
+        <Button
+            android:id="@+id/rssButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📰 संस्कृति समाचार" />
+
+        <Button
+            android:id="@+id/cultureButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📱 Culture Posts" />
+
+        <Button
+            android:id="@+id/aboutButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ℹ️ हमारे बारे में" />
+
+    </LinearLayout>
+
+</ScrollView>
