@@ -14,7 +14,7 @@ public class CulturePostData {
                 "👑 भारतीय राजा",
                 "भारत के महान राजाओं और उनके इतिहास को जानिए।",
                 "0",
-                R.drawable.ic_launcher_foreground,
+                R.drawable.icon_foreground,
                 R.drawable.chandragupta
         ));
 
@@ -24,7 +24,7 @@ public class CulturePostData {
                 "🛕 भारतीय मंदिर",
                 "भारत के प्राचीन मंदिरों के इतिहास, परंपरा और वास्तुकला को जानिए।",
                 "0",
-                R.drawable.ic_launcher_foreground,
+                R.drawable.icon_foreground,
                 R.drawable.somnath
         ));
 
@@ -34,7 +34,7 @@ public class CulturePostData {
                 "🕉️ देवी और देवता",
                 "भारतीय धार्मिक परंपराओं में देवी-देवताओं के स्वरूप और सांस्कृतिक महत्व को समझिए।",
                 "0",
-                R.drawable.ic_launcher_foreground,
+                R.drawable.icon_foreground,
                 R.drawable.shiva
         ));
 
@@ -44,7 +44,7 @@ public class CulturePostData {
                 "📖 भगवद्गीता",
                 "भगवद्गीता के 18 अध्यायों के ज्ञान और प्रमुख शिक्षाओं का अध्ययन करें।",
                 "0",
-                R.drawable.ic_launcher_foreground,
+                R.drawable.icon_foreground,
                 R.drawable.gita
         ));
 
@@ -54,7 +54,7 @@ public class CulturePostData {
                 "📰 संस्कृति समाचार",
                 "भारतीय संस्कृति, इतिहास और विरासत से जुड़ी महत्वपूर्ण जानकारी पढ़ें।",
                 "0",
-                R.drawable.ic_launcher_foreground,
+                R.drawable.icon_foreground,
                 R.drawable.rss
         ));
 
