@@ -6,21 +6,45 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 public class MainActivity extends AppCompatActivity {
+
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        firebaseAuth = FirebaseAuth.getInstance();
+
         // 👤 Login / Profile
         Button loginButton = findViewById(R.id.loginButton);
+
         loginButton.setOnClickListener(v -> {
-            Intent intent = new Intent(
-                    MainActivity.this,
-                    LoginActivity.class
-            );
-            startActivity(intent);
+
+            FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+
+            if (currentUser != null) {
+
+                // Already Login → Profile
+                Intent intent = new Intent(
+                        MainActivity.this,
+                        ProfileActivity.class
+                );
+                startActivity(intent);
+
+            } else {
+
+                // Login nahi hai → LoginActivity
+                Intent intent = new Intent(
+                        MainActivity.this,
+                        LoginActivity.class
+                );
+                startActivity(intent);
+            }
         });
 
         // 👑 Raja
