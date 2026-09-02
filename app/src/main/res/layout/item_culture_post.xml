@@ -22,13 +22,12 @@
             android:orientation="horizontal"
             android:padding="12dp">
 
-            <TextView
+            <ImageView
                 android:id="@+id/postProfileImage"
                 android:layout_width="46dp"
                 android:layout_height="46dp"
-                android:gravity="center"
-                android:text="🕉️"
-                android:textSize="25sp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/icon_foreground"
                 android:contentDescription="Profile" />
 
             <LinearLayout
