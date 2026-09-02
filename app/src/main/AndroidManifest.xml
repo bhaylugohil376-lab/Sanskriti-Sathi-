@@ -13,6 +13,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // 👤 Login / Profile
+        Button loginButton = findViewById(R.id.loginButton);
+        loginButton.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    LoginActivity.class
+            );
+            startActivity(intent);
+        });
+
         // 👑 Raja
         Button rajaButton = findViewById(R.id.rajaButton);
         rajaButton.setOnClickListener(v -> {
