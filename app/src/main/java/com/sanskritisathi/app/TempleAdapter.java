@@ -1,86 +1,71 @@
 package com.sanskritisathi.app;
 
-public class Temple {
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-    private String name;
-    private String location;
-    private String description;
-    private String history;
-    private String religiousImportance;
-    private String mainDeity;
-    private String festivals;
-    private String traditions;
-    private String architecture;
-    private String stories;
-    private int imageResId;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
-    public Temple(
-            String name,
-            String location,
-            String description,
-            String history,
-            String religiousImportance,
-            String mainDeity,
-            String festivals,
-            String traditions,
-            String architecture,
-            String stories,
-            int imageResId) {
+import java.util.List;
 
-        this.name = name;
-        this.location = location;
-        this.description = description;
-        this.history = history;
-        this.religiousImportance = religiousImportance;
-        this.mainDeity = mainDeity;
-        this.festivals = festivals;
-        this.traditions = traditions;
-        this.architecture = architecture;
-        this.stories = stories;
-        this.imageResId = imageResId;
+public class TempleAdapter extends RecyclerView.Adapter<TempleAdapter.TempleViewHolder> {
+
+    private final List<Temple> templeList;
+
+    public TempleAdapter(List<Temple> templeList) {
+        this.templeList = templeList;
     }
 
-    public String getName() {
-        return name;
+    @NonNull
+    @Override
+    public TempleViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent,
+            int viewType) {
+
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_temple, parent, false);
+
+        return new TempleViewHolder(view);
     }
 
-    public String getLocation() {
-        return location;
+    @Override
+    public void onBindViewHolder(
+            @NonNull TempleViewHolder holder,
+            int position) {
+
+        Temple temple = templeList.get(position);
+
+        holder.templeName.setText(temple.getName());
+        holder.templeLocation.setText(temple.getLocation());
+        holder.templeDescription.setText(temple.getDescription());
+
+        if (temple.getImageResId() != 0) {
+            holder.templeImage.setImageResource(temple.getImageResId());
+        }
     }
 
-    public String getDescription() {
-        return description;
+    @Override
+    public int getItemCount() {
+        return templeList.size();
     }
 
-    public String getHistory() {
-        return history;
-    }
+    public static class TempleViewHolder extends RecyclerView.ViewHolder {
 
-    public String getReligiousImportance() {
-        return religiousImportance;
-    }
+        ImageView templeImage;
+        TextView templeName;
+        TextView templeLocation;
+        TextView templeDescription;
 
-    public String getMainDeity() {
-        return mainDeity;
-    }
+        public TempleViewHolder(@NonNull View itemView) {
+            super(itemView);
 
-    public String getFestivals() {
-        return festivals;
-    }
-
-    public String getTraditions() {
-        return traditions;
-    }
-
-    public String getArchitecture() {
-        return architecture;
-    }
-
-    public String getStories() {
-        return stories;
-    }
-
-    public int getImageResId() {
-        return imageResId;
+            templeImage = itemView.findViewById(R.id.templeImage);
+            templeName = itemView.findViewById(R.id.templeName);
+            templeLocation = itemView.findViewById(R.id.templeLocation);
+            templeDescription = itemView.findViewById(R.id.templeDescription);
+        }
     }
 }
