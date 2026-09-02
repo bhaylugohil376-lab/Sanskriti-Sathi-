@@ -61,6 +61,16 @@
             android:textSize="16sp"
             android:lineSpacingExtra="5dp" />
 
+        <!-- 👤 Login / Profile -->
+        <Button
+            android:id="@+id/loginButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:minHeight="58dp"
+            android:text="👤 Login / Profile"
+            android:textSize="17sp" />
+
         <!-- Culture Feed -->
         <TextView
             android:layout_width="match_parent"
