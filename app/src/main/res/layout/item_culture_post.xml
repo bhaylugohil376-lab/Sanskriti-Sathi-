@@ -19,15 +19,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:padding="12dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="12dp">
 
-            <ImageView
+            <TextView
                 android:id="@+id/postProfileImage"
                 android:layout_width="46dp"
                 android:layout_height="46dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_launcher_foreground"
+                android:gravity="center"
+                android:text="🕉️"
+                android:textSize="25sp"
                 android:contentDescription="Profile" />
 
             <LinearLayout
@@ -58,9 +59,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="4dp"
                 android:text="⋮"
-                android:textSize="26sp"
-                android:padding="4dp" />
+                android:textSize="26sp" />
 
         </LinearLayout>
 
@@ -70,15 +71,15 @@
             android:layout_width="match_parent"
             android:layout_height="280dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_foreground"
+            android:src="@drawable/ic_launcher"
             android:contentDescription="Culture Post" />
 
         <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:paddingStart="12dp"
             android:paddingTop="8dp"
             android:paddingEnd="12dp">
@@ -87,31 +88,31 @@
                 android:id="@+id/postLike"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center"
                 android:text="♡"
-                android:textSize="30sp"
-                android:clickable="true"
-                android:focusable="true" />
+                android:textSize="30sp" />
 
             <TextView
                 android:id="@+id/postComment"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center"
                 android:text="💬"
-                android:textSize="22sp"
-                android:clickable="true"
-                android:focusable="true" />
+                android:textSize="22sp" />
 
             <TextView
                 android:id="@+id/postShare"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center"
                 android:text="➤"
-                android:textSize="24sp"
-                android:clickable="true"
-                android:focusable="true" />
+                android:textSize="24sp" />
 
             <View
                 android:layout_width="0dp"
@@ -122,11 +123,11 @@
                 android:id="@+id/postSave"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center"
                 android:text="🔖"
-                android:textSize="22sp"
-                android:clickable="true"
-                android:focusable="true" />
+                android:textSize="22sp" />
 
         </LinearLayout>
 
@@ -146,10 +147,10 @@
             android:id="@+id/postCaption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:lineSpacingExtra="4dp"
             android:padding="14dp"
             android:text="भारतीय संस्कृति और विरासत"
-            android:textSize="16sp"
-            android:lineSpacingExtra="4dp" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 
