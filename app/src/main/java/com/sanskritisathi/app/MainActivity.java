@@ -5,16 +5,8 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-
-    private RecyclerView culturePostRecyclerView;
-    private CulturePostAdapter culturePostAdapter;
-    private ArrayList<CulturePost> culturePostList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,44 +14,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // =========================
-        // CULTURE FEED
+        // CULTURE FEED - TEMPORARILY DISABLED
         // =========================
-
-        culturePostRecyclerView =
-                findViewById(R.id.culturePostRecyclerView);
-
-        culturePostRecyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
-        );
-
-        culturePostList =
-                CulturePostData.getAllPosts();
-
-        culturePostAdapter =
-                new CulturePostAdapter(
-                        this,
-                        culturePostList
-                );
-
-        culturePostRecyclerView.setAdapter(
-                culturePostAdapter
-        );
+        // Feed ko test ke liye abhi load nahi kar rahe.
 
 
         // =========================
         // INDIAN KINGS
         // =========================
 
-        Button rajaButton =
-                findViewById(R.id.rajaButton);
+        Button rajaButton = findViewById(R.id.rajaButton);
 
         rajaButton.setOnClickListener(v -> {
-
             Intent intent = new Intent(
                     MainActivity.this,
                     RajaActivity.class
             );
-
             startActivity(intent);
         });
 
@@ -68,16 +38,13 @@ public class MainActivity extends AppCompatActivity {
         // TEMPLES
         // =========================
 
-        Button templeButton =
-                findViewById(R.id.templeButton);
+        Button templeButton = findViewById(R.id.templeButton);
 
         templeButton.setOnClickListener(v -> {
-
             Intent intent = new Intent(
                     MainActivity.this,
                     TempleActivity.class
             );
-
             startActivity(intent);
         });
 
@@ -86,16 +53,13 @@ public class MainActivity extends AppCompatActivity {
         // BHAGAVAD GITA
         // =========================
 
-        Button gitaButton =
-                findViewById(R.id.gitaButton);
+        Button gitaButton = findViewById(R.id.gitaButton);
 
         gitaButton.setOnClickListener(v -> {
-
             Intent intent = new Intent(
                     MainActivity.this,
                     GitaActivity.class
             );
-
             startActivity(intent);
         });
 
@@ -108,12 +72,10 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.deviDevtaButton);
 
         deviDevtaButton.setOnClickListener(v -> {
-
             Intent intent = new Intent(
                     MainActivity.this,
                     DeviDevtaActivity.class
             );
-
             startActivity(intent);
         });
 
@@ -122,16 +84,13 @@ public class MainActivity extends AppCompatActivity {
         // RSS NEWS
         // =========================
 
-        Button rssButton =
-                findViewById(R.id.rssButton);
+        Button rssButton = findViewById(R.id.rssButton);
 
         rssButton.setOnClickListener(v -> {
-
             Intent intent = new Intent(
                     MainActivity.this,
                     RssActivity.class
             );
-
             startActivity(intent);
         });
 
@@ -140,16 +99,13 @@ public class MainActivity extends AppCompatActivity {
         // ABOUT
         // =========================
 
-        Button aboutButton =
-                findViewById(R.id.aboutButton);
+        Button aboutButton = findViewById(R.id.aboutButton);
 
         aboutButton.setOnClickListener(v -> {
-
             Intent intent = new Intent(
                     MainActivity.this,
                     AboutActivity.class
             );
-
             startActivity(intent);
         });
     }
