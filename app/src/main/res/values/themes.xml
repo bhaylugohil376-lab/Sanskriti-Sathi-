@@ -4,27 +4,21 @@
 
     <style
         name="Theme.SanskritiSathi"
-        parent="android:style/Theme.Material.Light.NoActionBar">
+        parent="Theme.AppCompat.Light.NoActionBar">
 
-        <!-- Font -->
         <item name="android:fontFamily">sans</item>
 
-        <!-- Status Bar -->
         <item name="android:statusBarColor">#FF9800</item>
         <item name="android:windowLightStatusBar">false</item>
 
-        <!-- Navigation Bar -->
         <item name="android:navigationBarColor">#FFF8E1</item>
         <item name="android:windowLightNavigationBar">true</item>
 
-        <!-- Window -->
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowNoTitle">true</item>
 
-        <!-- Default background -->
         <item name="android:windowBackground">#FFFDF7</item>
 
-        <!-- Text -->
         <item name="android:textColorPrimary">#212121</item>
         <item name="android:textColorSecondary">#616161</item>
 
