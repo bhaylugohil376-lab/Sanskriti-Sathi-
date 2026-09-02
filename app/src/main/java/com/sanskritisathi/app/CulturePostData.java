@@ -15,7 +15,7 @@ public class CulturePostData {
                 "भारत के महान राजाओं और उनके इतिहास को जानिए।",
                 "0",
                 R.drawable.icon_foreground,
-                R.drawable.chandragupta
+                R.drawable.icon_foreground
         ));
 
         // 🛕 Temple
