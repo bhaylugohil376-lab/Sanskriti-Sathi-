@@ -32,10 +32,7 @@ public class TempleActivity extends AppCompatActivity {
 
         templeList = TempleData.getAllTemples();
 
-        adapter = new TempleAdapter(
-                this,
-                templeList
-        );
+        adapter = new TempleAdapter(templeList);
 
         recyclerView.setAdapter(adapter);
     }
