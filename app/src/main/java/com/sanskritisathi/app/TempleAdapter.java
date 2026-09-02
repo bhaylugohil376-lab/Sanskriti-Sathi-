@@ -40,10 +40,39 @@ public class TempleAdapter extends RecyclerView.Adapter<TempleAdapter.TempleView
 
         holder.templeName.setText(temple.getName());
         holder.templeLocation.setText(temple.getLocation());
-        holder.templeDescription.setText(temple.getDescription());
+
+        holder.templeHistory.setText(
+                "📜 इतिहास\n" + temple.getHistory()
+        );
+
+        holder.templeImportance.setText(
+                "🙏 धार्मिक महत्व\n" + temple.getReligiousImportance()
+        );
+
+        holder.templeDeity.setText(
+                "🕉️ मुख्य देवी/देवता\n" + temple.getMainDeity()
+        );
+
+        holder.templeFestivals.setText(
+                "🎉 प्रमुख पर्व\n" + temple.getFestivals()
+        );
+
+        holder.templeTraditions.setText(
+                "🪔 विशेष परंपराएँ\n" + temple.getTraditions()
+        );
+
+        holder.templeArchitecture.setText(
+                "🏛️ वास्तुकला\n" + temple.getArchitecture()
+        );
+
+        holder.templeStories.setText(
+                "📖 प्रमुख कथाएँ\n" + temple.getStories()
+        );
 
         if (temple.getImageResId() != 0) {
-            holder.templeImage.setImageResource(temple.getImageResId());
+            holder.templeImage.setImageResource(
+                    temple.getImageResId()
+            );
         }
     }
 
@@ -52,12 +81,19 @@ public class TempleAdapter extends RecyclerView.Adapter<TempleAdapter.TempleView
         return templeList.size();
     }
 
-    public static class TempleViewHolder extends RecyclerView.ViewHolder {
+    public static class TempleViewHolder
+            extends RecyclerView.ViewHolder {
 
         ImageView templeImage;
         TextView templeName;
         TextView templeLocation;
-        TextView templeDescription;
+        TextView templeHistory;
+        TextView templeImportance;
+        TextView templeDeity;
+        TextView templeFestivals;
+        TextView templeTraditions;
+        TextView templeArchitecture;
+        TextView templeStories;
 
         public TempleViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -65,7 +101,13 @@ public class TempleAdapter extends RecyclerView.Adapter<TempleAdapter.TempleView
             templeImage = itemView.findViewById(R.id.templeImage);
             templeName = itemView.findViewById(R.id.templeName);
             templeLocation = itemView.findViewById(R.id.templeLocation);
-            templeDescription = itemView.findViewById(R.id.templeDescription);
+            templeHistory = itemView.findViewById(R.id.templeHistory);
+            templeImportance = itemView.findViewById(R.id.templeImportance);
+            templeDeity = itemView.findViewById(R.id.templeDeity);
+            templeFestivals = itemView.findViewById(R.id.templeFestivals);
+            templeTraditions = itemView.findViewById(R.id.templeTraditions);
+            templeArchitecture = itemView.findViewById(R.id.templeArchitecture);
+            templeStories = itemView.findViewById(R.id.templeStories);
         }
     }
 }
