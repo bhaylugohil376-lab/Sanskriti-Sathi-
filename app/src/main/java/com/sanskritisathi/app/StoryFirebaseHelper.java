@@ -187,3 +187,89 @@ public class StoryFirebaseHelper {
                 );
     }
 }
+public interface StoriesCallback {
+    void onSuccess(java.util.List<Story> stories);
+    void onError(String message);
+}
+
+public void getActiveStories(StoriesCallback callback) {
+
+    if (auth.getCurrentUser() == null) {
+        callback.onError("Please login first");
+        return;
+    }
+
+    long twentyFourHoursAgo =
+            System.currentTimeMillis()
+                    - (24L * 60L * 60L * 1000L);
+
+    firestore.collection("stories")
+            .whereGreaterThan(
+                    "createdAt",
+                    new com.google.firebase.Timestamp(
+                            new java.util.Date(twentyFourHoursAgo)
+                    )
+            )
+            .get()
+            .addOnSuccessListener(snapshot -> {
+
+                java.util.List<Story> result =
+                        new java.util.ArrayList<>();
+
+                for (com.google.firebase.firestore.DocumentSnapshot doc
+                        : snapshot.getDocuments()) {
+
+                    String id = doc.getString("storyId");
+                    String uid = doc.getString("ownerUid");
+                    String imageUrl = doc.getString("imageUrl");
+                    String caption = doc.getString("caption");
+                    String visibility = doc.getString("visibility");
+
+                    com.google.firebase.Timestamp timestamp =
+                            doc.getTimestamp("createdAt");
+
+                    long createdAt = timestamp != null
+                            ? timestamp.toDate().getTime()
+                            : System.currentTimeMillis();
+
+                    Long viewsValue = doc.getLong("views");
+
+                    int views = viewsValue != null
+                            ? viewsValue.intValue()
+                            : 0;
+
+                    if (id == null || imageUrl == null) {
+                        continue;
+                    }
+
+                    boolean ownStory =
+                            uid != null &&
+                            uid.equals(
+                                    auth.getCurrentUser().getUid()
+                            );
+
+                    Story story = new Story(
+                            id,
+                            uid != null ? uid : "Sanskriti User",
+                            "",
+                            imageUrl,
+                            caption != null ? caption : "",
+                            visibility != null ? visibility : "Public",
+                            createdAt,
+                            views,
+                            ownStory
+                    );
+
+                    result.add(story);
+                }
+
+                callback.onSuccess(result);
+            })
+            .addOnFailureListener(e ->
+                    callback.onError(
+                            "Stories load nahi hui: "
+                                    + e.getMessage()
+                    )
+            );
+}
+
