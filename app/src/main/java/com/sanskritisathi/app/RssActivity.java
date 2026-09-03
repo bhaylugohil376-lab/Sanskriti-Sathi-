@@ -50,17 +50,18 @@ public class RssActivity extends AppCompatActivity {
         executor.execute(() -> {
 
             ArrayList<RssItem> items = new ArrayList<>();
+            HttpURLConnection connection = null;
 
             try {
 
                 URL url = new URL(RSS_FEED_URL);
 
-                HttpURLConnection connection =
-                        (HttpURLConnection) url.openConnection();
+                connection = (HttpURLConnection) url.openConnection();
 
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(15000);
+                connection.setUseCaches(false);
 
                 connection.setRequestProperty(
                         "User-Agent",
@@ -69,8 +70,7 @@ public class RssActivity extends AppCompatActivity {
 
                 connection.connect();
 
-                int responseCode =
-                        connection.getResponseCode();
+                int responseCode = connection.getResponseCode();
 
                 if (responseCode == HttpURLConnection.HTTP_OK) {
 
@@ -87,8 +87,6 @@ public class RssActivity extends AppCompatActivity {
                     );
                 }
 
-                connection.disconnect();
-
             } catch (Exception e) {
 
                 runOnUiThread(() ->
@@ -98,11 +96,21 @@ public class RssActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT
                         ).show()
                 );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
 
             ArrayList<RssItem> finalItems = items;
 
             runOnUiThread(() -> {
+
+                if (isFinishing() || isDestroyed()) {
+                    return;
+                }
 
                 rssList.clear();
 
@@ -127,7 +135,6 @@ public class RssActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         executor.shutdownNow();
     }
 }
