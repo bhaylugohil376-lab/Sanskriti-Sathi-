@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <ImageView
+        android:id="@+id/storyImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="Story"/>
+
+    <!-- Dark overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#55000000"/>
+
+    <!-- Top area -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Story progress -->
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:progress="70"
+            android:max="100"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingTop="12dp">
+
+            <TextView
+                android:id="@+id/storyUsername"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Sanskriti Sathi"
+                android:textColor="#FFFFFF"
+                android:textSize="17sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/storyTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2 hr ago"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"/>
+
+            <ImageButton
+                android:id="@+id/storyDeleteButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_menu_delete"
+                android:tint="#FFFFFF"
+                android:visibility="gone"
+                android:contentDescription="Delete Story"/>
+
+            <ImageButton
+                android:id="@+id/storyCloseButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:tint="#FFFFFF"
+                android:contentDescription="Close"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Caption -->
+    <TextView
+        android:id="@+id/storyCaption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="90dp"
+        android:padding="18dp"
+        android:text="Story caption"
+        android:textColor="#FFFFFF"
+        android:textSize="17sp"
+        android:textStyle="bold"/>
+
+    <!-- Bottom actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/storyViews"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="👁 128 views"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"/>
+
+        <ImageButton
+            android:id="@+id/storyLikeButton"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/btn_star_big_off"
+            android:tint="#FFFFFF"
+            android:contentDescription="Like"/>
+
+        <ImageButton
+            android:id="@+id/storyReplyButton"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_send"
+            android:tint="#FFFFFF"
+            android:contentDescription="Reply"/>
+
+    </LinearLayout>
+
+</FrameLayout>
