@@ -3,86 +3,182 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="6dp">
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+
+    android:foreground="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+
+    app:cardCornerRadius="24dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:orientation="vertical">
+
+        <!-- Image -->
 
         <ImageView
             android:id="@+id/deviDevtaImage"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="280dp"
             android:scaleType="centerCrop"
-            android:contentDescription="Devi Devta image" />
+            android:contentDescription="Devi Devta image"
+            android:background="#FCE4EC" />
 
-        <TextView
-            android:id="@+id/deviDevtaName"
+        <!-- Content -->
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="Devi Devta Name"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:padding="18dp">
 
-        <TextView
-            android:id="@+id/deviDevtaTradition"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="परंपरा"
-            android:textSize="16sp" />
+            <!-- Name -->
 
-        <TextView
-            android:id="@+id/deviDevtaDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="विस्तृत विवरण"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            <TextView
+                android:id="@+id/deviDevtaName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Devi Devta Name"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#AD1457" />
 
-        <TextView
-            android:id="@+id/deviDevtaImportance"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="महत्व"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            <!-- Tradition -->
 
-        <TextView
-            android:id="@+id/deviDevtaTemples"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="प्रमुख मंदिर / तीर्थ"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            <TextView
+                android:id="@+id/deviDevtaTradition"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:text="परंपरा"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#6A1B9A" />
 
-        <TextView
-            android:id="@+id/deviDevtaFestivals"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="प्रमुख पर्व"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            <!-- Divider -->
 
-        <TextView
-            android:id="@+id/deviDevtaStories"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:text="प्रमुख कथाएँ"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="14dp"
+                android:background="#F3D1DF" />
+
+            <!-- Description Title -->
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:text="📖 विस्तृत परिचय"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#7B1FA2" />
+
+            <TextView
+                android:id="@+id/deviDevtaDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:text="विस्तृत विवरण"
+                android:textSize="15sp"
+                android:textColor="#424242"
+                android:lineSpacingExtra="5dp" />
+
+            <!-- Importance -->
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="✨ महत्व"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#E65100" />
+
+            <TextView
+                android:id="@+id/deviDevtaImportance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:text="महत्व"
+                android:textSize="15sp"
+                android:textColor="#424242"
+                android:lineSpacingExtra="5dp" />
+
+            <!-- Temples -->
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="🛕 प्रमुख मंदिर / तीर्थ"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#2E7D32" />
+
+            <TextView
+                android:id="@+id/deviDevtaTemples"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:text="प्रमुख मंदिर / तीर्थ"
+                android:textSize="15sp"
+                android:textColor="#424242"
+                android:lineSpacingExtra="5dp" />
+
+            <!-- Festivals -->
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="🎉 प्रमुख पर्व"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#1565C0" />
+
+            <TextView
+                android:id="@+id/deviDevtaFestivals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:text="प्रमुख पर्व"
+                android:textSize="15sp"
+                android:textColor="#424242"
+                android:lineSpacingExtra="5dp" />
+
+            <!-- Stories -->
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="📜 प्रमुख कथाएँ"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#6A1B9A" />
+
+            <TextView
+                android:id="@+id/deviDevtaStories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:text="प्रमुख कथाएँ"
+                android:textSize="15sp"
+                android:textColor="#424242"
+                android:lineSpacingExtra="5dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
