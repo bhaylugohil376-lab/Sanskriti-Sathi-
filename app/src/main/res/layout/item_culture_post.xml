@@ -5,30 +5,37 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp">
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Post Header -->
+        <!-- ========================= -->
+        <!-- POST HEADER -->
+        <!-- ========================= -->
+
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="12dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp">
 
             <ImageView
                 android:id="@+id/postProfileImage"
-                android:layout_width="46dp"
-                android:layout_height="46dp"
-                android:scaleType="centerCrop"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:src="@drawable/icon_foreground"
-                android:contentDescription="Profile" />
+                android:scaleType="centerCrop"
+                android:background="#FFE082"
+                android:contentDescription="Profile"/>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -37,119 +44,167 @@
                 android:orientation="vertical"
                 android:paddingStart="10dp">
 
-                <TextView
-                    android:id="@+id/postAuthor"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sanskriti Sathi"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/postAuthor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sanskriti Sathi"
+                        android:textColor="#202020"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/followStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="  •  Follow"
+                        android:textColor="#1976D2"
+                        android:textSize="13sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/postCategory"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="🕉️ भारतीय संस्कृति"
-                    android:textSize="13sp" />
-
+                    android:text="📰 संस्कृति समाचार"
+                    android:textColor="#757575"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"/>
             </LinearLayout>
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="4dp"
+                android:id="@+id/postMenu"
+                android:layout_width="40dp"
+                android:layout_height="45dp"
+                android:gravity="center"
                 android:text="⋮"
-                android:textSize="26sp" />
-
+                android:textColor="#333333"
+                android:textSize="28sp"/>
         </LinearLayout>
 
-        <!-- Main Post Image -->
+
+        <!-- ========================= -->
+        <!-- POST IMAGE -->
+        <!-- ========================= -->
+
         <ImageView
             android:id="@+id/postImage"
             android:layout_width="match_parent"
-            android:layout_height="280dp"
+            android:layout_height="300dp"
             android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:contentDescription="Culture Post" />
+            android:src="@drawable/icon_foreground"
+            android:contentDescription="Culture post"/>
 
-        <!-- Action Buttons -->
+
+        <!-- ========================= -->
+        <!-- ACTION BAR -->
+        <!-- ========================= -->
+
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="58dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="12dp">
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
 
             <TextView
-                android:id="@+id/postLike"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="♡"
-                android:textSize="30sp" />
-
-            <TextView
-                android:id="@+id/postComment"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="💬"
-                android:textSize="22sp" />
-
-            <TextView
-                android:id="@+id/postShare"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="➤"
-                android:textSize="24sp" />
-
-            <View
+                android:id="@+id/likeButton"
                 android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="♡  Like"
+                android:textColor="#222222"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
 
             <TextView
-                android:id="@+id/postSave"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="🔖"
-                android:textSize="22sp" />
+                android:id="@+id/commentButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="💬  Comment"
+                android:textColor="#222222"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
 
+            <TextView
+                android:id="@+id/shareButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:text="➤  Share"
+                android:textColor="#222222"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/saveButton"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|end"
+                android:text="♡"
+                android:textColor="#222222"
+                android:textSize="25sp"/>
         </LinearLayout>
 
-        <!-- Like Count -->
+
+        <!-- ========================= -->
+        <!-- LIKES -->
+        <!-- ========================= -->
+
         <TextView
-            android:id="@+id/postLikeCount"
+            android:id="@+id/likeCount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
-            android:text="0 likes"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:text="❤️ 0 likes"
+            android:textColor="#555555"
+            android:textSize="14sp"
+            android:textStyle="bold"/>
 
-        <!-- Caption -->
+
+        <!-- ========================= -->
+        <!-- CAPTION -->
+        <!-- ========================= -->
+
         <TextView
             android:id="@+id/postCaption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:lineSpacingExtra="4dp"
-            android:padding="14dp"
-            android:text="भारतीय संस्कृति और विरासत"
-            android:textSize="16sp" />
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="14dp"
+            android:text="भारतीय संस्कृति और विरासत के बारे में जानकारी पढ़ें।"
+            android:textColor="#333333"
+            android:textSize="15sp"
+            android:lineSpacingExtra="3dp"/>
+
+
+        <!-- ========================= -->
+        <!-- DELETE -->
+        <!-- ========================= -->
+
+        <TextView
+            android:id="@+id/deletePostButton"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="🗑️ Delete Post"
+            android:textColor="#D32F2F"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
