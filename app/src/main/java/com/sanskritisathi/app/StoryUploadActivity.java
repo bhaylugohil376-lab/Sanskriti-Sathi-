@@ -2,6 +2,7 @@ package com.sanskritisathi.app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,6 +17,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.ByteArrayOutputStream;
+
 public class StoryUploadActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE = 100;
@@ -25,8 +28,11 @@ public class StoryUploadActivity extends AppCompatActivity {
     private EditText captionInput;
     private RadioGroup visibilityGroup;
     private TextView selectedFileText;
+    private Button uploadButton;
 
     private Uri selectedImageUri;
+
+    private StoryFirebaseHelper firebaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,20 +47,24 @@ public class StoryUploadActivity extends AppCompatActivity {
 
         Button galleryButton = findViewById(R.id.galleryButton);
         Button cameraButton = findViewById(R.id.cameraButton);
-        Button uploadButton = findViewById(R.id.uploadStoryButton);
+        uploadButton = findViewById(R.id.uploadStoryButton);
+
+        firebaseHelper = new StoryFirebaseHelper();
 
         galleryButton.setOnClickListener(v -> openGallery());
 
         cameraButton.setOnClickListener(v -> openCamera());
 
-        uploadButton.setOnClickListener(v -> createStory());
+        uploadButton.setOnClickListener(v -> uploadStory());
     }
 
     private void openGallery() {
 
-        Intent intent = new Intent(
-                Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        Intent intent = new Intent(Intent.ACTION_PICK);
+
+        intent.setDataAndType(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                "image/*"
         );
 
         startActivityForResult(intent, PICK_IMAGE);
@@ -67,8 +77,14 @@ public class StoryUploadActivity extends AppCompatActivity {
         );
 
         if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, CAMERA_REQUEST);
+
+            startActivityForResult(
+                    intent,
+                    CAMERA_REQUEST
+            );
+
         } else {
+
             Toast.makeText(
                     this,
                     "Camera available nahi hai",
@@ -89,40 +105,73 @@ public class StoryUploadActivity extends AppCompatActivity {
                 data
         );
 
-        if (resultCode != Activity.RESULT_OK || data == null) {
+        if (resultCode != Activity.RESULT_OK ||
+                data == null) {
+
             return;
         }
 
         if (requestCode == PICK_IMAGE) {
 
-            selectedImageUri = data.getData();
+            Uri uri = data.getData();
 
-            if (selectedImageUri != null) {
+            if (uri != null) {
+
+                selectedImageUri = uri;
 
                 selectedImage.setImageURI(
                         selectedImageUri
                 );
 
                 selectedFileText.setText(
-                        "Photo selected ✓"
+                        "Gallery photo selected ✓"
                 );
             }
         }
 
-        if (requestCode == CAMERA_REQUEST) {
+        else if (requestCode == CAMERA_REQUEST) {
 
-            selectedImage.setImageBitmap(
-                    (android.graphics.Bitmap)
-                            data.getExtras().get("data")
-            );
+            Bundle extras = data.getExtras();
 
-            selectedFileText.setText(
-                    "Camera photo selected ✓"
-            );
+            if (extras == null) {
+                return;
+            }
+
+            Bitmap bitmap =
+                    (Bitmap) extras.get("data");
+
+            if (bitmap != null) {
+
+                selectedImage.setImageBitmap(bitmap);
+
+                selectedImageUri =
+                        bitmapToUri(bitmap);
+
+                selectedFileText.setText(
+                        "Camera photo selected ✓"
+                );
+            }
         }
     }
 
-    private void createStory() {
+    private Uri bitmapToUri(Bitmap bitmap) {
+
+        String path =
+                MediaStore.Images.Media.insertImage(
+                        getContentResolver(),
+                        bitmap,
+                        "Sanskriti_Sathi_Story",
+                        "Story image"
+                );
+
+        if (path == null) {
+            return null;
+        }
+
+        return Uri.parse(path);
+    }
+
+    private void uploadStory() {
 
         if (selectedImageUri == null) {
 
@@ -149,51 +198,87 @@ public class StoryUploadActivity extends AppCompatActivity {
             return;
         }
 
-        RadioButton selectedVisibility =
+        RadioButton visibilityButton =
                 findViewById(selectedId);
 
-        String visibility =
-                selectedVisibility.getText().toString();
+        String visibilityText =
+                visibilityButton.getText().toString();
+
+        String visibility;
+
+        if (visibilityText.contains("Followers")) {
+            visibility = "Followers";
+        } else {
+            visibility = "Public";
+        }
 
         String caption =
-                captionInput.getText().toString().trim();
+                captionInput.getText()
+                        .toString()
+                        .trim();
 
         if (caption.isEmpty()) {
             caption = "Meri Sanskriti Story 🇮🇳";
         }
 
-        /*
-         * Local Story creation.
-         *
-         * Firebase integration mein isi jagah:
-         * 1. Image Storage mein upload hogi
-         * 2. Story document Firestore mein banega
-         * 3. Owner UID save hoga
-         * 4. Visibility save hogi
-         * 5. createdAt save hoga
-         * 6. 24-hour expiry server-side handle hogi
-         */
+        setUploading(true);
 
-        Story newStory = new Story(
-                "story_" + System.currentTimeMillis(),
-                "Sanskriti Sathi",
-                "icon_foreground",
-                "icon_foreground",
+        firebaseHelper.uploadStory(
+                selectedImageUri,
                 caption,
                 visibility,
-                System.currentTimeMillis(),
-                0,
-                true
+                new StoryFirebaseHelper.UploadCallback() {
+
+                    @Override
+                    public void onSuccess(String storyId) {
+
+                        runOnUiThread(() -> {
+
+                            setUploading(false);
+
+                            Toast.makeText(
+                                    StoryUploadActivity.this,
+                                    "Story publish ho gayi ✓",
+                                    Toast.LENGTH_LONG
+                            ).show();
+
+                            finish();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String message) {
+
+                        runOnUiThread(() -> {
+
+                            setUploading(false);
+
+                            Toast.makeText(
+                                    StoryUploadActivity.this,
+                                    message,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        });
+                    }
+                }
         );
+    }
 
-        StoryData.addStory(newStory);
+    private void setUploading(boolean uploading) {
 
-        Toast.makeText(
-                this,
-                "Story create ho gayi ✓",
-                Toast.LENGTH_SHORT
-        ).show();
+        uploadButton.setEnabled(!uploading);
 
-        finish();
+        if (uploading) {
+
+            uploadButton.setText(
+                    "Uploading..."
+            );
+
+        } else {
+
+            uploadButton.setText(
+                    "➕ Publish Story"
+            );
+        }
     }
 }
