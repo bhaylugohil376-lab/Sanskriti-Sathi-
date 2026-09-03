@@ -32,7 +32,7 @@ public class DeviDevtaAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(context)
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(
                         R.layout.item_devi_devta,
                         parent,
@@ -54,37 +54,48 @@ public class DeviDevtaAdapter
         );
 
         holder.deviDevtaName.setText(
-                item.getName()
+                safeText(item.getName())
         );
 
         holder.deviDevtaTradition.setText(
-                "परंपरा: " + item.getTradition()
+                "परंपरा: " + safeText(item.getTradition())
         );
 
         holder.deviDevtaDescription.setText(
-                item.getDescription()
+                safeText(item.getDescription())
         );
 
         holder.deviDevtaImportance.setText(
-                "महत्व\n" + item.getImportance()
+                safeText(item.getImportance())
         );
 
         holder.deviDevtaTemples.setText(
-                "प्रमुख मंदिर / तीर्थ\n" + item.getTemples()
+                safeText(item.getTemples())
         );
 
         holder.deviDevtaFestivals.setText(
-                "प्रमुख पर्व\n" + item.getFestivals()
+                safeText(item.getFestivals())
         );
 
         holder.deviDevtaStories.setText(
-                "प्रमुख कथाएँ\n" + item.getStories()
+                safeText(item.getStories())
         );
+    }
+
+    private String safeText(String text) {
+
+        if (text == null || text.trim().isEmpty()) {
+            return "जानकारी उपलब्ध नहीं है।";
+        }
+
+        return text.trim();
     }
 
     @Override
     public int getItemCount() {
-        return deviDevtaList.size();
+        return deviDevtaList == null
+                ? 0
+                : deviDevtaList.size();
     }
 
     public static class DeviDevtaViewHolder
@@ -104,45 +115,37 @@ public class DeviDevtaAdapter
 
             super(itemView);
 
-            deviDevtaImage =
-                    itemView.findViewById(
-                            R.id.deviDevtaImage
-                    );
+            deviDevtaImage = itemView.findViewById(
+                    R.id.deviDevtaImage
+            );
 
-            deviDevtaName =
-                    itemView.findViewById(
-                            R.id.deviDevtaName
-                    );
+            deviDevtaName = itemView.findViewById(
+                    R.id.deviDevtaName
+            );
 
-            deviDevtaTradition =
-                    itemView.findViewById(
-                            R.id.deviDevtaTradition
-                    );
+            deviDevtaTradition = itemView.findViewById(
+                    R.id.deviDevtaTradition
+            );
 
-            deviDevtaDescription =
-                    itemView.findViewById(
-                            R.id.deviDevtaDescription
-                    );
+            deviDevtaDescription = itemView.findViewById(
+                    R.id.deviDevtaDescription
+            );
 
-            deviDevtaImportance =
-                    itemView.findViewById(
-                            R.id.deviDevtaImportance
-                    );
+            deviDevtaImportance = itemView.findViewById(
+                    R.id.deviDevtaImportance
+            );
 
-            deviDevtaTemples =
-                    itemView.findViewById(
-                            R.id.deviDevtaTemples
-                    );
+            deviDevtaTemples = itemView.findViewById(
+                    R.id.deviDevtaTemples
+            );
 
-            deviDevtaFestivals =
-                    itemView.findViewById(
-                            R.id.deviDevtaFestivals
-                    );
+            deviDevtaFestivals = itemView.findViewById(
+                    R.id.deviDevtaFestivals
+            );
 
-            deviDevtaStories =
-                    itemView.findViewById(
-                            R.id.deviDevtaStories
-                    );
+            deviDevtaStories = itemView.findViewById(
+                    R.id.deviDevtaStories
+            );
         }
     }
 }
