@@ -2,21 +2,29 @@ package com.sanskritisathi.app;
 
 import android.net.Uri;
 
-import androidx.annotation.NonNull;
-
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class StoryFirebaseHelper {
 
     public interface UploadCallback {
         void onSuccess(String storyId);
+        void onError(String message);
+    }
+
+    public interface StoriesCallback {
+        void onSuccess(List<Story> stories);
         void onError(String message);
     }
 
@@ -29,6 +37,10 @@ public class StoryFirebaseHelper {
         firestore = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
     }
+
+    // =========================
+    // UPLOAD STORY
+    // =========================
 
     public void uploadStory(
             Uri imageUri,
@@ -101,8 +113,11 @@ public class StoryFirebaseHelper {
         story.put("storyId", storyId);
         story.put("ownerUid", uid);
         story.put("imageUrl", imageUrl);
-        story.put("caption", caption);
-        story.put("visibility", visibility);
+        story.put("caption", caption != null ? caption : "");
+        story.put(
+                "visibility",
+                visibility != null ? visibility : "Public"
+        );
         story.put("createdAt", FieldValue.serverTimestamp());
         story.put("views", 0L);
         story.put("likes", 0L);
@@ -121,6 +136,116 @@ public class StoryFirebaseHelper {
                 );
     }
 
+    // =========================
+    // LOAD ACTIVE STORIES
+    // =========================
+
+    public void getActiveStories(StoriesCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            callback.onError("Please login first");
+            return;
+        }
+
+        long twentyFourHoursAgo =
+                System.currentTimeMillis()
+                        - (24L * 60L * 60L * 1000L);
+
+        Timestamp cutoff =
+                new Timestamp(
+                        new Date(twentyFourHoursAgo)
+                );
+
+        firestore.collection("stories")
+                .whereGreaterThan("createdAt", cutoff)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+
+                    List<Story> result =
+                            new ArrayList<>();
+
+                    for (DocumentSnapshot doc :
+                            snapshot.getDocuments()) {
+
+                        String id =
+                                doc.getString("storyId");
+
+                        String uid =
+                                doc.getString("ownerUid");
+
+                        String imageUrl =
+                                doc.getString("imageUrl");
+
+                        String caption =
+                                doc.getString("caption");
+
+                        String visibility =
+                                doc.getString("visibility");
+
+                        Timestamp timestamp =
+                                doc.getTimestamp("createdAt");
+
+                        long createdAt =
+                                timestamp != null
+                                        ? timestamp.toDate().getTime()
+                                        : System.currentTimeMillis();
+
+                        Long viewsValue =
+                                doc.getLong("views");
+
+                        int views =
+                                viewsValue != null
+                                        ? viewsValue.intValue()
+                                        : 0;
+
+                        if (id == null ||
+                                imageUrl == null) {
+                            continue;
+                        }
+
+                        boolean ownStory =
+                                uid != null &&
+                                uid.equals(
+                                        auth.getCurrentUser().getUid()
+                                );
+
+                        Story story =
+                                new Story(
+                                        id,
+                                        uid != null
+                                                ? uid
+                                                : "Sanskriti User",
+                                        "",
+                                        imageUrl,
+                                        caption != null
+                                                ? caption
+                                                : "",
+                                        visibility != null
+                                                ? visibility
+                                                : "Public",
+                                        createdAt,
+                                        views,
+                                        ownStory
+                                );
+
+                        result.add(story);
+                    }
+
+                    callback.onSuccess(result);
+
+                })
+                .addOnFailureListener(e ->
+                        callback.onError(
+                                "Stories load nahi hui: "
+                                        + e.getMessage()
+                        )
+                );
+    }
+
+    // =========================
+    // DELETE STORY
+    // =========================
+
     public void deleteStory(
             String storyId,
             String imagePath,
@@ -131,7 +256,8 @@ public class StoryFirebaseHelper {
             return;
         }
 
-        String uid = auth.getCurrentUser().getUid();
+        String uid =
+                auth.getCurrentUser().getUid();
 
         firestore.collection("stories")
                 .document(storyId)
@@ -152,7 +278,6 @@ public class StoryFirebaseHelper {
                         callback.onError(
                                 "Aap sirf apni Story delete kar sakte hain"
                         );
-
                         return;
                     }
 
@@ -160,6 +285,13 @@ public class StoryFirebaseHelper {
                             .document(storyId)
                             .delete()
                             .addOnSuccessListener(unused -> {
+
+                                if (imagePath == null ||
+                                        imagePath.trim().isEmpty()) {
+
+                                    callback.onSuccess(storyId);
+                                    return;
+                                }
 
                                 StorageReference imageReference =
                                         storage.getReference()
@@ -187,89 +319,3 @@ public class StoryFirebaseHelper {
                 );
     }
 }
-public interface StoriesCallback {
-    void onSuccess(java.util.List<Story> stories);
-    void onError(String message);
-}
-
-public void getActiveStories(StoriesCallback callback) {
-
-    if (auth.getCurrentUser() == null) {
-        callback.onError("Please login first");
-        return;
-    }
-
-    long twentyFourHoursAgo =
-            System.currentTimeMillis()
-                    - (24L * 60L * 60L * 1000L);
-
-    firestore.collection("stories")
-            .whereGreaterThan(
-                    "createdAt",
-                    new com.google.firebase.Timestamp(
-                            new java.util.Date(twentyFourHoursAgo)
-                    )
-            )
-            .get()
-            .addOnSuccessListener(snapshot -> {
-
-                java.util.List<Story> result =
-                        new java.util.ArrayList<>();
-
-                for (com.google.firebase.firestore.DocumentSnapshot doc
-                        : snapshot.getDocuments()) {
-
-                    String id = doc.getString("storyId");
-                    String uid = doc.getString("ownerUid");
-                    String imageUrl = doc.getString("imageUrl");
-                    String caption = doc.getString("caption");
-                    String visibility = doc.getString("visibility");
-
-                    com.google.firebase.Timestamp timestamp =
-                            doc.getTimestamp("createdAt");
-
-                    long createdAt = timestamp != null
-                            ? timestamp.toDate().getTime()
-                            : System.currentTimeMillis();
-
-                    Long viewsValue = doc.getLong("views");
-
-                    int views = viewsValue != null
-                            ? viewsValue.intValue()
-                            : 0;
-
-                    if (id == null || imageUrl == null) {
-                        continue;
-                    }
-
-                    boolean ownStory =
-                            uid != null &&
-                            uid.equals(
-                                    auth.getCurrentUser().getUid()
-                            );
-
-                    Story story = new Story(
-                            id,
-                            uid != null ? uid : "Sanskriti User",
-                            "",
-                            imageUrl,
-                            caption != null ? caption : "",
-                            visibility != null ? visibility : "Public",
-                            createdAt,
-                            views,
-                            ownStory
-                    );
-
-                    result.add(story);
-                }
-
-                callback.onSuccess(result);
-            })
-            .addOnFailureListener(e ->
-                    callback.onError(
-                            "Stories load nahi hui: "
-                                    + e.getMessage()
-                    )
-            );
-}
-
