@@ -33,7 +33,7 @@ public class RssAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(context)
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(
                         R.layout.item_rss,
                         parent,
@@ -51,44 +51,58 @@ public class RssAdapter
         Rss rss = rssList.get(position);
 
         holder.rssTitle.setText(
-                rss.getTitle()
+                safeText(rss.getTitle(), "समाचार")
         );
 
         holder.rssDescription.setText(
-                rss.getDescription()
+                safeText(rss.getDescription(), "विवरण उपलब्ध नहीं है।")
         );
 
         holder.rssDate.setText(
-                "🕒 " + rss.getPubDate()
+                "🕒 " + safeText(rss.getPubDate(), "तारीख उपलब्ध नहीं है")
         );
 
         holder.rssSource.setText(
-                "Source: " + rss.getSource()
+                "Source: " + safeText(rss.getSource(), "PIB")
         );
 
-        View.OnClickListener openNews = v -> {
-
-            String link = rss.getLink();
-
-            if (link != null && !link.trim().isEmpty()) {
-
-                try {
-
-                    Intent intent = new Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse(link)
-                    );
-
-                    context.startActivity(intent);
-
-                } catch (Exception ignored) {
-                    // No browser available
-                }
-            }
-        };
+        View.OnClickListener openNews = v -> openNewsLink(rss.getLink());
 
         holder.readNews.setOnClickListener(openNews);
         holder.itemView.setOnClickListener(openNews);
+    }
+
+    private void openNewsLink(String link) {
+
+        if (link == null || link.trim().isEmpty()) {
+
+            return;
+        }
+
+        try {
+
+            Uri uri = Uri.parse(link);
+
+            Intent intent = new Intent(
+                    Intent.ACTION_VIEW,
+                    uri
+            );
+
+            context.startActivity(intent);
+
+        } catch (Exception ignored) {
+
+            // Browser उपलब्ध नहीं होने पर कुछ नहीं करेंगे
+        }
+    }
+
+    private String safeText(String value, String fallback) {
+
+        if (value == null || value.trim().isEmpty()) {
+            return fallback;
+        }
+
+        return value.trim();
     }
 
     @Override
