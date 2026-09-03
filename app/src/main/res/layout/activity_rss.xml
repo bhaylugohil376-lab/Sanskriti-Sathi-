@@ -2,32 +2,82 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#FFF8F0">
 
-    <TextView
+    <!-- Header -->
+
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="16dp"
-        android:text="📰 Sanskriti News"
-        android:textSize="28sp"
-        android:textStyle="bold" />
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="6dp"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="#FF6F00">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="4dp"
-        android:text="Culture • Heritage • Temple Updates"
-        android:textSize="16sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📰"
+                android:textSize="38sp"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="Sanskriti News"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="Culture • Heritage • Temple Updates"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#FFF3E0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Press Information Bureau (PIB)"
+                android:textSize="12sp"
+                android:textColor="#FFE0B2" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- News List -->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rssRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp" />
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:clipToPadding="false" />
 
 </LinearLayout>
