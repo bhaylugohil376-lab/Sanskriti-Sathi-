@@ -4,9 +4,11 @@ import android.net.Uri;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -28,6 +30,11 @@ public class StoryFirebaseHelper {
         void onError(String message);
     }
 
+    public interface ActionCallback {
+        void onSuccess();
+        void onError(String message);
+    }
+
     private final FirebaseAuth auth;
     private final FirebaseFirestore firestore;
     private final FirebaseStorage storage;
@@ -38,9 +45,9 @@ public class StoryFirebaseHelper {
         storage = FirebaseStorage.getInstance();
     }
 
-    // =========================
+    // =========================================================
     // UPLOAD STORY
-    // =========================
+    // =========================================================
 
     public void uploadStory(
             Uri imageUri,
@@ -60,16 +67,16 @@ public class StoryFirebaseHelper {
 
         String uid = auth.getCurrentUser().getUid();
 
-        String storyId =
-                firestore.collection("stories")
-                        .document()
-                        .getId();
+        String storyId = firestore
+                .collection("stories")
+                .document()
+                .getId();
 
-        StorageReference imageReference =
-                storage.getReference()
-                        .child("stories")
-                        .child(uid)
-                        .child(storyId + ".jpg");
+        StorageReference imageReference = storage
+                .getReference()
+                .child("stories")
+                .child(uid)
+                .child(storyId + ".jpg");
 
         imageReference
                 .putFile(imageUri)
@@ -113,16 +120,22 @@ public class StoryFirebaseHelper {
         story.put("storyId", storyId);
         story.put("ownerUid", uid);
         story.put("imageUrl", imageUrl);
-        story.put("caption", caption != null ? caption : "");
+        story.put(
+                "caption",
+                caption != null ? caption : ""
+        );
         story.put(
                 "visibility",
-                visibility != null ? visibility : "Public"
+                visibility != null
+                        ? visibility
+                        : "Public"
         );
         story.put("createdAt", FieldValue.serverTimestamp());
         story.put("views", 0L);
         story.put("likes", 0L);
 
-        firestore.collection("stories")
+        firestore
+                .collection("stories")
                 .document(storyId)
                 .set(story)
                 .addOnSuccessListener(unused ->
@@ -136,9 +149,9 @@ public class StoryFirebaseHelper {
                 );
     }
 
-    // =========================
+    // =========================================================
     // LOAD ACTIVE STORIES
-    // =========================
+    // =========================================================
 
     public void getActiveStories(StoriesCallback callback) {
 
@@ -151,12 +164,12 @@ public class StoryFirebaseHelper {
                 System.currentTimeMillis()
                         - (24L * 60L * 60L * 1000L);
 
-        Timestamp cutoff =
-                new Timestamp(
-                        new Date(twentyFourHoursAgo)
-                );
+        Timestamp cutoff = new Timestamp(
+                new Date(twentyFourHoursAgo)
+        );
 
-        firestore.collection("stories")
+        firestore
+                .collection("stories")
                 .whereGreaterThan("createdAt", cutoff)
                 .get()
                 .addOnSuccessListener(snapshot -> {
@@ -187,7 +200,9 @@ public class StoryFirebaseHelper {
 
                         long createdAt =
                                 timestamp != null
-                                        ? timestamp.toDate().getTime()
+                                        ? timestamp
+                                        .toDate()
+                                        .getTime()
                                         : System.currentTimeMillis();
 
                         Long viewsValue =
@@ -206,27 +221,27 @@ public class StoryFirebaseHelper {
                         boolean ownStory =
                                 uid != null &&
                                 uid.equals(
-                                        auth.getCurrentUser().getUid()
+                                        auth.getCurrentUser()
+                                                .getUid()
                                 );
 
-                        Story story =
-                                new Story(
-                                        id,
-                                        uid != null
-                                                ? uid
-                                                : "Sanskriti User",
-                                        "",
-                                        imageUrl,
-                                        caption != null
-                                                ? caption
-                                                : "",
-                                        visibility != null
-                                                ? visibility
-                                                : "Public",
-                                        createdAt,
-                                        views,
-                                        ownStory
-                                );
+                        Story story = new Story(
+                                id,
+                                uid != null
+                                        ? uid
+                                        : "Sanskriti User",
+                                "",
+                                imageUrl,
+                                caption != null
+                                        ? caption
+                                        : "",
+                                visibility != null
+                                        ? visibility
+                                        : "Public",
+                                createdAt,
+                                views,
+                                ownStory
+                        );
 
                         result.add(story);
                     }
@@ -242,9 +257,315 @@ public class StoryFirebaseHelper {
                 );
     }
 
-    // =========================
+    // =========================================================
+    // UNIQUE STORY VIEW
+    // =========================================================
+
+    public void addStoryView(
+            String storyId,
+            ActionCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            if (callback != null) {
+                callback.onError("Please login first");
+            }
+            return;
+        }
+
+        String uid =
+                auth.getCurrentUser().getUid();
+
+        DocumentReference storyRef =
+                firestore
+                        .collection("stories")
+                        .document(storyId);
+
+        DocumentReference viewRef =
+                storyRef
+                        .collection("views")
+                        .document(uid);
+
+        firestore.runTransaction(
+                transaction -> {
+
+                    DocumentSnapshot storySnapshot =
+                            transaction.get(storyRef);
+
+                    DocumentSnapshot viewSnapshot =
+                            transaction.get(viewRef);
+
+                    if (!storySnapshot.exists()) {
+                        throw new IllegalStateException(
+                                "Story nahi mili"
+                        );
+                    }
+
+                    // Already viewed
+                    if (viewSnapshot.exists()) {
+                        return null;
+                    }
+
+                    Map<String, Object> viewData =
+                            new HashMap<>();
+
+                    viewData.put(
+                            "userId",
+                            uid
+                    );
+
+                    viewData.put(
+                            "createdAt",
+                            FieldValue.serverTimestamp()
+                    );
+
+                    transaction.set(
+                            viewRef,
+                            viewData
+                    );
+
+                    Long currentViews =
+                            storySnapshot.getLong("views");
+
+                    long newViews =
+                            currentViews != null
+                                    ? currentViews + 1
+                                    : 1;
+
+                    transaction.update(
+                            storyRef,
+                            "views",
+                            newViews
+                    );
+
+                    return null;
+                }
+        )
+        .addOnSuccessListener(unused -> {
+
+            if (callback != null) {
+                callback.onSuccess();
+            }
+
+        })
+        .addOnFailureListener(e -> {
+
+            if (callback != null) {
+                callback.onError(
+                        "View update failed: "
+                                + e.getMessage()
+                );
+            }
+
+        });
+    }
+
+    // =========================================================
+    // UNIQUE LIKE / UNLIKE
+    // =========================================================
+
+    public void toggleStoryLike(
+            String storyId,
+            boolean like,
+            ActionCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            if (callback != null) {
+                callback.onError("Please login first");
+            }
+            return;
+        }
+
+        String uid =
+                auth.getCurrentUser().getUid();
+
+        DocumentReference storyRef =
+                firestore
+                        .collection("stories")
+                        .document(storyId);
+
+        DocumentReference likeRef =
+                storyRef
+                        .collection("likes")
+                        .document(uid);
+
+        firestore.runTransaction(
+                transaction -> {
+
+                    DocumentSnapshot storySnapshot =
+                            transaction.get(storyRef);
+
+                    DocumentSnapshot likeSnapshot =
+                            transaction.get(likeRef);
+
+                    if (!storySnapshot.exists()) {
+                        throw new IllegalStateException(
+                                "Story nahi mili"
+                        );
+                    }
+
+                    Long currentLikes =
+                            storySnapshot.getLong("likes");
+
+                    long likes =
+                            currentLikes != null
+                                    ? currentLikes
+                                    : 0;
+
+                    if (like) {
+
+                        // Already liked
+                        if (!likeSnapshot.exists()) {
+
+                            Map<String, Object> likeData =
+                                    new HashMap<>();
+
+                            likeData.put(
+                                    "userId",
+                                    uid
+                            );
+
+                            likeData.put(
+                                    "createdAt",
+                                    FieldValue.serverTimestamp()
+                            );
+
+                            transaction.set(
+                                    likeRef,
+                                    likeData
+                            );
+
+                            transaction.update(
+                                    storyRef,
+                                    "likes",
+                                    likes + 1
+                            );
+                        }
+
+                    } else {
+
+                        // Unlike only if like exists
+                        if (likeSnapshot.exists()) {
+
+                            transaction.delete(
+                                    likeRef
+                            );
+
+                            transaction.update(
+                                    storyRef,
+                                    "likes",
+                                    Math.max(0, likes - 1)
+                            );
+                        }
+                    }
+
+                    return null;
+                }
+        )
+        .addOnSuccessListener(unused -> {
+
+            if (callback != null) {
+                callback.onSuccess();
+            }
+
+        })
+        .addOnFailureListener(e -> {
+
+            if (callback != null) {
+                callback.onError(
+                        "Like update failed: "
+                                + e.getMessage()
+                );
+            }
+
+        });
+    }
+
+    // =========================================================
+    // STORY REPLY
+    // =========================================================
+
+    public void addStoryReply(
+            String storyId,
+            String replyText,
+            ActionCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            if (callback != null) {
+                callback.onError("Please login first");
+            }
+            return;
+        }
+
+        if (replyText == null ||
+                replyText.trim().isEmpty()) {
+
+            if (callback != null) {
+                callback.onError(
+                        "Reply empty nahi ho sakta"
+                );
+            }
+            return;
+        }
+
+        String text = replyText.trim();
+
+        if (text.length() > 500) {
+            if (callback != null) {
+                callback.onError(
+                        "Reply 500 characters se kam hona chahiye"
+                );
+            }
+            return;
+        }
+
+        String uid =
+                auth.getCurrentUser().getUid();
+
+        Map<String, Object> reply =
+                new HashMap<>();
+
+        reply.put(
+                "userId",
+                uid
+        );
+
+        reply.put(
+                "text",
+                text
+        );
+
+        reply.put(
+                "createdAt",
+                FieldValue.serverTimestamp()
+        );
+
+        firestore
+                .collection("stories")
+                .document(storyId)
+                .collection("replies")
+                .add(reply)
+                .addOnSuccessListener(documentReference -> {
+
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+
+                })
+                .addOnFailureListener(e -> {
+
+                    if (callback != null) {
+                        callback.onError(
+                                "Reply send nahi hui: "
+                                        + e.getMessage()
+                        );
+                    }
+
+                });
+    }
+
+    // =========================================================
     // DELETE STORY
-    // =========================
+    // =========================================================
 
     public void deleteStory(
             String storyId,
@@ -259,13 +580,16 @@ public class StoryFirebaseHelper {
         String uid =
                 auth.getCurrentUser().getUid();
 
-        firestore.collection("stories")
+        firestore
+                .collection("stories")
                 .document(storyId)
                 .get()
                 .addOnSuccessListener(document -> {
 
                     if (!document.exists()) {
-                        callback.onError("Story nahi mili");
+                        callback.onError(
+                                "Story nahi mili"
+                        );
                         return;
                     }
 
@@ -281,7 +605,8 @@ public class StoryFirebaseHelper {
                         return;
                     }
 
-                    firestore.collection("stories")
+                    firestore
+                            .collection("stories")
                             .document(storyId)
                             .delete()
                             .addOnSuccessListener(unused -> {
@@ -289,15 +614,19 @@ public class StoryFirebaseHelper {
                                 if (imagePath == null ||
                                         imagePath.trim().isEmpty()) {
 
-                                    callback.onSuccess(storyId);
+                                    callback.onSuccess(
+                                            storyId
+                                    );
                                     return;
                                 }
 
                                 StorageReference imageReference =
-                                        storage.getReference()
+                                        storage
+                                                .getReference()
                                                 .child(imagePath);
 
-                                imageReference.delete()
+                                imageReference
+                                        .delete()
                                         .addOnCompleteListener(task ->
                                                 callback.onSuccess(
                                                         storyId
