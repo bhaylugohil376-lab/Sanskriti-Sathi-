@@ -15,6 +15,12 @@ public class RssParser {
         ArrayList<RssItem> items = new ArrayList<>();
 
         XmlPullParser parser = Xml.newPullParser();
+
+        parser.setFeature(
+                XmlPullParser.FEATURE_PROCESS_NAMESPACES,
+                false
+        );
+
         parser.setInput(inputStream, null);
 
         String title = "";
@@ -34,7 +40,8 @@ public class RssParser {
 
                     String tagName = parser.getName();
 
-                    if (tagName.equalsIgnoreCase("item")) {
+                    if (tagName != null &&
+                            tagName.equalsIgnoreCase("item")) {
 
                         insideItem = true;
 
@@ -45,55 +52,80 @@ public class RssParser {
                     }
 
                     else if (insideItem &&
+                            tagName != null &&
                             tagName.equalsIgnoreCase("title")) {
 
-                        title = parser.nextText();
+                        title = readText(parser);
                     }
 
                     else if (insideItem &&
+                            tagName != null &&
                             tagName.equalsIgnoreCase("description")) {
 
-                        description = parser.nextText();
+                        description = readText(parser);
                     }
 
                     else if (insideItem &&
+                            tagName != null &&
                             tagName.equalsIgnoreCase("link")) {
 
-                        link = parser.nextText();
+                        link = readText(parser);
                     }
 
                     else if (insideItem &&
+                            tagName != null &&
                             tagName.equalsIgnoreCase("pubDate")) {
 
-                        pubDate = parser.nextText();
+                        pubDate = readText(parser);
                     }
                 }
 
-                else if (eventType == XmlPullParser.END_TAG &&
-                        parser.getName().equalsIgnoreCase("item")) {
+                else if (eventType == XmlPullParser.END_TAG) {
 
-                    if (!title.trim().isEmpty()) {
+                    String tagName = parser.getName();
 
-                        items.add(
-                                new RssItem(
-                                        title.trim(),
-                                        description.trim(),
-                                        link.trim(),
-                                        pubDate.trim()
-                                )
-                        );
+                    if (tagName != null &&
+                            tagName.equalsIgnoreCase("item")) {
+
+                        if (!title.trim().isEmpty()) {
+
+                            items.add(
+                                    new RssItem(
+                                            title.trim(),
+                                            description.trim(),
+                                            link.trim(),
+                                            pubDate.trim()
+                                    )
+                            );
+                        }
+
+                        insideItem = false;
                     }
-
-                    insideItem = false;
                 }
 
                 eventType = parser.next();
             }
 
         } finally {
-            inputStream.close();
+
+            try {
+                inputStream.close();
+            } catch (Exception ignored) {
+            }
         }
 
         return items;
+    }
+
+    private static String readText(
+            XmlPullParser parser) throws Exception {
+
+        String text = parser.nextText();
+
+        if (text == null) {
+            return "";
+        }
+
+        return text.trim();
     }
 }
