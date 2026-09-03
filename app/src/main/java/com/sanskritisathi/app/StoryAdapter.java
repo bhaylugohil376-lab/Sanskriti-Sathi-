@@ -12,6 +12,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.storage.FirebaseStorage;
+
 import java.util.List;
 
 public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHolder> {
@@ -45,13 +47,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHol
 
         holder.username.setText(story.getUsername());
 
-        int profileRes = getDrawableResource(story.getProfileImage());
-
-        if (profileRes != 0) {
-            holder.profileImage.setImageResource(profileRes);
-        }
-
-        // Story ring
+        // Orange Story ring
         GradientDrawable ring = new GradientDrawable();
         ring.setShape(GradientDrawable.OVAL);
         ring.setStroke(
@@ -61,7 +57,67 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHol
 
         holder.profileImage.setBackground(ring);
 
+        /*
+         * Firebase Story image.
+         *
+         * Agar Firebase URL hai to Storage se image
+         * download karke Story thumbnail mein show hogi.
+         */
+        String imageUrl = story.getStoryImage();
+
+        if (imageUrl != null &&
+                (imageUrl.startsWith("http://") ||
+                 imageUrl.startsWith("https://"))) {
+
+            FirebaseStorage.getInstance()
+                    .getReferenceFromUrl(imageUrl)
+                    .getBytes(2 * 1024 * 1024)
+                    .addOnSuccessListener(bytes -> {
+
+                        android.graphics.Bitmap bitmap =
+                                android.graphics.BitmapFactory
+                                        .decodeByteArray(
+                                                bytes,
+                                                0,
+                                                bytes.length
+                                        );
+
+                        if (bitmap != null) {
+                            holder.profileImage
+                                    .setImageBitmap(bitmap);
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            holder.profileImage.setImageResource(
+                                    R.drawable.icon_foreground
+                            )
+                    );
+
+        } else {
+
+            // Local/default profile image
+            int resourceId =
+                    getDrawableResource(imageUrl);
+
+            if (resourceId != 0) {
+                holder.profileImage.setImageResource(
+                        resourceId
+                );
+            } else {
+                holder.profileImage.setImageResource(
+                        R.drawable.icon_foreground
+                );
+            }
+        }
+
         holder.itemView.setOnClickListener(v -> {
+
+            int adapterPosition =
+                    holder.getBindingAdapterPosition();
+
+            if (adapterPosition == RecyclerView.NO_POSITION) {
+                return;
+            }
 
             Intent intent = new Intent(
                     context,
@@ -70,7 +126,7 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHol
 
             intent.putExtra(
                     "story_position",
-                    holder.getBindingAdapterPosition()
+                    adapterPosition
             );
 
             context.startActivity(intent);
