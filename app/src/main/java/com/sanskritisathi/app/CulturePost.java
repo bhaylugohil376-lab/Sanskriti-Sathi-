@@ -2,12 +2,13 @@ package com.sanskritisathi.app;
 
 public class CulturePost {
 
-    private final String author;
-    private final String category;
-    private final String caption;
+    private String author;
+    private String category;
+    private String caption;
+
     private int likeCount;
-    private final int profileImageResId;
-    private final int postImageResId;
+    private int profileImageResId;
+    private int postImageResId;
 
     private boolean liked;
     private boolean saved;
@@ -16,28 +17,23 @@ public class CulturePost {
             String author,
             String category,
             String caption,
-            String likeCount,
+            int likeCount,
             int profileImageResId,
-            int postImageResId) {
-
+            int postImageResId
+    ) {
         this.author = author;
         this.category = category;
         this.caption = caption;
-
-        int count = 0;
-
-        try {
-            count = Integer.parseInt(likeCount);
-        } catch (Exception ignored) {
-        }
-
-        this.likeCount = count;
+        this.likeCount = Math.max(0, likeCount);
         this.profileImageResId = profileImageResId;
         this.postImageResId = postImageResId;
-
         this.liked = false;
         this.saved = false;
     }
+
+    // =========================
+    // GETTERS
+    // =========================
 
     public String getAuthor() {
         return author;
@@ -51,8 +47,8 @@ public class CulturePost {
         return caption;
     }
 
-    public String getLikeCount() {
-        return String.valueOf(likeCount);
+    public int getLikeCount() {
+        return likeCount;
     }
 
     public int getProfileImageResId() {
@@ -71,21 +67,68 @@ public class CulturePost {
         return saved;
     }
 
-    public void toggleLike() {
+    // =========================
+    // LIKE
+    // =========================
+
+    public void toggleLiked() {
 
         if (liked) {
+
             if (likeCount > 0) {
                 likeCount--;
             }
+
             liked = false;
 
         } else {
+
             likeCount++;
             liked = true;
         }
     }
 
+    // =========================
+    // SAVE
+    // =========================
+
     public void toggleSaved() {
         saved = !saved;
+    }
+
+    // =========================
+    // SETTERS
+    // =========================
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = Math.max(0, likeCount);
+    }
+
+    public void setProfileImageResId(int profileImageResId) {
+        this.profileImageResId = profileImageResId;
+    }
+
+    public void setPostImageResId(int postImageResId) {
+        this.postImageResId = postImageResId;
+    }
+
+    public void setLiked(boolean liked) {
+        this.liked = liked;
+    }
+
+    public void setSaved(boolean saved) {
+        this.saved = saved;
     }
 }
