@@ -2,113 +2,420 @@
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#FFF8F0">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
+
+        <!-- Header -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="7dp"
+            app:cardBackgroundColor="#FF6F00">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🕉️"
+                    android:textSize="52sp"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Sanskriti Sathi"
+                    android:textSize="30sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="भारतीय संस्कृति और ज्ञान का डिजिटल साथी"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFF3E0"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- About App -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="5dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="✨ Sanskriti Sathi क्या है?"
+                    android:textSize="21sp"
+                    android:textStyle="bold"
+                    android:textColor="#6A1B9A" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Sanskriti Sathi भारतीय संस्कृति, इतिहास, आध्यात्मिक ज्ञान और हमारी समृद्ध विरासत को एक ही स्थान पर समझने और जानने के लिए बनाया गया डिजिटल प्लेटफॉर्म है। इसका उद्देश्य ज्ञान को सरल, सुंदर और उपयोगी तरीके से सभी तक पहुँचाना है।"
+                    android:textSize="15sp"
+                    android:textColor="#424242"
+                    android:lineSpacingExtra="5dp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Features -->
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="🕉️ Sanskriti Sathi"
-            android:textSize="30sp"
+            android:text="🌟 App में क्या मिलेगा?"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:padding="16dp" />
+            android:textColor="#E65100"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="10dp" />
+
+
+        <!-- Feature 1 -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFF3E0">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:gravity="center"
+                    android:text="👑"
+                    android:textSize="30sp"
+                    android:background="#FFE0B2" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="भारतीय राजा और इतिहास\nमहान राजाओं, राज्यों और ऐतिहासिक घटनाओं की जानकारी"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#E65100" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Feature 2 -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#E8F5E9">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:gravity="center"
+                    android:text="🛕"
+                    android:textSize="30sp"
+                    android:background="#C8E6C9" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="भारतीय मंदिर और विरासत\nमंदिरों का इतिहास, वास्तुकला, परंपराएँ और महत्व"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#2E7D32" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Feature 3 -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FCE4EC">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:gravity="center"
+                    android:text="🕉️"
+                    android:textSize="30sp"
+                    android:background="#F8BBD0" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="देवी-देवता\nदेवी-देवताओं की परंपरा, कथाएँ, महत्व और त्योहार"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#AD1457" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Feature 4 -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#EDE7F6">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:gravity="center"
+                    android:text="📖"
+                    android:textSize="30sp"
+                    android:background="#D1C4E9" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="भगवद्गीता\n18 अध्यायों के माध्यम से गीता के ज्ञान और शिक्षाओं का अध्ययन"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#4527A0" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Feature 5 -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#E3F2FD">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:gravity="center"
+                    android:text="📰"
+                    android:textSize="30sp"
+                    android:background="#BBDEFB" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="संस्कृति समाचार\nPIB से प्राप्त समाचार और महत्वपूर्ण अपडेट"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#1565C0" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Feature 6 -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFFDE7">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:gravity="center"
+                    android:text="📱"
+                    android:textSize="30sp"
+                    android:background="#FFF9C4" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:text="Culture Posts\nसंस्कृति से जुड़े पोस्ट और ज्ञानवर्धक सामग्री"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="#F57F17" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Mission -->
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="5dp"
+            app:cardBackgroundColor="#6A1B9A">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🎯 हमारा उद्देश्य"
+                    android:textSize="21sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="9dp"
+                    android:text="भारतीय संस्कृति और ज्ञान को आधुनिक डिजिटल माध्यम से सरल, व्यवस्थित और आकर्षक रूप में प्रस्तुत करना, ताकि हमारी विरासत के बारे में सीखना आसान और रोचक बने।"
+                    android:textSize="15sp"
+                    android:textColor="#F3E5F5"
+                    android:lineSpacingExtra="5dp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <!-- Version -->
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="भारतीय संस्कृति और ज्ञान का डिजिटल साथी"
-            android:gravity="center"
-            android:textSize="18sp"
+            android:text="Sanskriti Sathi • Version 1.0"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:padding="10dp" />
+            android:textColor="#795548"
+            android:gravity="center"
+            android:padding="8dp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="हमारे बारे में"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Sanskriti Sathi एक भारतीय संस्कृति और ज्ञान आधारित मोबाइल ऐप है। इसका उद्देश्य भारत की ऐतिहासिक, धार्मिक और सांस्कृतिक विरासत से जुड़ी जानकारी को एक व्यवस्थित और सरल डिजिटल माध्यम में प्रस्तुत करना है।"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="📚 ऐप में क्या मिलेगा?"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="• 👑 भारतीय राजाओं और ऐतिहासिक व्यक्तित्वों की जानकारी&#10;&#10;• 🛕 प्रमुख मंदिरों का इतिहास, धार्मिक महत्व और वास्तुकला&#10;&#10;• 🕉️ देवी-देवताओं से संबंधित सांस्कृतिक एवं धार्मिक जानकारी&#10;&#10;• 📖 भगवद्गीता के 18 अध्यायों का अध्ययन&#10;&#10;• 📰 भारतीय संस्कृति और सार्वजनिक समाचारों के लिए RSS समाचार अनुभाग&#10;&#10;• 📱 भविष्य में सांस्कृतिक वीडियो और पोस्ट साझा करने की सुविधा"
-            android:textSize="17sp"
-            android:lineSpacingExtra="5dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="🎯 हमारा उद्देश्य"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="भारतीय इतिहास, साहित्य, धार्मिक परंपराओं और सांस्कृतिक विरासत को डिजिटल रूप में व्यवस्थित करना, ताकि विद्यार्थी और सामान्य उपयोगकर्ता इन विषयों को आसानी से पढ़ और समझ सकें।"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="ℹ️ जानकारी और स्रोत"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="ऐप में प्रकाशित जानकारी को यथासंभव विश्वसनीय ऐतिहासिक, धार्मिक और सार्वजनिक स्रोतों के आधार पर व्यवस्थित किया जाना चाहिए। समाचार अनुभाग में प्रदर्शित RSS सामग्री उसके मूल प्रकाशक के स्रोत से आती है।"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="🙏 धन्यवाद"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Sanskriti Sathi का उद्देश्य भारतीय संस्कृति और ज्ञान को एक उपयोगी डिजिटल अनुभव के रूप में प्रस्तुत करना है।"
-            android:textSize="17sp"
-            android:lineSpacingExtra="6dp"
-            android:paddingBottom="20dp" />
+            android:text="🙏 हमारी संस्कृति • हमारा गौरव • हमारी पहचान"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#E65100"
+            android:gravity="center"
+            android:paddingTop="4dp"
+            android:paddingBottom="18dp" />
 
     </LinearLayout>
 
