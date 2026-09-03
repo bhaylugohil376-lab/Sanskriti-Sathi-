@@ -1,531 +1,423 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
+    android:orientation="vertical"
     android:background="#FFF8F0">
+
+    <!-- ========================= -->
+    <!-- TOP HEADER -->
+    <!-- ========================= -->
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:background="#FFFFFF">
 
-        <!-- Header -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="18dp"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="7dp"
-            app:cardBackgroundColor="#FF6F00">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="24dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🕉️"
-                    android:textSize="48sp"
-                    android:gravity="center" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sanskriti Sathi"
-                    android:textSize="30sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:gravity="center" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="भारतीय संस्कृति और ज्ञान का डिजिटल साथी"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFF3E0"
-                    android:gravity="center" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- Section Title -->
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="✨ संस्कृति की दुनिया"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#6A1B9A"
-            android:paddingStart="6dp"
-            android:paddingEnd="6dp"
-            android:paddingBottom="10dp" />
-
-
-        <!-- Raja -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/rajaButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="5dp"
-            app:cardBackgroundColor="#FFF3E0">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:gravity="center"
-                    android:text="👑"
-                    android:textSize="34sp"
-                    android:background="#FFE0B2" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="भारतीय राजा"
-                        android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:textColor="#E65100" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="महान राजाओं और उनके इतिहास को जानें"
-                        android:textSize="13sp"
-                        android:textColor="#6D4C41"
-                        android:layout_marginTop="3dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:textColor="#E65100" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- Temple -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/templeButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="5dp"
-            app:cardBackgroundColor="#E8F5E9">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:gravity="center"
-                    android:text="🛕"
-                    android:textSize="32sp"
-                    android:background="#C8E6C9" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="भारतीय मंदिर"
-                        android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:textColor="#2E7D32" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="मंदिरों का इतिहास और वास्तुकला"
-                        android:textSize="13sp"
-                        android:textColor="#455A64"
-                        android:layout_marginTop="3dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:textColor="#2E7D32" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- Devi Devta -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/deviDevtaButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="5dp"
-            app:cardBackgroundColor="#FCE4EC">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:gravity="center"
-                    android:text="🕉️"
-                    android:textSize="32sp"
-                    android:background="#F8BBD0" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="देवी-देवता"
-                        android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:textColor="#AD1457" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="देवी-देवताओं की परंपरा और महत्व"
-                        android:textSize="13sp"
-                        android:textColor="#6D4C41"
-                        android:layout_marginTop="3dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:textColor="#AD1457" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- Gita -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/gitaButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="5dp"
-            app:cardBackgroundColor="#EDE7F6">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:gravity="center"
-                    android:text="📖"
-                    android:textSize="32sp"
-                    android:background="#D1C4E9" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="भगवद्गीता"
-                        android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:textColor="#4527A0" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="18 अध्यायों का ज्ञान और शिक्षाएँ"
-                        android:textSize="13sp"
-                        android:textColor="#5E35B1"
-                        android:layout_marginTop="3dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:textColor="#4527A0" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- RSS -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/rssButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="5dp"
-            app:cardBackgroundColor="#E3F2FD">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:gravity="center"
-                    android:text="📰"
-                    android:textSize="32sp"
-                    android:background="#BBDEFB" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="संस्कृति समाचार"
-                        android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:textColor="#1565C0" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="नई जानकारी और महत्वपूर्ण समाचार"
-                        android:textSize="13sp"
-                        android:textColor="#455A64"
-                        android:layout_marginTop="3dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:textColor="#1565C0" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- Culture Posts -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cultureButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="5dp"
-            app:cardBackgroundColor="#FFFDE7">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:gravity="center"
-                    android:text="📱"
-                    android:textSize="32sp"
-                    android:background="#FFF9C4" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Culture Posts"
-                        android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:textColor="#F57F17" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="संस्कृति से जुड़े पोस्ट देखें"
-                        android:textSize="13sp"
-                        android:textColor="#6D4C41"
-                        android:layout_marginTop="3dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:textColor="#F57F17" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- About -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/aboutButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="5dp"
-            app:cardBackgroundColor="#F3E5F5">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="18dp">
-
-                <TextView
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:gravity="center"
-                    android:text="ℹ️"
-                    android:textSize="30sp"
-                    android:background="#E1BEE7" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:paddingStart="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="हमारे बारे में"
-                        android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:textColor="#7B1FA2" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sanskriti Sathi के बारे में जानें"
-                        android:textSize="13sp"
-                        android:textColor="#6D4C41"
-                        android:layout_marginTop="3dp" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="›"
-                    android:textSize="32sp"
-                    android:textStyle="bold"
-                    android:textColor="#7B1FA2" />
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-
-        <!-- Footer -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🙏 हमारी संस्कृति • हमारा गौरव • हमारी पहचान"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="#795548"
+            android:id="@+id/createTopButton"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:gravity="center"
-            android:padding="12dp" />
+            android:text="＋"
+            android:textSize="30sp"
+            android:textColor="#222222"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ॐ  Sanskriti Sathi"
+                android:textColor="#222222"
+                android:textStyle="bold"
+                android:textSize="24sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="संस्कृति • ज्ञान • परंपरा"
+                android:textColor="#F57C00"
+                android:textSize="11sp"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/notificationButton"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:gravity="center"
+            android:text="🔔"
+            android:textSize="23sp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
     </LinearLayout>
 
-</ScrollView>
+
+    <!-- ========================= -->
+    <!-- STORIES -->
+    <!-- ========================= -->
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="116dp"
+        android:scrollbars="none"
+        android:background="#FFFFFF"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp">
+
+            <!-- YOUR STORY -->
+
+            <LinearLayout
+                android:id="@+id/yourStoryButton"
+                android:layout_width="82dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="68dp"
+                    android:layout_height="68dp">
+
+                    <ImageView
+                        android:layout_width="68dp"
+                        android:layout_height="68dp"
+                        android:src="@drawable/icon_foreground"
+                        android:scaleType="centerCrop"
+                        android:background="#FFE082"/>
+
+                    <TextView
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_gravity="bottom|end"
+                        android:gravity="center"
+                        android:text="+"
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:background="#1976D2"/>
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Your Story"
+                    android:textSize="12sp"
+                    android:textColor="#333333"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+
+            <!-- TEMPLE -->
+
+            <LinearLayout
+                android:id="@+id/templeStoryButton"
+                android:layout_width="82dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:src="@drawable/somnath"
+                    android:scaleType="centerCrop"
+                    android:background="#FFB74D"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛕 Temple"
+                    android:textSize="12sp"
+                    android:textColor="#333333"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+
+            <!-- RAJA -->
+
+            <LinearLayout
+                android:id="@+id/rajaStoryButton"
+                android:layout_width="82dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:src="@drawable/icon_foreground"
+                    android:scaleType="centerCrop"
+                    android:background="#FFCC80"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👑 Raja"
+                    android:textSize="12sp"
+                    android:textColor="#333333"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+
+            <!-- DEVI DEVTA -->
+
+            <LinearLayout
+                android:id="@+id/deviStoryButton"
+                android:layout_width="82dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:src="@drawable/shiva"
+                    android:scaleType="centerCrop"
+                    android:background="#F8BBD0"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🕉️ Devi-Devta"
+                    android:textSize="12sp"
+                    android:textColor="#333333"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+
+            <!-- GITA -->
+
+            <LinearLayout
+                android:id="@+id/gitaStoryButton"
+                android:layout_width="82dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:src="@drawable/gita"
+                    android:scaleType="centerCrop"
+                    android:background="#D7CCC8"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📖 Gita"
+                    android:textSize="12sp"
+                    android:textColor="#333333"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+
+            <!-- FESTIVAL -->
+
+            <LinearLayout
+                android:id="@+id/festivalStoryButton"
+                android:layout_width="82dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:src="@drawable/rss"
+                    android:scaleType="centerCrop"
+                    android:background="#FFE0B2"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎉 Festival"
+                    android:textSize="12sp"
+                    android:textColor="#333333"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+
+    <!-- ========================= -->
+    <!-- FEED -->
+    <!-- ========================= -->
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/homeFeedRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"/>
+
+
+    <!-- ========================= -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ========================= -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="#FFFFFF"
+        android:elevation="10dp">
+
+        <!-- HOME -->
+
+        <LinearLayout
+            android:id="@+id/homeNavButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⌂"
+                android:textSize="28sp"
+                android:textColor="#F57C00"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Home"
+                android:textSize="11sp"
+                android:textColor="#F57C00"/>
+        </LinearLayout>
+
+
+        <!-- REELS -->
+
+        <LinearLayout
+            android:id="@+id/reelsNavButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▣"
+                android:textSize="25sp"
+                android:textColor="#222222"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reels"
+                android:textSize="11sp"
+                android:textColor="#222222"/>
+        </LinearLayout>
+
+
+        <!-- CREATE -->
+
+        <LinearLayout
+            android:id="@+id/createNavButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="+"
+                android:textSize="30sp"
+                android:textColor="#FFFFFF"
+                android:background="#F57C00"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create"
+                android:textSize="11sp"
+                android:textColor="#222222"/>
+        </LinearLayout>
+
+
+        <!-- SEARCH -->
+
+        <LinearLayout
+            android:id="@+id/searchNavButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⌕"
+                android:textSize="31sp"
+                android:textColor="#222222"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Search"
+                android:textSize="11sp"
+                android:textColor="#222222"/>
+        </LinearLayout>
+
+
+        <!-- PROFILE -->
+
+        <LinearLayout
+            android:id="@+id/profileNavButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="◎"
+                android:textSize="30sp"
+                android:textColor="#222222"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:textSize="11sp"
+                android:textColor="#222222"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
