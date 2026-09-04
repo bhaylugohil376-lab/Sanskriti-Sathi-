@@ -1,5 +1,6 @@
 package com.sanskritisathi.app;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -21,7 +22,8 @@ public class MainActivity extends AppCompatActivity {
         // HOME FEED
         // =========================
 
-        homeFeedRecyclerView = findViewById(R.id.homeFeedRecyclerView);
+        homeFeedRecyclerView =
+                findViewById(R.id.homeFeedRecyclerView);
 
         homeFeedRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
@@ -39,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // =========================
-        // STORY BUTTONS
+        // STORY / CULTURE BUTTONS
         // =========================
 
         findViewById(R.id.templeStoryButton)
@@ -99,11 +101,12 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.yourStoryButton)
                 .setOnClickListener(v ->
-                        Toast.makeText(
-                                MainActivity.this,
-                                "Story feature — next step",
-                                Toast.LENGTH_SHORT
-                        ).show()
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        StoryUploadActivity.class
+                                )
+                        )
                 );
 
 
@@ -113,11 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.createTopButton)
                 .setOnClickListener(v ->
-                        Toast.makeText(
-                                MainActivity.this,
-                                "Create Post / Reel / Story",
-                                Toast.LENGTH_SHORT
-                        ).show()
+                        showCreateMenu()
                 );
 
 
@@ -129,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 .setOnClickListener(v ->
                         Toast.makeText(
                                 MainActivity.this,
-                                "Notifications — next step",
+                                "Notifications next step mein add honge.",
                                 Toast.LENGTH_SHORT
                         ).show()
                 );
@@ -141,7 +140,8 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.homeNavButton)
                 .setOnClickListener(v ->
-                        homeFeedRecyclerView.smoothScrollToPosition(0)
+                        homeFeedRecyclerView
+                                .smoothScrollToPosition(0)
                 );
 
 
@@ -151,25 +151,22 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.reelsNavButton)
                 .setOnClickListener(v ->
-                        Toast.makeText(
-                                MainActivity.this,
-                                "Reels — next step",
-                                Toast.LENGTH_SHORT
-                        ).show()
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        ReelActivity.class
+                                )
+                        )
                 );
 
 
         // =========================
-        // CREATE
+        // BOTTOM CREATE
         // =========================
 
         findViewById(R.id.createNavButton)
                 .setOnClickListener(v ->
-                        Toast.makeText(
-                                MainActivity.this,
-                                "Create Post / Reel / Story",
-                                Toast.LENGTH_SHORT
-                        ).show()
+                        showCreateMenu()
                 );
 
 
@@ -181,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
                 .setOnClickListener(v ->
                         Toast.makeText(
                                 MainActivity.this,
-                                "Search — next step",
+                                "Search next step mein add hoga.",
                                 Toast.LENGTH_SHORT
                         ).show()
                 );
@@ -200,5 +197,61 @@ public class MainActivity extends AppCompatActivity {
                                 )
                         )
                 );
+    }
+
+
+    // =========================
+    // CREATE MENU
+    // =========================
+
+    private void showCreateMenu() {
+
+        String[] options = {
+                "🎬 Create Reel",
+                "📸 Create Post",
+                "⭕ Create Story"
+        };
+
+        new AlertDialog.Builder(this)
+                .setTitle("Create")
+                .setItems(
+                        options,
+                        (dialog, which) -> {
+
+                            if (which == 0) {
+
+                                // CREATE REEL
+
+                                startActivity(
+                                        new Intent(
+                                                MainActivity.this,
+                                                ReelUploadActivity.class
+                                        )
+                                );
+
+                            } else if (which == 1) {
+
+                                // CREATE POST
+
+                                Toast.makeText(
+                                        MainActivity.this,
+                                        "Post creation next step mein add hoga.",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                            } else {
+
+                                // CREATE STORY
+
+                                startActivity(
+                                        new Intent(
+                                                MainActivity.this,
+                                                StoryUploadActivity.class
+                                        )
+                                );
+                            }
+                        }
+                )
+                .show();
     }
 }
