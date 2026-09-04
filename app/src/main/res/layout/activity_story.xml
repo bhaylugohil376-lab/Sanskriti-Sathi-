@@ -6,127 +6,161 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
+    <!-- Story Image -->
     <ImageView
         android:id="@+id/storyImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:contentDescription="Story"/>
+        android:contentDescription="Story image" />
 
     <!-- Dark overlay -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#55000000"/>
+        android:background="#33000000" />
 
-    <!-- Top area -->
+    <!-- Top section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="12dp">
 
-        <!-- Story progress -->
+        <!-- Progress -->
         <ProgressBar
+            android:id="@+id/storyProgress"
+            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="3dp"
-            android:progress="70"
-            android:max="100"/>
+            android:layout_height="4dp"
+            android:max="150"
+            android:progress="0" />
 
+        <!-- Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:gravity="center_vertical"
-            android:paddingTop="12dp">
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/storyUsername"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Sanskriti Sathi"
-                android:textColor="#FFFFFF"
-                android:textSize="17sp"
-                android:textStyle="bold"/>
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/storyTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="2 hr ago"
-                android:textColor="#FFFFFF"
-                android:textSize="13sp"/>
+                <TextView
+                    android:id="@+id/usernameText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sanskriti User"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/timeText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Just now"
+                    android:textColor="#EEEEEE"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
 
             <ImageButton
-                android:id="@+id/storyDeleteButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@android:color/transparent"
+                android:id="@+id/deleteButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Delete Story"
                 android:src="@android:drawable/ic_menu_delete"
                 android:tint="#FFFFFF"
-                android:visibility="gone"
-                android:contentDescription="Delete Story"/>
+                android:visibility="gone" />
 
             <ImageButton
-                android:id="@+id/storyCloseButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@android:color/transparent"
+                android:id="@+id/closeButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Close"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:tint="#FFFFFF"
-                android:contentDescription="Close"/>
+                android:tint="#FFFFFF" />
+
         </LinearLayout>
 
     </LinearLayout>
 
     <!-- Caption -->
     <TextView
-        android:id="@+id/storyCaption"
+        android:id="@+id/captionText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="90dp"
-        android:padding="18dp"
-        android:text="Story caption"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="110dp"
+        android:text=""
         android:textColor="#FFFFFF"
-        android:textSize="17sp"
-        android:textStyle="bold"/>
+        android:textSize="16sp"
+        android:visibility="visible" />
 
-    <!-- Bottom actions -->
+    <!-- Bottom controls -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:layout_margin="12dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/storyViews"
+        <!-- Views -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="👁 128 views"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"/>
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👁"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/viewsText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="0"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Like -->
         <ImageButton
-            android:id="@+id/storyLikeButton"
+            android:id="@+id/likeButton"
             android:layout_width="52dp"
             android:layout_height="52dp"
-            android:background="@android:color/transparent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Like Story"
             android:src="@android:drawable/btn_star_big_off"
-            android:tint="#FFFFFF"
-            android:contentDescription="Like"/>
+            android:tint="#FFFFFF" />
 
+        <!-- Reply -->
         <ImageButton
-            android:id="@+id/storyReplyButton"
+            android:id="@+id/replyButton"
             android:layout_width="52dp"
             android:layout_height="52dp"
-            android:background="@android:color/transparent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Reply"
             android:src="@android:drawable/ic_menu_send"
-            android:tint="#FFFFFF"
-            android:contentDescription="Reply"/>
+            android:tint="#FFFFFF" />
 
     </LinearLayout>
 
