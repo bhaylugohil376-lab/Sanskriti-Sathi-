@@ -1,33 +1,12 @@
-plugins {
-    id 'com.android.application'
-    id 'com.google.gms.google-services'
-}
-
-android {
-    namespace 'com.sanskritisathi.app'
-    compileSdk 35
-
-    defaultConfig {
-        applicationId 'com.sanskritisathi.app'
-        minSdk 23
-        targetSdk 35
-        versionCode 1
-        versionName "1.0"
-    }
-}
-
-configurations.all {
-    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
-    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
-}
-
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.cardview:cardview:1.0.0'
 
-    // Firebase
+    implementation 'androidx.media3:media3-exoplayer:1.8.0'
+    implementation 'androidx.media3:media3-ui:1.8.0'
+
     implementation platform('com.google.firebase:firebase-bom:34.18.0')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
