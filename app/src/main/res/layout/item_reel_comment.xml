@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:layout_marginEnd="10dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="5dp"
+    app:cardCornerRadius="14dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp">
+
+        <!-- Profile -->
+
+        <ImageView
+            android:id="@+id/commentProfileImage"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/icon_foreground"
+            android:scaleType="centerCrop"
+            android:contentDescription="Profile"/>
+
+
+        <!-- Comment Content -->
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="10dp">
+
+            <TextView
+                android:id="@+id/commentUsernameText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Sanskriti User"
+                android:textColor="#212121"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/commentText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:text="Comment"
+                android:textColor="#424242"
+                android:textSize="15sp"
+                android:lineSpacingExtra="2dp"/>
+
+        </LinearLayout>
+
+
+        <!-- Delete -->
+
+        <ImageButton
+            android:id="@+id/commentDeleteButton"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="6dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_delete"
+            android:tint="#D32F2F"
+            android:contentDescription="Delete comment"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
