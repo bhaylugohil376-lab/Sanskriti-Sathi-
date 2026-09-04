@@ -5,6 +5,7 @@ import android.net.Uri;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -51,7 +52,6 @@ public class ReelFirebaseHelper {
             FirebaseStorage.getInstance();
 
     private ReelFirebaseHelper() {
-        // Prevent object creation
     }
 
     // =========================
@@ -74,11 +74,8 @@ public class ReelFirebaseHelper {
             return;
         }
 
-        String uid =
-                auth.getCurrentUser().getUid();
-
-        String reelId =
-                UUID.randomUUID().toString();
+        String uid = auth.getCurrentUser().getUid();
+        String reelId = UUID.randomUUID().toString();
 
         StorageReference videoRef =
                 storage.getReference()
@@ -86,16 +83,12 @@ public class ReelFirebaseHelper {
                         .child(uid)
                         .child(reelId + ".mp4");
 
-        UploadTask uploadTask =
-                videoRef.putFile(videoUri);
+        UploadTask uploadTask = videoRef.putFile(videoUri);
 
         uploadTask.addOnProgressListener(snapshot -> {
 
-            long total =
-                    snapshot.getTotalByteCount();
-
-            long uploaded =
-                    snapshot.getBytesTransferred();
+            long total = snapshot.getTotalByteCount();
+            long uploaded = snapshot.getBytesTransferred();
 
             int progress = total > 0
                     ? (int) ((uploaded * 100L) / total)
@@ -160,7 +153,6 @@ public class ReelFirebaseHelper {
         reel.put("reelId", reelId);
         reel.put("ownerUid", uid);
         reel.put("username", username);
-
         reel.put("videoUrl", videoUrl);
         reel.put("thumbnailUrl", "");
 
@@ -229,8 +221,7 @@ public class ReelFirebaseHelper {
                             new ArrayList<>();
 
                     String currentUid =
-                            auth.getCurrentUser()
-                                    .getUid();
+                            auth.getCurrentUser().getUid();
 
                     for (DocumentSnapshot document :
                             querySnapshot.getDocuments()) {
@@ -239,54 +230,34 @@ public class ReelFirebaseHelper {
                                 document.getId();
 
                         String ownerUid =
-                                document.getString(
-                                        "ownerUid"
-                                );
+                                document.getString("ownerUid");
 
                         String username =
-                                document.getString(
-                                        "username"
-                                );
+                                document.getString("username");
 
                         String videoUrl =
-                                document.getString(
-                                        "videoUrl"
-                                );
+                                document.getString("videoUrl");
 
                         String thumbnailUrl =
-                                document.getString(
-                                        "thumbnailUrl"
-                                );
+                                document.getString("thumbnailUrl");
 
                         String caption =
-                                document.getString(
-                                        "caption"
-                                );
+                                document.getString("caption");
 
                         String visibility =
-                                document.getString(
-                                        "visibility"
-                                );
+                                document.getString("visibility");
 
                         Long createdAtValue =
-                                document.getLong(
-                                        "createdAt"
-                                );
+                                document.getLong("createdAt");
 
                         Long likesValue =
-                                document.getLong(
-                                        "likes"
-                                );
+                                document.getLong("likes");
 
                         Long commentsValue =
-                                document.getLong(
-                                        "comments"
-                                );
+                                document.getLong("comments");
 
                         Long viewsValue =
-                                document.getLong(
-                                        "views"
-                                );
+                                document.getLong("views");
 
                         long createdAt =
                                 createdAtValue != null
@@ -309,9 +280,7 @@ public class ReelFirebaseHelper {
                                         : 0;
 
                         boolean ownReel =
-                                currentUid.equals(
-                                        ownerUid
-                                );
+                                currentUid.equals(ownerUid);
 
                         Reel reel =
                                 new Reel(
@@ -359,6 +328,268 @@ public class ReelFirebaseHelper {
     }
 
     // =========================
+    // ADD UNIQUE REEL VIEW
+    // =========================
+
+    public static void addReelView(
+            String reelId,
+            ActionCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            callback.onError("Please login first.");
+            return;
+        }
+
+        if (reelId == null ||
+                reelId.trim().isEmpty()) {
+
+            callback.onError("Invalid Reel.");
+            return;
+        }
+
+        String uid =
+                auth.getCurrentUser().getUid();
+
+        com.google.firebase.firestore.DocumentReference reelRef =
+                db.collection("reels")
+                        .document(reelId);
+
+        com.google.firebase.firestore.DocumentReference viewRef =
+                reelRef.collection("views")
+                        .document(uid);
+
+        db.runTransaction(transaction -> {
+
+            DocumentSnapshot reelSnapshot =
+                    transaction.get(reelRef);
+
+            if (!reelSnapshot.exists()) {
+                throw new FirebaseFirestoreException(
+                        "Reel not found.",
+                        FirebaseFirestoreException.Code.NOT_FOUND
+                );
+            }
+
+            DocumentSnapshot viewSnapshot =
+                    transaction.get(viewRef);
+
+            // Same user has already viewed this Reel.
+            if (viewSnapshot.exists()) {
+                return false;
+            }
+
+            Long viewsValue =
+                    reelSnapshot.getLong("views");
+
+            int views =
+                    viewsValue != null
+                            ? viewsValue.intValue()
+                            : 0;
+
+            Map<String, Object> viewData =
+                    new HashMap<>();
+
+            viewData.put("userId", uid);
+            viewData.put(
+                    "createdAt",
+                    System.currentTimeMillis()
+            );
+
+            transaction.set(
+                    viewRef,
+                    viewData
+            );
+
+            Map<String, Object> update =
+                    new HashMap<>();
+
+            update.put(
+                    "views",
+                    views + 1
+            );
+
+            transaction.update(
+                    reelRef,
+                    update
+            );
+
+            return true;
+
+        }).addOnSuccessListener(added -> {
+
+            callback.onSuccess();
+
+        }).addOnFailureListener(e ->
+                callback.onError(
+                        "View update failed: "
+                                + e.getMessage()
+                )
+        );
+    }
+
+    // =========================
+    // TOGGLE REEL LIKE
+    // =========================
+
+    public static void toggleReelLike(
+            String reelId,
+            boolean currentlyLiked,
+            ActionCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            callback.onError("Please login first.");
+            return;
+        }
+
+        if (reelId == null ||
+                reelId.trim().isEmpty()) {
+
+            callback.onError("Invalid Reel.");
+            return;
+        }
+
+        String uid =
+                auth.getCurrentUser().getUid();
+
+        com.google.firebase.firestore.DocumentReference reelRef =
+                db.collection("reels")
+                        .document(reelId);
+
+        com.google.firebase.firestore.DocumentReference likeRef =
+                reelRef.collection("likes")
+                        .document(uid);
+
+        db.runTransaction(transaction -> {
+
+            DocumentSnapshot reelSnapshot =
+                    transaction.get(reelRef);
+
+            if (!reelSnapshot.exists()) {
+                throw new FirebaseFirestoreException(
+                        "Reel not found.",
+                        FirebaseFirestoreException.Code.NOT_FOUND
+                );
+            }
+
+            Long likesValue =
+                    reelSnapshot.getLong("likes");
+
+            int likes =
+                    likesValue != null
+                            ? likesValue.intValue()
+                            : 0;
+
+            if (currentlyLiked) {
+
+                transaction.delete(likeRef);
+
+                likes = Math.max(
+                        0,
+                        likes - 1
+                );
+
+            } else {
+
+                DocumentSnapshot likeSnapshot =
+                        transaction.get(likeRef);
+
+                if (!likeSnapshot.exists()) {
+
+                    Map<String, Object> likeData =
+                            new HashMap<>();
+
+                    likeData.put(
+                            "userId",
+                            uid
+                    );
+
+                    likeData.put(
+                            "createdAt",
+                            System.currentTimeMillis()
+                    );
+
+                    transaction.set(
+                            likeRef,
+                            likeData
+                    );
+
+                    likes++;
+                }
+            }
+
+            Map<String, Object> update =
+                    new HashMap<>();
+
+            update.put(
+                    "likes",
+                    likes
+            );
+
+            transaction.update(
+                    reelRef,
+                    update
+            );
+
+            return null;
+
+        }).addOnSuccessListener(unused ->
+                callback.onSuccess()
+        ).addOnFailureListener(e ->
+                callback.onError(
+                        "Like update failed: "
+                                + e.getMessage()
+                )
+        );
+    }
+
+    // =========================
+    // CHECK USER LIKE
+    // =========================
+
+    public static void checkReelLike(
+            String reelId,
+            ActionCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            callback.onError("Please login first.");
+            return;
+        }
+
+        if (reelId == null ||
+                reelId.trim().isEmpty()) {
+
+            callback.onError("Invalid Reel.");
+            return;
+        }
+
+        String uid =
+                auth.getCurrentUser().getUid();
+
+        db.collection("reels")
+                .document(reelId)
+                .collection("likes")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(document -> {
+
+                    if (document.exists()) {
+                        callback.onSuccess();
+                    } else {
+                        callback.onError(
+                                "NOT_LIKED"
+                        );
+                    }
+
+                })
+                .addOnFailureListener(e ->
+                        callback.onError(
+                                "Like check failed: "
+                                        + e.getMessage()
+                        )
+                );
+    }
+
+    // =========================
     // DELETE REEL
     // =========================
 
@@ -368,6 +599,13 @@ public class ReelFirebaseHelper {
 
         if (auth.getCurrentUser() == null) {
             callback.onError("Please login first.");
+            return;
+        }
+
+        if (reelId == null ||
+                reelId.trim().isEmpty()) {
+
+            callback.onError("Invalid Reel.");
             return;
         }
 
@@ -391,7 +629,6 @@ public class ReelFirebaseHelper {
                                     "ownerUid"
                             );
 
-                    // Owner check
                     if (ownerUid == null ||
                             !uid.equals(ownerUid)) {
 
@@ -468,8 +705,6 @@ public class ReelFirebaseHelper {
                         )
                 )
                 .addOnFailureListener(e ->
-                        // Even if storage file is already
-                        // missing, remove Firestore document.
                         deleteReelDocument(
                                 reelId,
                                 callback
@@ -499,112 +734,3 @@ public class ReelFirebaseHelper {
                 );
     }
 }
-
-    // =========================
-    // REEL LIKE - FIREBASE
-    // =========================
-
-    public static void toggleReelLike(
-            String reelId,
-            boolean currentlyLiked,
-            ActionCallback callback) {
-
-        if (auth.getCurrentUser() == null) {
-            callback.onError("Please login first.");
-            return;
-        }
-
-        if (reelId == null || reelId.trim().isEmpty()) {
-            callback.onError("Invalid Reel.");
-            return;
-        }
-
-        String uid = auth.getCurrentUser().getUid();
-
-        com.google.firebase.firestore.DocumentReference likeRef =
-                db.collection("reels")
-                        .document(reelId)
-                        .collection("likes")
-                        .document(uid);
-
-        if (currentlyLiked) {
-
-            // Unlike
-            likeRef.delete()
-                    .addOnSuccessListener(unused ->
-                            callback.onSuccess()
-                    )
-                    .addOnFailureListener(e ->
-                            callback.onError(
-                                    "Unlike failed: " + e.getMessage()
-                            )
-                    );
-
-        } else {
-
-            // Like
-            Map<String, Object> likeData =
-                    new HashMap<>();
-
-            likeData.put("userId", uid);
-            likeData.put(
-                    "createdAt",
-                    System.currentTimeMillis()
-            );
-
-            likeRef.set(likeData)
-                    .addOnSuccessListener(unused ->
-                            callback.onSuccess()
-                    )
-                    .addOnFailureListener(e ->
-                            callback.onError(
-                                    "Like failed: " + e.getMessage()
-                            )
-                    );
-        }
-    }
-
-
-    // =========================
-    // CHECK USER LIKE
-    // =========================
-
-    public static void checkReelLike(
-            String reelId,
-            ActionCallback callback) {
-
-        if (auth.getCurrentUser() == null) {
-            callback.onError("Please login first.");
-            return;
-        }
-
-        if (reelId == null || reelId.trim().isEmpty()) {
-            callback.onError("Invalid Reel.");
-            return;
-        }
-
-        String uid =
-                auth.getCurrentUser().getUid();
-
-        db.collection("reels")
-                .document(reelId)
-                .collection("likes")
-                .document(uid)
-                .get()
-                .addOnSuccessListener(document -> {
-
-                    if (document.exists()) {
-                        callback.onSuccess();
-                    } else {
-                        callback.onError("NOT_LIKED");
-                    }
-
-                })
-                .addOnFailureListener(e ->
-                        callback.onError(
-                                "Like check failed: "
-                                        + e.getMessage()
-                        )
-                );
-    }
-
