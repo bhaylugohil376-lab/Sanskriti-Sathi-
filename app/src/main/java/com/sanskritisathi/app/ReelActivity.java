@@ -1,7 +1,6 @@
 package com.sanskritisathi.app;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,14 +14,22 @@ public class ReelActivity extends AppCompatActivity {
 
     private RecyclerView reelRecyclerView;
     private ReelAdapter reelAdapter;
-    private final List<Reel> reelList = new ArrayList<>();
+
+    private final List<Reel> reelList =
+            new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_reel);
 
-        reelRecyclerView = findViewById(R.id.reelRecyclerView);
+        setContentView(
+                R.layout.activity_reel
+        );
+
+        reelRecyclerView =
+                findViewById(
+                        R.id.reelRecyclerView
+                );
 
         LinearLayoutManager layoutManager =
                 new LinearLayoutManager(this);
@@ -31,52 +38,81 @@ public class ReelActivity extends AppCompatActivity {
                 LinearLayoutManager.VERTICAL
         );
 
-        reelRecyclerView.setLayoutManager(layoutManager);
-        reelRecyclerView.setHasFixedSize(false);
-
-        reelAdapter = new ReelAdapter(
-                this,
-                reelList,
-                new ReelAdapter.ReelActionListener() {
-
-                    @Override
-                    public void onDelete(Reel reel, int position) {
-                        deleteReel(reel, position);
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        Toast.makeText(
-                                ReelActivity.this,
-                                message,
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                }
+        reelRecyclerView.setLayoutManager(
+                layoutManager
         );
 
-        reelRecyclerView.setAdapter(reelAdapter);
+        reelRecyclerView.setHasFixedSize(
+                false
+        );
+
+        reelAdapter =
+                new ReelAdapter(
+                        this,
+                        reelList,
+                        new ReelAdapter.ReelActionListener() {
+
+                            @Override
+                            public void onDelete(
+                                    Reel reel,
+                                    int position) {
+
+                                deleteReel(
+                                        reel,
+                                        position
+                                );
+                            }
+
+                            @Override
+                            public void onError(
+                                    String message) {
+
+                                Toast.makeText(
+                                        ReelActivity.this,
+                                        message,
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        }
+                );
+
+        reelRecyclerView.setAdapter(
+                reelAdapter
+        );
 
         loadReels();
     }
 
+
+    // =========================
+    // LOAD REELS
+    // =========================
+
     private void loadReels() {
 
         reelList.clear();
+
         reelAdapter.notifyDataSetChanged();
 
         ReelFirebaseHelper.getActiveReels(
                 new ReelFirebaseHelper.ReelsCallback() {
 
                     @Override
-                    public void onSuccess(List<Reel> reels) {
+                    public void onSuccess(
+                            List<Reel> reels) {
 
                         reelList.clear();
-                        reelList.addAll(reels);
+
+                        if (reels != null) {
+                            reelList.addAll(
+                                    reels
+                            );
+                        }
 
                         reelAdapter.notifyDataSetChanged();
 
-                        if (reels.isEmpty()) {
+                        if (reelList.isEmpty()) {
+
                             Toast.makeText(
                                     ReelActivity.this,
                                     "Abhi koi Reel available nahi hai.",
@@ -86,7 +122,9 @@ public class ReelActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message) {
+
                         Toast.makeText(
                                 ReelActivity.this,
                                 message,
@@ -97,7 +135,14 @@ public class ReelActivity extends AppCompatActivity {
         );
     }
 
-    private void deleteReel(Reel reel, int position) {
+
+    // =========================
+    // DELETE REEL
+    // =========================
+
+    private void deleteReel(
+            Reel reel,
+            int position) {
 
         if (reel == null) {
             return;
@@ -113,8 +158,14 @@ public class ReelActivity extends AppCompatActivity {
                         if (position >= 0 &&
                                 position < reelList.size()) {
 
-                            reelList.remove(position);
-                            reelAdapter.notifyItemRemoved(position);
+                            reelList.remove(
+                                    position
+                            );
+
+                            reelAdapter
+                                    .notifyItemRemoved(
+                                            position
+                                    );
                         }
 
                         Toast.makeText(
@@ -125,7 +176,8 @@ public class ReelActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message) {
 
                         Toast.makeText(
                                 ReelActivity.this,
@@ -137,18 +189,32 @@ public class ReelActivity extends AppCompatActivity {
         );
     }
 
+
+    // =========================
+    // PAUSE VIDEOS
+    // =========================
+
     @Override
     protected void onPause() {
+
         super.onPause();
 
         if (reelAdapter != null) {
+
             reelAdapter.pauseAllVideos();
         }
     }
 
+
+    // =========================
+    // RELEASE VIDEOS
+    // =========================
+
     @Override
     protected void onDestroy() {
+
         if (reelAdapter != null) {
+
             reelAdapter.releaseAllVideos();
         }
 
