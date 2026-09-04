@@ -499,3 +499,112 @@ public class ReelFirebaseHelper {
                 );
     }
 }
+
+    // =========================
+    // REEL LIKE - FIREBASE
+    // =========================
+
+    public static void toggleReelLike(
+            String reelId,
+            boolean currentlyLiked,
+            ActionCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            callback.onError("Please login first.");
+            return;
+        }
+
+        if (reelId == null || reelId.trim().isEmpty()) {
+            callback.onError("Invalid Reel.");
+            return;
+        }
+
+        String uid = auth.getCurrentUser().getUid();
+
+        com.google.firebase.firestore.DocumentReference likeRef =
+                db.collection("reels")
+                        .document(reelId)
+                        .collection("likes")
+                        .document(uid);
+
+        if (currentlyLiked) {
+
+            // Unlike
+            likeRef.delete()
+                    .addOnSuccessListener(unused ->
+                            callback.onSuccess()
+                    )
+                    .addOnFailureListener(e ->
+                            callback.onError(
+                                    "Unlike failed: " + e.getMessage()
+                            )
+                    );
+
+        } else {
+
+            // Like
+            Map<String, Object> likeData =
+                    new HashMap<>();
+
+            likeData.put("userId", uid);
+            likeData.put(
+                    "createdAt",
+                    System.currentTimeMillis()
+            );
+
+            likeRef.set(likeData)
+                    .addOnSuccessListener(unused ->
+                            callback.onSuccess()
+                    )
+                    .addOnFailureListener(e ->
+                            callback.onError(
+                                    "Like failed: " + e.getMessage()
+                            )
+                    );
+        }
+    }
+
+
+    // =========================
+    // CHECK USER LIKE
+    // =========================
+
+    public static void checkReelLike(
+            String reelId,
+            ActionCallback callback) {
+
+        if (auth.getCurrentUser() == null) {
+            callback.onError("Please login first.");
+            return;
+        }
+
+        if (reelId == null || reelId.trim().isEmpty()) {
+            callback.onError("Invalid Reel.");
+            return;
+        }
+
+        String uid =
+                auth.getCurrentUser().getUid();
+
+        db.collection("reels")
+                .document(reelId)
+                .collection("likes")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(document -> {
+
+                    if (document.exists()) {
+                        callback.onSuccess();
+                    } else {
+                        callback.onError("NOT_LIKED");
+                    }
+
+                })
+                .addOnFailureListener(e ->
+                        callback.onError(
+                                "Like check failed: "
+                                        + e.getMessage()
+                        )
+                );
+    }
+
