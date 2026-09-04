@@ -51,12 +51,13 @@ public class ReelAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(context)
-                .inflate(
-                        R.layout.item_reel,
-                        parent,
-                        false
-                );
+        View view =
+                LayoutInflater.from(context)
+                        .inflate(
+                                R.layout.item_reel,
+                                parent,
+                                false
+                        );
 
         return new ReelViewHolder(view);
     }
@@ -67,10 +68,6 @@ public class ReelAdapter
             int position) {
 
         Reel reel = reels.get(position);
-
-        // =========================
-        // BASIC INFORMATION
-        // =========================
 
         holder.usernameText.setText(
                 reel.getUsername()
@@ -96,10 +93,6 @@ public class ReelAdapter
                 View.GONE
         );
 
-        // =========================
-        // PROFILE IMAGE
-        // =========================
-
         holder.profileImage.setImageResource(
                 R.drawable.icon_foreground
         );
@@ -109,13 +102,10 @@ public class ReelAdapter
         // =========================
 
         if (reel.isOwnReel()) {
-
             holder.deleteButton.setVisibility(
                     View.VISIBLE
             );
-
         } else {
-
             holder.deleteButton.setVisibility(
                     View.GONE
             );
@@ -175,6 +165,46 @@ public class ReelAdapter
 
                 players.add(player);
 
+                // =========================
+                // RECORD UNIQUE VIEW
+                // =========================
+
+                String reelId =
+                        reel.getId();
+
+                if (reelId != null &&
+                        !reelId.trim().isEmpty()) {
+
+                    ReelFirebaseHelper.addReelView(
+                            reelId,
+                            new ReelFirebaseHelper.ActionCallback() {
+
+                                @Override
+                                public void onSuccess() {
+
+                                    /*
+                                     * The helper only calls this callback
+                                     * after successfully processing the
+                                     * view request.
+                                     *
+                                     * Avoid changing the displayed count
+                                     * here because RecyclerView may bind
+                                     * the same item again.
+                                     *
+                                     * Firebase remains the source of truth.
+                                     */
+                                }
+
+                                @Override
+                                public void onError(
+                                        String message) {
+
+                                    // View failure should not stop video.
+                                }
+                            }
+                    );
+                }
+
             } catch (Exception e) {
 
                 holder.errorText.setText(
@@ -204,27 +234,20 @@ public class ReelAdapter
         holder.playerView.setOnClickListener(v -> {
 
             if (player.isPlaying()) {
-
                 player.pause();
-
             } else {
-
                 player.play();
             }
         });
 
         // =========================
-        // INITIAL LIKE UI
+        // LIKE STATE
         // =========================
 
         updateLikeButton(
                 holder,
                 reel
         );
-
-        // =========================
-        // CHECK FIREBASE LIKE
-        // =========================
 
         String currentReelId =
                 reel.getId();
@@ -275,7 +298,7 @@ public class ReelAdapter
         }
 
         // =========================
-        // LIKE BUTTON ❤️
+        // LIKE BUTTON
         // =========================
 
         holder.likeButton.setOnClickListener(v -> {
@@ -403,11 +426,11 @@ public class ReelAdapter
 
         holder.shareButton.setOnClickListener(v -> {
 
-            String videoUrl =
+            String videoUrlForShare =
                     reel.getVideoUrl();
 
-            if (videoUrl == null ||
-                    videoUrl.trim().isEmpty()) {
+            if (videoUrlForShare == null ||
+                    videoUrlForShare.trim().isEmpty()) {
 
                 listener.onError(
                         "Video link available nahi hai."
@@ -428,7 +451,7 @@ public class ReelAdapter
             shareIntent.putExtra(
                     Intent.EXTRA_TEXT,
                     "Sanskriti Sathi Reel 🎬\n\n"
-                            + videoUrl
+                            + videoUrlForShare
             );
 
             try {
@@ -481,7 +504,7 @@ public class ReelAdapter
     }
 
     // =========================
-    // PAUSE ALL VIDEOS
+    // PAUSE VIDEOS
     // =========================
 
     public void pauseAllVideos() {
@@ -495,7 +518,7 @@ public class ReelAdapter
     }
 
     // =========================
-    // RELEASE ALL VIDEOS
+    // RELEASE VIDEOS
     // =========================
 
     public void releaseAllVideos() {
@@ -511,7 +534,7 @@ public class ReelAdapter
     }
 
     // =========================
-    // RECYCLED VIEW HOLDER
+    // RECYCLE VIEW HOLDER
     // =========================
 
     @Override
@@ -553,11 +576,9 @@ public class ReelAdapter
 
         TextView usernameText;
         TextView captionText;
-
         TextView likesText;
         TextView commentsText;
         TextView viewsText;
-
         TextView errorText;
 
         ReelViewHolder(
