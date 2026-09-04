@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFDF7">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create Reel 🎬"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Share Indian culture, history and knowledge"
+            android:textSize="15sp"
+            android:textColor="#616161"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/selectVideoButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🎥 Select Video"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/videoNameText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No video selected"
+            android:textSize="14sp"
+            android:textColor="#757575"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"/>
+
+        <EditText
+            android:id="@+id/captionInput"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:gravity="top"
+            android:hint="Write a caption..."
+            android:inputType="textMultiLine"
+            android:maxLength="1000"
+            android:padding="14dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Who can see this?"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="8dp"/>
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/publicRadio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🌍 Public"
+                android:checked="true"
+                android:textSize="16sp"/>
+
+            <RadioButton
+                android:id="@+id/followersRadio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="👥 Followers"
+                android:textSize="16sp"/>
+
+        </RadioGroup>
+
+        <ProgressBar
+            android:id="@+id/uploadProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="100"
+            android:progress="0"
+            android:layout_marginTop="22dp"/>
+
+        <Button
+            android:id="@+id/publishButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Publish Reel"
+            android:textSize="17sp"
+            android:layout_marginTop="16dp"
+            android:enabled="false"/>
+
+    </LinearLayout>
+
+</ScrollView>
