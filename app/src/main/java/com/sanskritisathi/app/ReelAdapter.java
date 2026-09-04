@@ -1,6 +1,7 @@
 package com.sanskritisathi.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,9 +68,9 @@ public class ReelAdapter
 
         Reel reel = reels.get(position);
 
-        // -------------------------
-        // TEXT
-        // -------------------------
+        // -----------------------------
+        // BASIC INFORMATION
+        // -----------------------------
 
         holder.usernameText.setText(
                 reel.getUsername()
@@ -95,15 +96,26 @@ public class ReelAdapter
                 View.GONE
         );
 
-        // -------------------------
-        // DELETE
-        // -------------------------
+        // -----------------------------
+        // PROFILE IMAGE
+        // -----------------------------
+
+        holder.profileImage.setImageResource(
+                R.drawable.icon_foreground
+        );
+
+        // -----------------------------
+        // DELETE BUTTON
+        // -----------------------------
 
         if (reel.isOwnReel()) {
+
             holder.deleteButton.setVisibility(
                     View.VISIBLE
             );
+
         } else {
+
             holder.deleteButton.setVisibility(
                     View.GONE
             );
@@ -114,7 +126,8 @@ public class ReelAdapter
             int adapterPosition =
                     holder.getBindingAdapterPosition();
 
-            if (adapterPosition != RecyclerView.NO_POSITION) {
+            if (adapterPosition !=
+                    RecyclerView.NO_POSITION) {
 
                 listener.onDelete(
                         reel,
@@ -123,17 +136,9 @@ public class ReelAdapter
             }
         });
 
-        // -------------------------
-        // PROFILE
-        // -------------------------
-
-        holder.profileImage.setImageResource(
-                R.drawable.icon_foreground
-        );
-
-        // -------------------------
-        // PLAYER
-        // -------------------------
+        // -----------------------------
+        // VIDEO PLAYER
+        // -----------------------------
 
         ExoPlayer player =
                 new ExoPlayer.Builder(context)
@@ -147,25 +152,39 @@ public class ReelAdapter
         if (videoUrl != null &&
                 !videoUrl.trim().isEmpty()) {
 
-            MediaItem mediaItem =
-                    MediaItem.fromUri(
-                            Uri.parse(videoUrl)
-                    );
+            try {
 
-            player.setMediaItem(
-                    mediaItem
-            );
+                MediaItem mediaItem =
+                        MediaItem.fromUri(
+                                Uri.parse(videoUrl)
+                        );
 
-            player.setRepeatMode(
-                    Player.REPEAT_MODE_ONE
-            );
+                player.setMediaItem(
+                        mediaItem
+                );
 
-            player.prepare();
+                player.setRepeatMode(
+                        Player.REPEAT_MODE_ONE
+                );
 
-            // Start only when user taps.
-            player.setPlayWhenReady(false);
+                player.prepare();
 
-            players.add(player);
+                player.setPlayWhenReady(
+                        false
+                );
+
+                players.add(player);
+
+            } catch (Exception e) {
+
+                holder.errorText.setText(
+                        "Video unavailable"
+                );
+
+                holder.errorText.setVisibility(
+                        View.VISIBLE
+                );
+            }
 
         } else {
 
@@ -178,38 +197,49 @@ public class ReelAdapter
             );
         }
 
-        // -------------------------
+        // -----------------------------
         // PLAY / PAUSE
-        // -------------------------
+        // -----------------------------
 
         holder.playerView.setOnClickListener(v -> {
 
             if (player.isPlaying()) {
+
                 player.pause();
+
             } else {
+
                 player.play();
             }
         });
 
-        // -------------------------
-        // LIKE
-        // -------------------------
+        // -----------------------------
+        // LIKE BUTTON
+        // -----------------------------
 
-        updateLikeButton(holder, reel);
+        updateLikeButton(
+                holder,
+                reel
+        );
 
         holder.likeButton.setOnClickListener(v -> {
 
             boolean newLiked =
                     !reel.isLiked();
 
-            reel.setLiked(newLiked);
+            reel.setLiked(
+                    newLiked
+            );
 
             int newLikes =
                     reel.getLikes();
 
             if (newLiked) {
+
                 newLikes++;
+
             } else {
+
                 newLikes =
                         Math.max(
                                 0,
@@ -217,7 +247,9 @@ public class ReelAdapter
                         );
             }
 
-            reel.setLikes(newLikes);
+            reel.setLikes(
+                    newLikes
+            );
 
             holder.likesText.setText(
                     newLikes + " likes"
@@ -229,26 +261,96 @@ public class ReelAdapter
             );
         });
 
-        // -------------------------
-        // COMMENTS
-        // -------------------------
+        // -----------------------------
+        // COMMENT BUTTON
+        // -----------------------------
 
-        holder.commentButton.setOnClickListener(v ->
+        holder.commentButton.setOnClickListener(v -> {
+
+            String reelId =
+                    reel.getId();
+
+            if (reelId == null ||
+                    reelId.trim().isEmpty()) {
+
                 listener.onError(
-                        "Comments system next step mein add hoga."
-                )
-        );
+                        "Invalid Reel."
+                );
 
-        // -------------------------
-        // SHARE
-        // -------------------------
+                return;
+            }
 
-        holder.shareButton.setOnClickListener(v ->
+            Intent intent =
+                    new Intent(
+                            context,
+                            ReelCommentsActivity.class
+                    );
+
+            intent.putExtra(
+                    "reel_id",
+                    reelId
+            );
+
+            context.startActivity(
+                    intent
+            );
+        });
+
+        // -----------------------------
+        // SHARE BUTTON
+        // -----------------------------
+
+        holder.shareButton.setOnClickListener(v -> {
+
+            String videoUrl =
+                    reel.getVideoUrl();
+
+            if (videoUrl == null ||
+                    videoUrl.trim().isEmpty()) {
+
                 listener.onError(
-                        "Share system next step mein add hoga."
-                )
-        );
+                        "Video link available nahi hai."
+                );
+
+                return;
+            }
+
+            Intent shareIntent =
+                    new Intent(
+                            Intent.ACTION_SEND
+                    );
+
+            shareIntent.setType(
+                    "text/plain"
+            );
+
+            shareIntent.putExtra(
+                    Intent.EXTRA_TEXT,
+                    "Sanskriti Sathi Reel 🎬\n\n"
+                            + videoUrl
+            );
+
+            try {
+
+                context.startActivity(
+                        Intent.createChooser(
+                                shareIntent,
+                                "Share Reel"
+                        )
+                );
+
+            } catch (Exception e) {
+
+                listener.onError(
+                        "Share option available nahi hai."
+                );
+            }
+        });
     }
+
+    // -----------------------------
+    // LIKE BUTTON UI
+    // -----------------------------
 
     private void updateLikeButton(
             ReelViewHolder holder,
@@ -257,15 +359,13 @@ public class ReelAdapter
         if (reel.isLiked()) {
 
             holder.likeButton.setImageResource(
-                    android.R.drawable
-                            .btn_star_big_on
+                    android.R.drawable.btn_star_big_on
             );
 
         } else {
 
             holder.likeButton.setImageResource(
-                    android.R.drawable
-                            .btn_star_big_off
+                    android.R.drawable.btn_star_big_off
             );
         }
     }
@@ -275,9 +375,9 @@ public class ReelAdapter
         return reels.size();
     }
 
-    // -------------------------
-    // PAUSE ALL
-    // -------------------------
+    // -----------------------------
+    // PAUSE ALL VIDEOS
+    // -----------------------------
 
     public void pauseAllVideos() {
 
@@ -289,9 +389,9 @@ public class ReelAdapter
         }
     }
 
-    // -------------------------
-    // RELEASE ALL
-    // -------------------------
+    // -----------------------------
+    // RELEASE ALL VIDEOS
+    // -----------------------------
 
     public void releaseAllVideos() {
 
@@ -305,6 +405,10 @@ public class ReelAdapter
         players.clear();
     }
 
+    // -----------------------------
+    // RECYCLED VIEW HOLDER
+    // -----------------------------
+
     @Override
     public void onViewRecycled(
             @NonNull ReelViewHolder holder) {
@@ -313,16 +417,22 @@ public class ReelAdapter
                 holder.playerView.getPlayer();
 
         if (player != null) {
+
             player.pause();
-            holder.playerView.setPlayer(null);
+
+            holder.playerView.setPlayer(
+                    null
+            );
         }
 
-        super.onViewRecycled(holder);
+        super.onViewRecycled(
+                holder
+        );
     }
 
-    // =========================
+    // -----------------------------
     // VIEW HOLDER
-    // =========================
+    // -----------------------------
 
     static class ReelViewHolder
             extends RecyclerView.ViewHolder {
@@ -338,9 +448,11 @@ public class ReelAdapter
 
         TextView usernameText;
         TextView captionText;
+
         TextView likesText;
         TextView commentsText;
         TextView viewsText;
+
         TextView errorText;
 
         ReelViewHolder(
