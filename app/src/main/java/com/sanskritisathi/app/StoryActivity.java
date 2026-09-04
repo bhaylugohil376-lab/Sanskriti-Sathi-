@@ -1,42 +1,52 @@
 package com.sanskritisathi.app;
 
-import android.graphics.BitmapFactory;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.io.IOException;
 import java.util.List;
 
 public class StoryActivity extends AppCompatActivity {
 
     private ImageView storyImage;
-    private TextView storyUsername;
-    private TextView storyTime;
-    private TextView storyViews;
-    private TextView storyCaption;
-
+    private ImageButton closeButton;
+    private ImageButton deleteButton;
     private ImageButton likeButton;
     private ImageButton replyButton;
-    private ImageButton deleteButton;
-    private ImageButton closeButton;
 
+    private TextView usernameText;
+    private TextView timeText;
+    private TextView viewsText;
+    private TextView captionText;
+    private ProgressBar progressBar;
+
+    private StoryFirebaseHelper firebaseHelper;
+
+    private List<Story> stories;
+    private int currentPosition = 0;
     private Story currentStory;
+
+    private boolean liked = false;
 
     private final Handler handler =
             new Handler(Looper.getMainLooper());
 
-    private final Runnable autoClose = this::finish;
+    private final Runnable autoCloseRunnable =
+            this::finish;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,214 +54,357 @@ public class StoryActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_story);
 
-        storyImage = findViewById(R.id.storyImage);
-        storyUsername = findViewById(R.id.storyUsername);
-        storyTime = findViewById(R.id.storyTime);
-        storyViews = findViewById(R.id.storyViews);
-        storyCaption = findViewById(R.id.storyCaption);
+        initializeViews();
 
-        likeButton = findViewById(R.id.storyLikeButton);
-        replyButton = findViewById(R.id.storyReplyButton);
-        deleteButton = findViewById(R.id.storyDeleteButton);
-        closeButton = findViewById(R.id.storyCloseButton);
+        firebaseHelper =
+                new StoryFirebaseHelper();
 
-        int position =
+        currentPosition =
                 getIntent().getIntExtra(
                         "story_position",
                         0
                 );
 
-        List<Story> stories =
-                StoryData.getActiveStories();
+        loadStories();
+    }
 
-        if (stories.isEmpty() ||
-                position < 0 ||
-                position >= stories.size()) {
+    // =========================================================
+    // INITIALIZE
+    // =========================================================
 
-            Toast.makeText(
-                    this,
-                    "Story available nahi hai",
-                    Toast.LENGTH_SHORT
-            ).show();
+    private void initializeViews() {
 
+        storyImage =
+                findViewById(R.id.storyImage);
+
+        closeButton =
+                findViewById(R.id.closeButton);
+
+        deleteButton =
+                findViewById(R.id.deleteButton);
+
+        likeButton =
+                findViewById(R.id.likeButton);
+
+        replyButton =
+                findViewById(R.id.replyButton);
+
+        usernameText =
+                findViewById(R.id.usernameText);
+
+        timeText =
+                findViewById(R.id.timeText);
+
+        viewsText =
+                findViewById(R.id.viewsText);
+
+        captionText =
+                findViewById(R.id.captionText);
+
+        progressBar =
+                findViewById(R.id.storyProgress);
+
+        closeButton.setOnClickListener(v ->
+                finish()
+        );
+
+        likeButton.setOnClickListener(v ->
+                toggleLike()
+        );
+
+        replyButton.setOnClickListener(v ->
+                showReplyDialog()
+        );
+
+        deleteButton.setOnClickListener(v ->
+                confirmDelete()
+        );
+    }
+
+    // =========================================================
+    // LOAD FIREBASE STORIES
+    // =========================================================
+
+    private void loadStories() {
+
+        firebaseHelper.getActiveStories(
+                new StoryFirebaseHelper.StoriesCallback() {
+
+                    @Override
+                    public void onSuccess(
+                            List<Story> loadedStories) {
+
+                        stories = loadedStories;
+
+                        if (stories == null ||
+                                stories.isEmpty()) {
+
+                            Toast.makeText(
+                                    StoryActivity.this,
+                                    "Koi active Story nahi hai",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            finish();
+                            return;
+                        }
+
+                        if (currentPosition < 0 ||
+                                currentPosition >= stories.size()) {
+
+                            currentPosition = 0;
+                        }
+
+                        showCurrentStory();
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        Toast.makeText(
+                                StoryActivity.this,
+                                message,
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        finish();
+                    }
+                }
+        );
+    }
+
+    // =========================================================
+    // SHOW CURRENT STORY
+    // =========================================================
+
+    private void showCurrentStory() {
+
+        if (stories == null ||
+                stories.isEmpty()) {
             finish();
             return;
         }
 
-        currentStory = stories.get(position);
+        if (currentPosition < 0 ||
+                currentPosition >= stories.size()) {
+            finish();
+            return;
+        }
 
-        showStory();
+        currentStory =
+                stories.get(currentPosition);
 
-        likeButton.setOnClickListener(v -> {
+        liked = false;
 
-            currentStory.setLiked(
-                    !currentStory.isLiked()
-            );
-
-            updateLikeButton();
-        });
-
-        replyButton.setOnClickListener(
-                v -> showReplyDialog()
-        );
-
-        deleteButton.setOnClickListener(
-                v -> confirmDelete()
-        );
-
-        closeButton.setOnClickListener(
-                v -> finish()
-        );
-
-        // Story viewer automatically closes after 15 seconds.
-        handler.postDelayed(
-                autoClose,
-                15000
-        );
-    }
-
-    private void showStory() {
-
-        storyUsername.setText(
+        usernameText.setText(
                 currentStory.getUsername()
         );
 
-        storyCaption.setText(
+        captionText.setText(
                 currentStory.getCaption()
         );
 
-        storyViews.setText(
-                "👁 " + currentStory.getViews() + " views"
+        viewsText.setText(
+                String.valueOf(
+                        currentStory.getViews()
+                )
         );
 
-        storyTime.setText(
+        timeText.setText(
                 getTimeText(
                         currentStory.getCreatedAt()
                 )
         );
 
-        updateLikeButton();
-
-        if (currentStory.isOwnStory()) {
-            deleteButton.setVisibility(
-                    View.VISIBLE
-            );
-        } else {
-            deleteButton.setVisibility(
-                    View.GONE
-            );
-        }
-
-        loadStoryImage(
-                currentStory.getStoryImage()
+        deleteButton.setVisibility(
+                currentStory.isOwnStory()
+                        ? View.VISIBLE
+                        : View.GONE
         );
+
+        likeButton.setImageResource(
+                android.R.drawable.btn_star_big_off
+        );
+
+        loadStoryImage();
+
+        addView();
+
+        startProgress();
     }
 
-    private void loadStoryImage(String imageUrl) {
+    // =========================================================
+    // LOAD STORY IMAGE
+    // =========================================================
 
-        if (imageUrl == null ||
-                imageUrl.trim().isEmpty()) {
+    private void loadStoryImage() {
+
+        String image =
+                currentStory.getStoryImage();
+
+        if (image == null ||
+                image.trim().isEmpty()) {
 
             storyImage.setImageResource(
-                    R.drawable.icon_foreground
+                    android.R.drawable.ic_menu_gallery
             );
 
             return;
         }
 
-        if (imageUrl.startsWith("http://") ||
-                imageUrl.startsWith("https://")) {
+        if (image.startsWith("http://") ||
+                image.startsWith("https://")) {
 
             FirebaseStorage
                     .getInstance()
-                    .getReferenceFromUrl(imageUrl)
-                    .getBytes(8 * 1024 * 1024)
+                    .getReferenceFromUrl(image)
+                    .getBytes(5 * 1024 * 1024)
                     .addOnSuccessListener(bytes -> {
 
                         android.graphics.Bitmap bitmap =
-                                BitmapFactory.decodeByteArray(
-                                        bytes,
-                                        0,
-                                        bytes.length
-                                );
+                                android.graphics.BitmapFactory
+                                        .decodeByteArray(
+                                                bytes,
+                                                0,
+                                                bytes.length
+                                        );
 
                         if (bitmap != null) {
                             storyImage.setImageBitmap(
                                     bitmap
                             );
                         }
+
                     })
                     .addOnFailureListener(e ->
-                            storyImage.setImageResource(
-                                    R.drawable.icon_foreground
-                            )
+                            Toast.makeText(
+                                    StoryActivity.this,
+                                    "Story image load nahi hui",
+                                    Toast.LENGTH_SHORT
+                            ).show()
                     );
 
-            return;
-        }
+        } else {
 
-        int resourceId =
-                getResources().getIdentifier(
-                        imageUrl,
-                        "drawable",
-                        getPackageName()
+            int resourceId =
+                    getResources()
+                            .getIdentifier(
+                                    image,
+                                    "drawable",
+                                    getPackageName()
+                            );
+
+            if (resourceId != 0) {
+
+                storyImage.setImageResource(
+                        resourceId
                 );
 
-        if (resourceId != 0) {
+            } else {
 
-            storyImage.setImageResource(
-                    resourceId
-            );
-
-        } else {
-
-            storyImage.setImageResource(
-                    R.drawable.icon_foreground
-            );
+                storyImage.setImageResource(
+                        android.R.drawable.ic_menu_gallery
+                );
+            }
         }
     }
 
-    private void updateLikeButton() {
+    // =========================================================
+    // UNIQUE VIEW
+    // =========================================================
 
-        if (currentStory.isLiked()) {
+    private void addView() {
 
-            likeButton.setImageResource(
-                    android.R.drawable.btn_star_big_on
-            );
+        firebaseHelper.addStoryView(
+                currentStory.getId(),
+                new StoryFirebaseHelper.ActionCallback() {
 
-        } else {
+                    @Override
+                    public void onSuccess() {
 
-            likeButton.setImageResource(
-                    android.R.drawable.btn_star_big_off
-            );
-        }
+                        int oldViews =
+                                currentStory.getViews();
+
+                        currentStory.setViews(
+                                oldViews + 1
+                        );
+
+                        viewsText.setText(
+                                String.valueOf(
+                                        currentStory.getViews()
+                                )
+                        );
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+                        // View failure ko user ko disturb
+                        // nahi karna.
+                    }
+                }
+        );
     }
 
-    private String getTimeText(long createdAt) {
+    // =========================================================
+    // LIKE / UNLIKE
+    // =========================================================
 
-        long difference =
-                System.currentTimeMillis()
-                        - createdAt;
+    private void toggleLike() {
 
-        long minutes =
-                difference / (60 * 1000);
+        liked = !liked;
 
-        if (minutes < 1) {
-            return "Just now";
-        }
+        final boolean newLikeState =
+                liked;
 
-        if (minutes < 60) {
-            return minutes + " min ago";
-        }
+        likeButton.setEnabled(false);
 
-        long hours = minutes / 60;
+        firebaseHelper.toggleStoryLike(
+                currentStory.getId(),
+                newLikeState,
+                new StoryFirebaseHelper.ActionCallback() {
 
-        if (hours < 24) {
-            return hours + " hr ago";
-        }
+                    @Override
+                    public void onSuccess() {
 
-        return "24 hr ago";
+                        likeButton.setEnabled(true);
+
+                        if (newLikeState) {
+
+                            likeButton.setImageResource(
+                                    android.R.drawable.btn_star_big_on
+                            );
+
+                        } else {
+
+                            likeButton.setImageResource(
+                                    android.R.drawable.btn_star_big_off
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        likeButton.setEnabled(true);
+
+                        liked = !newLikeState;
+
+                        Toast.makeText(
+                                StoryActivity.this,
+                                message,
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+        );
     }
+
+    // =========================================================
+    // REPLY
+    // =========================================================
 
     private void showReplyDialog() {
 
@@ -259,21 +412,33 @@ public class StoryActivity extends AppCompatActivity {
                 new EditText(this);
 
         input.setHint(
-                "Reply likhiye..."
+                "Reply likhein..."
         );
 
-        input.setSingleLine(false);
+        input.setInputType(
+                InputType.TYPE_CLASS_TEXT |
+                        InputType.TYPE_TEXT_FLAG_CAP_SENTENCES |
+                        InputType.TYPE_TEXT_FLAG_MULTI_LINE
+        );
+
+        input.setMaxLines(4);
+
+        int padding =
+                (int) (16 *
+                        getResources()
+                                .getDisplayMetrics()
+                                .density);
 
         input.setPadding(
-                40,
-                20,
-                40,
-                20
+                padding,
+                padding,
+                padding,
+                padding
         );
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
-                        .setTitle("Reply")
+                        .setTitle("Story Reply")
                         .setView(input)
                         .setNegativeButton(
                                 "Cancel",
@@ -285,42 +450,71 @@ public class StoryActivity extends AppCompatActivity {
                         )
                         .create();
 
-        dialog.setOnShowListener(d -> {
+        dialog.setOnShowListener(
+                dialogInterface -> {
 
-            dialog.getButton(
-                    AlertDialog.BUTTON_POSITIVE
-            ).setOnClickListener(v -> {
+                    dialog.getButton(
+                            AlertDialog.BUTTON_POSITIVE
+                    ).setOnClickListener(v -> {
 
-                String reply =
-                        input.getText()
-                                .toString()
-                                .trim();
+                        String text =
+                                input.getText()
+                                        .toString()
+                                        .trim();
 
-                if (reply.isEmpty()) {
+                        if (text.isEmpty()) {
 
-                    input.setError(
-                            "Reply likhiye"
-                    );
+                            input.setError(
+                                    "Reply likhein"
+                            );
 
-                    return;
+                            return;
+                        }
+
+                        firebaseHelper.addStoryReply(
+                                currentStory.getId(),
+                                text,
+                                new StoryFirebaseHelper.ActionCallback() {
+
+                                    @Override
+                                    public void onSuccess() {
+
+                                        Toast.makeText(
+                                                StoryActivity.this,
+                                                "Reply sent",
+                                                Toast.LENGTH_SHORT
+                                        ).show();
+
+                                        dialog.dismiss();
+                                    }
+
+                                    @Override
+                                    public void onError(
+                                            String message) {
+
+                                        Toast.makeText(
+                                                StoryActivity.this,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                        ).show();
+                                    }
+                                }
+                        );
+                    });
                 }
-
-                Toast.makeText(
-                        this,
-                        "Reply sent ✓",
-                        Toast.LENGTH_SHORT
-                ).show();
-
-                dialog.dismiss();
-            });
-        });
+        );
 
         dialog.show();
     }
 
+    // =========================================================
+    // DELETE CONFIRMATION
+    // =========================================================
+
     private void confirmDelete() {
 
-        if (!currentStory.isOwnStory()) {
+        if (currentStory == null ||
+                !currentStory.isOwnStory()) {
 
             Toast.makeText(
                     this,
@@ -334,7 +528,7 @@ public class StoryActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Story?")
                 .setMessage(
-                        "Kya aap apni Story delete karna chahte hain?"
+                        "Kya aap ye Story delete karna chahte hain?"
                 )
                 .setNegativeButton(
                         "Cancel",
@@ -342,57 +536,64 @@ public class StoryActivity extends AppCompatActivity {
                 )
                 .setPositiveButton(
                         "Delete",
-                        (dialog, which) -> {
-
-                            StoryFirebaseHelper helper =
-                                    new StoryFirebaseHelper();
-
-                            helper.deleteStory(
-                                    currentStory.getId(),
-                                    getStoragePath(
-                                            currentStory.getStoryImage()
-                                    ),
-                                    new StoryFirebaseHelper.UploadCallback() {
-
-                                        @Override
-                                        public void onSuccess(
-                                                String storyId) {
-
-                                            runOnUiThread(() -> {
-
-                                                Toast.makeText(
-                                                        StoryActivity.this,
-                                                        "Story deleted ✓",
-                                                        Toast.LENGTH_SHORT
-                                                ).show();
-
-                                                finish();
-                                            });
-                                        }
-
-                                        @Override
-                                        public void onError(
-                                                String message) {
-
-                                            runOnUiThread(() ->
-                                                    Toast.makeText(
-                                                            StoryActivity.this,
-                                                            message,
-                                                            Toast.LENGTH_LONG
-                                                    ).show()
-                                            );
-                                        }
-                                    }
-                            );
-                        })
+                        (dialog, which) ->
+                                deleteCurrentStory()
+                )
                 .show();
     }
+
+    // =========================================================
+    // DELETE STORY
+    // =========================================================
+
+    private void deleteCurrentStory() {
+
+        String imagePath =
+                getStoragePath(
+                        currentStory.getStoryImage()
+                );
+
+        firebaseHelper.deleteStory(
+                currentStory.getId(),
+                imagePath,
+                new StoryFirebaseHelper.UploadCallback() {
+
+                    @Override
+                    public void onSuccess(
+                            String storyId) {
+
+                        Toast.makeText(
+                                StoryActivity.this,
+                                "Story deleted",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        Toast.makeText(
+                                StoryActivity.this,
+                                message,
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+        );
+    }
+
+    // =========================================================
+    // FIREBASE STORAGE PATH
+    // =========================================================
 
     private String getStoragePath(
             String imageUrl) {
 
         if (imageUrl == null ||
-                !imageUrl.startsWith("http")) {
+                imageUrl.trim().isEmpty()) {
             return "";
         }
 
@@ -410,44 +611,135 @@ public class StoryActivity extends AppCompatActivity {
                 return "";
             }
 
-            String marker = "/o/";
+            if (path.startsWith("/v0/b/")) {
 
-            int index =
-                    path.indexOf(marker);
-
-            if (index >= 0) {
-
-                String encoded =
-                        path.substring(
-                                index + marker.length()
+                int oIndex =
+                        path.indexOf(
+                                "/o/"
                         );
 
-                int queryIndex =
-                        encoded.indexOf("?");
+                if (oIndex != -1) {
 
-                if (queryIndex >= 0) {
-                    encoded =
-                            encoded.substring(
-                                    0,
-                                    queryIndex
+                    path =
+                            path.substring(
+                                    oIndex + 3
                             );
                 }
-
-                return android.net.Uri
-                        .decode(encoded);
             }
 
-        } catch (Exception ignored) {
+            return path
+                    .replace(
+                            "%2F",
+                            "/"
+                    )
+                    .replace(
+                            "%20",
+                            " "
+                    );
+
+        } catch (Exception e) {
+
+            return "";
+        }
+    }
+
+    // =========================================================
+    // PROGRESS / AUTO CLOSE
+    // =========================================================
+
+    private void startProgress() {
+
+        if (progressBar == null) {
+            return;
         }
 
-        return "";
+        progressBar.setProgress(0);
+
+        progressBar.post(() -> {
+
+            progressBar.setMax(150);
+
+            final int[] progress =
+                    {0};
+
+            final Runnable runnable =
+                    new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            progress[0]++;
+
+                            progressBar.setProgress(
+                                    progress[0]
+                            );
+
+                            if (progress[0] < 150) {
+
+                                handler.postDelayed(
+                                        this,
+                                        100
+                                );
+
+                            }
+                        }
+                    };
+
+            handler.removeCallbacksAndMessages(
+                    null
+            );
+
+            handler.post(runnable);
+        });
+
+        handler.postDelayed(
+                autoCloseRunnable,
+                15000
+        );
     }
+
+    // =========================================================
+    // TIME
+    // =========================================================
+
+    private String getTimeText(
+            long createdAt) {
+
+        long difference =
+                System.currentTimeMillis()
+                        - createdAt;
+
+        long minutes =
+                difference /
+                        (60L * 1000L);
+
+        if (minutes < 1) {
+            return "Just now";
+        }
+
+        if (minutes < 60) {
+            return minutes + " min ago";
+        }
+
+        long hours =
+                minutes / 60L;
+
+        if (hours < 24) {
+            return hours + " hr ago";
+        }
+
+        return "24h+";
+    }
+
+    // =========================================================
+    // CLEANUP
+    // =========================================================
 
     @Override
     protected void onDestroy() {
 
-        handler.removeCallbacks(
-                autoClose
+        handler.removeCallbacksAndMessages(
+                null
         );
 
         super.onDestroy();
