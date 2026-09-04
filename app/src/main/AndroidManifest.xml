@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Internet -->
+    <uses-permission
+        android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -16,33 +19,43 @@
             android:exported="true">
 
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+
+                <action
+                    android:name="android.intent.action.MAIN" />
+
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
 
         </activity>
 
-        <!-- 🔐 Login -->
+
+        <!-- Authentication -->
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
 
-        <!-- 👤 Profile -->
+
+        <!-- Profile -->
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
 
-        <!-- 👑 Raja -->
+
+        <!-- Raja -->
         <activity
             android:name=".RajaActivity"
             android:exported="false" />
 
-        <!-- 🛕 Temple -->
+
+        <!-- Temple -->
         <activity
             android:name=".TempleActivity"
             android:exported="false" />
 
-        <!-- 📖 Bhagavad Gita -->
+
+        <!-- Bhagavad Gita -->
         <activity
             android:name=".GitaActivity"
             android:exported="false" />
@@ -51,24 +64,52 @@
             android:name=".GitaDetailActivity"
             android:exported="false" />
 
-        <!-- 🕉️ Devi Devta -->
+
+        <!-- Devi Devta -->
         <activity
             android:name=".DeviDevtaActivity"
             android:exported="false" />
 
-        <!-- 📰 RSS -->
+
+        <!-- RSS News -->
         <activity
             android:name=".RssActivity"
             android:exported="false" />
 
-        <!-- ℹ️ About -->
+
+        <!-- About -->
         <activity
             android:name=".AboutActivity"
             android:exported="false" />
 
-        <!-- 📸 Culture -->
+
+        <!-- Culture / Instagram Feed -->
         <activity
             android:name=".CultureActivity"
+            android:exported="false" />
+
+
+        <!-- Stories -->
+        <activity
+            android:name=".StoryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".StoryUploadActivity"
+            android:exported="false" />
+
+
+        <!-- Reels -->
+        <activity
+            android:name=".ReelActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ReelUploadActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ReelCommentsActivity"
             android:exported="false" />
 
     </application>
