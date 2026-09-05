@@ -2,7 +2,6 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -17,9 +16,12 @@
         android:layout_height="64dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp"
-        android:background="#FFFFFF">
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:background="#FFFFFF"
+        android:elevation="4dp">
+
+        <!-- CREATE -->
 
         <TextView
             android:id="@+id/createTopButton"
@@ -28,8 +30,11 @@
             android:gravity="center"
             android:text="＋"
             android:textSize="30sp"
-            android:textColor="#222222"
+            android:textStyle="bold"
+            android:textColor="#F57C00"
             android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <!-- APP TITLE -->
 
         <LinearLayout
             android:layout_width="0dp"
@@ -42,9 +47,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="ॐ  Sanskriti Sathi"
-                android:textColor="#222222"
+                android:textColor="#311B5E"
                 android:textStyle="bold"
-                android:textSize="24sp"/>
+                android:textSize="22sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -52,15 +57,29 @@
                 android:text="संस्कृति • ज्ञान • परंपरा"
                 android:textColor="#F57C00"
                 android:textSize="11sp"/>
+
         </LinearLayout>
+
+        <!-- DAY / NIGHT -->
+
+        <TextView
+            android:id="@+id/themeToggleButton"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="🌙"
+            android:textSize="21sp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <!-- NOTIFICATION -->
 
         <TextView
             android:id="@+id/notificationButton"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:gravity="center"
             android:text="🔔"
-            android:textSize="23sp"
+            android:textSize="21sp"
             android:background="?attr/selectableItemBackgroundBorderless"/>
 
     </LinearLayout>
@@ -114,7 +133,8 @@
                         android:textColor="#FFFFFF"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:background="#1976D2"/>
+                        android:background="#F57C00"/>
+
                 </FrameLayout>
 
                 <TextView
@@ -124,6 +144,7 @@
                     android:textSize="12sp"
                     android:textColor="#333333"
                     android:layout_marginTop="4dp"/>
+
             </LinearLayout>
 
 
@@ -150,6 +171,7 @@
                     android:textSize="12sp"
                     android:textColor="#333333"
                     android:layout_marginTop="4dp"/>
+
             </LinearLayout>
 
 
@@ -176,6 +198,7 @@
                     android:textSize="12sp"
                     android:textColor="#333333"
                     android:layout_marginTop="4dp"/>
+
             </LinearLayout>
 
 
@@ -202,6 +225,7 @@
                     android:textSize="12sp"
                     android:textColor="#333333"
                     android:layout_marginTop="4dp"/>
+
             </LinearLayout>
 
 
@@ -228,6 +252,7 @@
                     android:textSize="12sp"
                     android:textColor="#333333"
                     android:layout_marginTop="4dp"/>
+
             </LinearLayout>
 
 
@@ -254,6 +279,7 @@
                     android:textSize="12sp"
                     android:textColor="#333333"
                     android:layout_marginTop="4dp"/>
+
             </LinearLayout>
 
         </LinearLayout>
@@ -301,7 +327,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⌂"
-                android:textSize="28sp"
+                android:textSize="27sp"
                 android:textColor="#F57C00"/>
 
             <TextView
@@ -310,6 +336,7 @@
                 android:text="Home"
                 android:textSize="11sp"
                 android:textColor="#F57C00"/>
+
         </LinearLayout>
 
 
@@ -328,21 +355,22 @@
                 android:layout_height="wrap_content"
                 android:text="▣"
                 android:textSize="25sp"
-                android:textColor="#222222"/>
+                android:textColor="#333333"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Reels"
                 android:textSize="11sp"
-                android:textColor="#222222"/>
+                android:textColor="#333333"/>
+
         </LinearLayout>
 
 
-        <!-- CREATE -->
+        <!-- CHAT -->
 
         <LinearLayout
-            android:id="@+id/createNavButton"
+            android:id="@+id/chatNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -350,20 +378,18 @@
             android:orientation="vertical">
 
             <TextView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:gravity="center"
-                android:text="+"
-                android:textSize="30sp"
-                android:textColor="#FFFFFF"
-                android:background="#F57C00"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💬"
+                android:textSize="24sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Create"
+                android:text="Chat"
                 android:textSize="11sp"
-                android:textColor="#222222"/>
+                android:textColor="#333333"/>
+
         </LinearLayout>
 
 
@@ -381,15 +407,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⌕"
-                android:textSize="31sp"
-                android:textColor="#222222"/>
+                android:textSize="30sp"
+                android:textColor="#333333"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Search"
                 android:textSize="11sp"
-                android:textColor="#222222"/>
+                android:textColor="#333333"/>
+
         </LinearLayout>
 
 
@@ -408,14 +435,15 @@
                 android:layout_height="wrap_content"
                 android:text="◎"
                 android:textSize="30sp"
-                android:textColor="#222222"/>
+                android:textColor="#333333"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Profile"
                 android:textSize="11sp"
-                android:textColor="#222222"/>
+                android:textColor="#333333"/>
+
         </LinearLayout>
 
     </LinearLayout>
