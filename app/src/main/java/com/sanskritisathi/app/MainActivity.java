@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView homeFeedRecyclerView;
@@ -185,18 +187,36 @@ public class MainActivity extends AppCompatActivity {
 
 
         // =========================
-        // PROFILE
+        // PROFILE / LOGIN
         // =========================
 
         findViewById(R.id.profileNavButton)
-                .setOnClickListener(v ->
+                .setOnClickListener(v -> {
+
+                    FirebaseAuth auth =
+                            FirebaseAuth.getInstance();
+
+                    // User Login nahi hai
+                    if (auth.getCurrentUser() == null) {
+
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        LoginActivity.class
+                                )
+                        );
+
+                    } else {
+
+                        // User already Login hai
                         startActivity(
                                 new Intent(
                                         MainActivity.this,
                                         ProfileActivity.class
                                 )
-                        )
-                );
+                        );
+                    }
+                });
     }
 
 
