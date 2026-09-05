@@ -13,9 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
-        <!-- Main Screen -->
+        <!-- Welcome Screen - App Start -->
         <activity
-            android:name=".MainActivity"
+            android:name=".WelcomeActivity"
             android:exported="true">
 
             <intent-filter>
@@ -29,6 +29,12 @@
             </intent-filter>
 
         </activity>
+
+
+        <!-- Main / Home -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
 
 
         <!-- Authentication -->
