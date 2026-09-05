@@ -37,6 +37,8 @@
             android:text="अपने खाते में Login करें"
             android:textSize="17sp" />
 
+        <!-- Email Login -->
+
         <EditText
             android:id="@+id/emailInput"
             android:layout_width="match_parent"
@@ -61,7 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
             android:minHeight="55dp"
-            android:text="🔐 Login"
+            android:text="🔐 Email Login"
             android:textSize="17sp" />
 
         <Button
@@ -82,6 +84,56 @@
             android:textSize="16sp"
             android:clickable="true"
             android:focusable="true" />
+
+        <!-- Divider -->
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center"
+            android:text="────────  या  ────────"
+            android:textSize="15sp" />
+
+        <!-- Phone Login -->
+
+        <EditText
+            android:id="@+id/phoneInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Phone Number (+91...)"
+            android:inputType="phone"
+            android:maxLength="13"
+            android:padding="14dp" />
+
+        <Button
+            android:id="@+id/sendOtpButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="55dp"
+            android:text="📱 OTP भेजें"
+            android:textSize="17sp" />
+
+        <EditText
+            android:id="@+id/otpInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="6 Digit OTP"
+            android:inputType="number"
+            android:maxLength="6"
+            android:padding="14dp" />
+
+        <Button
+            android:id="@+id/verifyOtpButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="55dp"
+            android:text="✅ OTP Verify करें"
+            android:textSize="17sp" />
 
     </LinearLayout>
 
