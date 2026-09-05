@@ -233,21 +233,19 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =========================
-        // CHAT
-        // =========================
+// =========================
+// CHAT
+// =========================
 
-        findViewById(R.id.chatNavButton)
-                .setOnClickListener(v -> {
-
-                    Toast.makeText(
-                            MainActivity.this,
-                            "Chat feature next step mein add hoga.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
-                });
-
+findViewById(R.id.chatNavButton)
+        .setOnClickListener(v ->
+                startActivity(
+                        new Intent(
+                                MainActivity.this,
+                                ChatActivity.class
+                        )
+                )
+        );
 
         // =========================
         // SEARCH
