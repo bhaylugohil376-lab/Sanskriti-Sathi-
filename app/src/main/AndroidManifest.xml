@@ -118,9 +118,17 @@
 
 
         <!-- Chat -->
-        <activity
-            android:name=".ChatActivity"
-            android:exported="false" />
+<activity
+    android:name=".ChatActivity"
+    android:exported="false" />
+
+<activity
+    android:name=".OneToOneChatActivity"
+    android:exported="false" />
+
+<activity
+    android:name=".GroupChatActivity"
+    android:exported="false" />
 
     </application>
 
