@@ -1,140 +1,108 @@
-package com.sanskritisathi.app;
+<?xml version="1.0" encoding="utf-8"?>
 
-import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFF8F0">
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="#FFFFFF"
+        android:elevation="4dp">
 
-import java.util.ArrayList;
-import java.util.List;
+        <TextView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="‹"
+            android:textSize="32sp"
+            android:textColor="#311B5E"
+            android:clickable="true"
+            android:focusable="true"
+            android:onClick="finish"/>
 
-public class GroupChatActivity extends AppCompatActivity {
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:orientation="vertical">
 
-    private RecyclerView groupMessagesRecyclerView;
-    private EditText messageInput;
-    private Button sendButton;
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👥 Sanskriti Sathi Group"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#311B5E"/>
 
-    private GroupChatAdapter adapter;
-    private final List<GroupMessage> messageList =
-            new ArrayList<>();
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Culture • Knowledge • Tradition"
+                android:textSize="11sp"
+                android:textColor="#F57C00"/>
+        </LinearLayout>
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        <TextView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="⋮"
+            android:textSize="26sp"
+            android:textColor="#333333"/>
+    </LinearLayout>
 
-        setContentView(R.layout.activity_group_chat);
+    <!-- Messages -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/groupMessagesRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:overScrollMode="never"/>
 
-        groupMessagesRecyclerView =
-                findViewById(R.id.groupMessagesRecyclerView);
+    <!-- Message Input -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:background="#FFFFFF"
+        android:elevation="6dp">
 
-        messageInput =
-                findViewById(R.id.groupMessageInput);
+        <EditText
+            android:id="@+id/groupMessageInput"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:hint="Group message likho..."
+            android:textSize="15sp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="#F3F0F7"
+            android:singleLine="true"
+            android:maxLength="500"/>
 
-        sendButton =
-                findViewById(R.id.groupSendButton);
+        <Button
+            android:id="@+id/groupSendButton"
+            android:layout_width="58dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="8dp"
+            android:text="➤"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#F57C00"/>
+    </LinearLayout>
 
-        LinearLayoutManager layoutManager =
-                new LinearLayoutManager(this);
-
-        layoutManager.setStackFromEnd(true);
-
-        groupMessagesRecyclerView.setLayoutManager(
-                layoutManager
-        );
-
-        adapter = new GroupChatAdapter(messageList);
-
-        groupMessagesRecyclerView.setAdapter(adapter);
-
-        loadMessages();
-
-        sendButton.setOnClickListener(v -> sendMessage());
-    }
-
-    private void loadMessages() {
-
-        GroupChatFirebaseHelper.getMessages(
-                new GroupChatFirebaseHelper.MessagesCallback() {
-
-                    @Override
-                    public void onSuccess(
-                            List<GroupMessage> messages) {
-
-                        messageList.clear();
-                        messageList.addAll(messages);
-
-                        adapter.notifyDataSetChanged();
-
-                        if (!messageList.isEmpty()) {
-                            groupMessagesRecyclerView.scrollToPosition(
-                                    messageList.size() - 1
-                            );
-                        }
-                    }
-
-                    @Override
-                    public void onError(String message) {
-
-                        Toast.makeText(
-                                GroupChatActivity.this,
-                                message,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                }
-        );
-    }
-
-    private void sendMessage() {
-
-        String message =
-                messageInput.getText()
-                        .toString()
-                        .trim();
-
-        if (message.isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Message likho.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            return;
-        }
-
-        sendButton.setEnabled(false);
-
-        GroupChatFirebaseHelper.sendMessage(
-                message,
-                new GroupChatFirebaseHelper.ActionCallback() {
-
-                    @Override
-                    public void onSuccess() {
-
-                        messageInput.setText("");
-
-                        sendButton.setEnabled(true);
-
-                        loadMessages();
-                    }
-
-                    @Override
-                    public void onError(String message) {
-
-                        sendButton.setEnabled(true);
-
-                        Toast.makeText(
-                                GroupChatActivity.this,
-                                message,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                }
-        );
-    }
-}
+</LinearLayout>
