@@ -3,11 +3,14 @@ package com.sanskritisathi.app;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.DocumentReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class ReelCommentFirebaseHelper {
 
@@ -44,26 +47,36 @@ public class ReelCommentFirebaseHelper {
             return;
         }
 
-        if (reelId == null || reelId.trim().isEmpty()) {
+        if (reelId == null ||
+                reelId.trim().isEmpty()) {
+
             callback.onError("Invalid Reel.");
             return;
         }
 
-        if (text == null || text.trim().isEmpty()) {
-            callback.onError("Comment empty nahi ho sakta.");
-            return;
-        }
+        if (text == null ||
+                text.trim().isEmpty()) {
 
-        String cleanText = text.trim();
-
-        if (cleanText.length() > 500) {
             callback.onError(
-                    "Comment maximum 500 characters ka ho sakta hai."
+                    "Comment empty nahi ho sakta."
             );
             return;
         }
 
-        String uid = auth.getCurrentUser().getUid();
+        String cleanText =
+                text.trim();
+
+        if (cleanText.length() > 500) {
+
+            callback.onError(
+                    "Comment maximum 500 characters ka ho sakta hai."
+            );
+
+            return;
+        }
+
+        String uid =
+                auth.getCurrentUser().getUid();
 
         String username =
                 auth.getCurrentUser().getDisplayName();
@@ -75,43 +88,99 @@ public class ReelCommentFirebaseHelper {
         }
 
         String commentId =
+                UUID.randomUUID().toString();
+
+        DocumentReference reelRef =
                 db.collection("reels")
-                        .document(reelId)
-                        .collection("comments")
-                        .document()
-                        .getId();
+                        .document(reelId);
+
+        DocumentReference commentRef =
+                reelRef.collection("comments")
+                        .document(commentId);
 
         Map<String, Object> comment =
                 new HashMap<>();
 
-        comment.put("commentId", commentId);
-        comment.put("reelId", reelId);
-        comment.put("userId", uid);
-        comment.put("username", username);
-        comment.put("text", cleanText);
+        comment.put(
+                "commentId",
+                commentId
+        );
+
+        comment.put(
+                "reelId",
+                reelId
+        );
+
+        comment.put(
+                "userId",
+                uid
+        );
+
+        comment.put(
+                "username",
+                username
+        );
+
+        comment.put(
+                "text",
+                cleanText
+        );
+
         comment.put(
                 "createdAt",
                 System.currentTimeMillis()
         );
 
-        db.collection("reels")
-                .document(reelId)
-                .collection("comments")
-                .document(commentId)
-                .set(comment)
-                .addOnSuccessListener(unused ->
-                        updateCommentCount(
-                                reelId,
-                                1,
-                                callback
-                        )
-                )
-                .addOnFailureListener(e ->
-                        callback.onError(
-                                "Comment save failed: "
-                                        + e.getMessage()
-                        )
+        // Comment + count in ONE transaction
+        db.runTransaction(transaction -> {
+
+            DocumentSnapshot reelSnapshot =
+                    transaction.get(reelRef);
+
+            if (!reelSnapshot.exists()) {
+
+                throw new FirebaseFirestoreException(
+                        "Reel not found.",
+                        FirebaseFirestoreException.Code.NOT_FOUND
                 );
+            }
+
+            Long currentCount =
+                    reelSnapshot.getLong("comments");
+
+            long count =
+                    currentCount == null
+                            ? 0
+                            : currentCount;
+
+            transaction.set(
+                    commentRef,
+                    comment
+            );
+
+            Map<String, Object> update =
+                    new HashMap<>();
+
+            update.put(
+                    "comments",
+                    count + 1
+            );
+
+            transaction.update(
+                    reelRef,
+                    update
+            );
+
+            return null;
+
+        }).addOnSuccessListener(unused ->
+                callback.onSuccess()
+        ).addOnFailureListener(e ->
+                callback.onError(
+                        "Comment save failed: "
+                                + e.getMessage()
+                )
+        );
     }
 
     // =========================
@@ -123,12 +192,21 @@ public class ReelCommentFirebaseHelper {
             CommentsCallback callback) {
 
         if (auth.getCurrentUser() == null) {
-            callback.onError("Please login first.");
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
-        if (reelId == null || reelId.trim().isEmpty()) {
-            callback.onError("Invalid Reel.");
+        if (reelId == null ||
+                reelId.trim().isEmpty()) {
+
+            callback.onError(
+                    "Invalid Reel."
+            );
+
             return;
         }
 
@@ -146,30 +224,43 @@ public class ReelCommentFirebaseHelper {
                             querySnapshot.getDocuments()) {
 
                         String id =
-                                document.getString("commentId");
+                                document.getString(
+                                        "commentId"
+                                );
 
-                        if (id == null) {
+                        if (id == null ||
+                                id.trim().isEmpty()) {
+
                             id = document.getId();
                         }
 
                         String userId =
-                                document.getString("userId");
+                                document.getString(
+                                        "userId"
+                                );
 
                         String username =
-                                document.getString("username");
+                                document.getString(
+                                        "username"
+                                );
 
                         String text =
-                                document.getString("text");
+                                document.getString(
+                                        "text"
+                                );
 
                         Long createdAt =
-                                document.getLong("createdAt");
+                                document.getLong(
+                                        "createdAt"
+                                );
 
                         comments.add(
                                 new ReelComment(
                                         id,
                                         reelId,
                                         userId,
-                                        username == null
+                                        username == null ||
+                                                username.trim().isEmpty()
                                                 ? "Sanskriti User"
                                                 : username,
                                         text == null
@@ -182,7 +273,9 @@ public class ReelCommentFirebaseHelper {
                         );
                     }
 
-                    callback.onSuccess(comments);
+                    callback.onSuccess(
+                            comments
+                    );
 
                 })
                 .addOnFailureListener(e ->
@@ -203,135 +296,126 @@ public class ReelCommentFirebaseHelper {
             ActionCallback callback) {
 
         if (auth.getCurrentUser() == null) {
-            callback.onError("Please login first.");
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
         if (reelId == null ||
                 reelId.trim().isEmpty()) {
 
-            callback.onError("Invalid Reel.");
+            callback.onError(
+                    "Invalid Reel."
+            );
+
             return;
         }
 
         if (commentId == null ||
                 commentId.trim().isEmpty()) {
 
-            callback.onError("Invalid comment.");
+            callback.onError(
+                    "Invalid comment."
+            );
+
             return;
         }
 
         String uid =
                 auth.getCurrentUser().getUid();
 
-        db.collection("reels")
-                .document(reelId)
-                .collection("comments")
-                .document(commentId)
-                .get()
-                .addOnSuccessListener(document -> {
+        DocumentReference reelRef =
+                db.collection("reels")
+                        .document(reelId);
 
-                    if (!document.exists()) {
-                        callback.onError(
-                                "Comment not found."
-                        );
-                        return;
-                    }
+        DocumentReference commentRef =
+                reelRef.collection("comments")
+                        .document(commentId);
 
-                    String ownerId =
-                            document.getString("userId");
+        // Delete + count update in ONE transaction
+        db.runTransaction(transaction -> {
 
-                    if (ownerId == null ||
-                            !uid.equals(ownerId)) {
+            DocumentSnapshot reelSnapshot =
+                    transaction.get(reelRef);
 
-                        callback.onError(
-                                "Aap sirf apna comment delete kar sakte ho."
-                        );
-                        return;
-                    }
+            if (!reelSnapshot.exists()) {
 
-                    document.getReference()
-                            .delete()
-                            .addOnSuccessListener(unused ->
-                                    updateCommentCount(
-                                            reelId,
-                                            -1,
-                                            callback
-                                    )
-                            )
-                            .addOnFailureListener(e ->
-                                    callback.onError(
-                                            "Comment delete failed: "
-                                                    + e.getMessage()
-                                    )
-                            );
-                })
-                .addOnFailureListener(e ->
-                        callback.onError(
-                                "Comment check failed: "
-                                        + e.getMessage()
-                        )
+                throw new FirebaseFirestoreException(
+                        "Reel not found.",
+                        FirebaseFirestoreException.Code.NOT_FOUND
                 );
-    }
+            }
 
-    // =========================
-    // UPDATE COMMENT COUNT
-    // =========================
+            DocumentSnapshot commentSnapshot =
+                    transaction.get(commentRef);
 
-    private static void updateCommentCount(
-            String reelId,
-            int change,
-            ActionCallback callback) {
+            if (!commentSnapshot.exists()) {
 
-        db.collection("reels")
-                .document(reelId)
-                .get()
-                .addOnSuccessListener(document -> {
-
-                    if (!document.exists()) {
-                        callback.onError(
-                                "Reel not found."
-                        );
-                        return;
-                    }
-
-                    Long currentCount =
-                            document.getLong("comments");
-
-                    long count =
-                            currentCount == null
-                                    ? 0
-                                    : currentCount;
-
-                    count += change;
-
-                    if (count < 0) {
-                        count = 0;
-                    }
-
-                    Map<String, Object> update =
-                            new HashMap<>();
-
-                    update.put("comments", count);
-
-                    document.getReference()
-                            .update(update)
-                            .addOnSuccessListener(unused ->
-                                    callback.onSuccess()
-                            )
-                            .addOnFailureListener(e ->
-                                    callback.onError(
-                                            "Comment count update failed: "
-                                                    + e.getMessage()
-                                    )
-                            );
-
-                })
-                .addOnFailureListener(e ->
-                        callback.onError(
-                                "Reel count check failed: "
-                                        + e.getMessage()
-                        )
+                throw new FirebaseFirestoreException(
+                        "Comment not found.",
+                        FirebaseFirestoreException.Code.NOT_FOUND
                 );
+            }
+
+            String ownerId =
+                    commentSnapshot.getString(
+                            "userId"
+                    );
+
+            if (ownerId == null ||
+                    !uid.equals(ownerId)) {
+
+                throw new FirebaseFirestoreException(
+                        "Aap sirf apna comment delete kar sakte ho.",
+                        FirebaseFirestoreException.Code.PERMISSION_DENIED
+                );
+            }
+
+            Long currentCount =
+                    reelSnapshot.getLong(
+                            "comments"
+                    );
+
+            long count =
+                    currentCount == null
+                            ? 0
+                            : currentCount;
+
+            long newCount =
+                    Math.max(
+                            0,
+                            count - 1
+                    );
+
+            transaction.delete(
+                    commentRef
+            );
+
+            Map<String, Object> update =
+                    new HashMap<>();
+
+            update.put(
+                    "comments",
+                    newCount
+            );
+
+            transaction.update(
+                    reelRef,
+                    update
+            );
+
+            return null;
+
+        }).addOnSuccessListener(unused ->
+                callback.onSuccess()
+        ).addOnFailureListener(e ->
+                callback.onError(
+                        "Comment delete failed: "
+                                + e.getMessage()
+                )
+        );
     }
 }
