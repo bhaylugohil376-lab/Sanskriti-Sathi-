@@ -9,10 +9,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class WelcomeActivity extends AppCompatActivity {
 
-    private Button hindiButton;
-    private Button englishButton;
-    private Button gujaratiButton;
-
     private static final String PREFS_NAME = "SanskritiSathiPrefs";
     private static final String LANGUAGE_KEY = "selected_language";
 
@@ -23,8 +19,6 @@ public class WelcomeActivity extends AppCompatActivity {
         SharedPreferences prefs =
                 getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
-        // Agar language pehle se select hai,
-        // to Welcome screen dobara nahi dikhayenge.
         String savedLanguage =
                 prefs.getString(LANGUAGE_KEY, "");
 
@@ -35,25 +29,16 @@ public class WelcomeActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_welcome);
 
-        hindiButton = findViewById(R.id.hindiButton);
-        englishButton = findViewById(R.id.englishButton);
-        gujaratiButton = findViewById(R.id.gujaratiButton);
+        Button hindiButton = findViewById(R.id.hindiButton);
+        Button englishButton = findViewById(R.id.englishButton);
+        Button gujaratiButton = findViewById(R.id.gujaratiButton);
 
-        hindiButton.setOnClickListener(v ->
-                selectLanguage("hi")
-        );
-
-        englishButton.setOnClickListener(v ->
-                selectLanguage("en")
-        );
-
-        gujaratiButton.setOnClickListener(v ->
-                selectLanguage("gu")
-        );
+        hindiButton.setOnClickListener(v -> selectLanguage("hi"));
+        englishButton.setOnClickListener(v -> selectLanguage("en"));
+        gujaratiButton.setOnClickListener(v -> selectLanguage("gu"));
     }
 
     private void selectLanguage(String language) {
-
         getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                 .edit()
                 .putString(LANGUAGE_KEY, language)
@@ -63,14 +48,12 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void openLogin() {
-
-        Intent intent =
+        startActivity(
                 new Intent(
                         WelcomeActivity.this,
                         LoginActivity.class
-                );
-
-        startActivity(intent);
+                )
+        );
         finish();
     }
 }
