@@ -2,7 +2,9 @@ package com.sanskritisathi.app;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,9 +17,13 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView homeFeedRecyclerView;
 
+    private static final String PREFS_NAME = "SanskritiSathiPrefs";
+    private static final String THEME_KEY = "dark_mode";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         // =========================
@@ -43,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         // =========================
-        // STORY / CULTURE BUTTONS
+        // TEMPLE
         // =========================
 
         findViewById(R.id.templeStoryButton)
@@ -56,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
                         )
                 );
 
+
+        // =========================
+        // RAJA
+        // =========================
+
         findViewById(R.id.rajaStoryButton)
                 .setOnClickListener(v ->
                         startActivity(
@@ -65,6 +76,11 @@ public class MainActivity extends AppCompatActivity {
                                 )
                         )
                 );
+
+
+        // =========================
+        // DEVI DEVTA
+        // =========================
 
         findViewById(R.id.deviStoryButton)
                 .setOnClickListener(v ->
@@ -76,6 +92,11 @@ public class MainActivity extends AppCompatActivity {
                         )
                 );
 
+
+        // =========================
+        // GITA
+        // =========================
+
         findViewById(R.id.gitaStoryButton)
                 .setOnClickListener(v ->
                         startActivity(
@@ -85,6 +106,11 @@ public class MainActivity extends AppCompatActivity {
                                 )
                         )
                 );
+
+
+        // =========================
+        // FESTIVAL / RSS
+        // =========================
 
         findViewById(R.id.festivalStoryButton)
                 .setOnClickListener(v ->
@@ -137,7 +163,52 @@ public class MainActivity extends AppCompatActivity {
 
 
         // =========================
-        // BOTTOM HOME
+        // DAY / NIGHT MODE
+        // =========================
+
+        TextView themeToggleButton =
+                findViewById(R.id.themeToggleButton);
+
+        updateThemeIcon(themeToggleButton);
+
+        themeToggleButton.setOnClickListener(v -> {
+
+            SharedPreferences preferences =
+                    getSharedPreferences(
+                            PREFS_NAME,
+                            MODE_PRIVATE
+                    );
+
+            boolean currentDarkMode =
+                    preferences.getBoolean(
+                            THEME_KEY,
+                            false
+                    );
+
+            boolean newDarkMode =
+                    !currentDarkMode;
+
+            preferences.edit()
+                    .putBoolean(
+                            THEME_KEY,
+                            newDarkMode
+                    )
+                    .apply();
+
+            updateThemeIcon(themeToggleButton);
+
+            Toast.makeText(
+                    MainActivity.this,
+                    newDarkMode
+                            ? "🌙 Night Mode"
+                            : "☀️ Day Mode",
+                    Toast.LENGTH_SHORT
+            ).show();
+        });
+
+
+        // =========================
+        // HOME
         // =========================
 
         findViewById(R.id.homeNavButton)
@@ -163,13 +234,19 @@ public class MainActivity extends AppCompatActivity {
 
 
         // =========================
-        // BOTTOM CREATE
+        // CHAT
         // =========================
 
-        findViewById(R.id.createNavButton)
-                .setOnClickListener(v ->
-                        showCreateMenu()
-                );
+        findViewById(R.id.chatNavButton)
+                .setOnClickListener(v -> {
+
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Chat feature next step mein add hoga.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                });
 
 
         // =========================
@@ -196,7 +273,6 @@ public class MainActivity extends AppCompatActivity {
                     FirebaseAuth auth =
                             FirebaseAuth.getInstance();
 
-                    // User Login nahi hai
                     if (auth.getCurrentUser() == null) {
 
                         startActivity(
@@ -208,7 +284,6 @@ public class MainActivity extends AppCompatActivity {
 
                     } else {
 
-                        // User already Login hai
                         startActivity(
                                 new Intent(
                                         MainActivity.this,
@@ -217,6 +292,32 @@ public class MainActivity extends AppCompatActivity {
                         );
                     }
                 });
+    }
+
+
+    // =========================
+    // THEME ICON
+    // =========================
+
+    private void updateThemeIcon(TextView button) {
+
+        SharedPreferences preferences =
+                getSharedPreferences(
+                        PREFS_NAME,
+                        MODE_PRIVATE
+                );
+
+        boolean darkMode =
+                preferences.getBoolean(
+                        THEME_KEY,
+                        false
+                );
+
+        if (darkMode) {
+            button.setText("☀️");
+        } else {
+            button.setText("🌙");
+        }
     }
 
 
