@@ -233,19 +233,20 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-// =========================
-// CHAT
-// =========================
+        // =========================
+        // CHAT
+        // =========================
 
-findViewById(R.id.chatNavButton)
-        .setOnClickListener(v ->
-                startActivity(
-                        new Intent(
-                                MainActivity.this,
-                                ChatActivity.class
+        findViewById(R.id.chatNavButton)
+                .setOnClickListener(v ->
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        ChatActivity.class
+                                )
                         )
-                )
-        );
+                );
+
 
         // =========================
         // SEARCH
@@ -282,10 +283,11 @@ findViewById(R.id.chatNavButton)
 
                     } else {
 
+                        // Logged-in user ki actual profile
                         startActivity(
                                 new Intent(
                                         MainActivity.this,
-                                        ProfileActivity.class
+                                        MyProfileActivity.class
                                 )
                         );
                     }
