@@ -28,6 +28,8 @@ public class UserProfileActivity extends AppCompatActivity {
     private FirebaseAuth auth;
 
     private String userUid;
+    private boolean isFollowing = false;
+    private boolean actionRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,14 +65,9 @@ public class UserProfileActivity extends AppCompatActivity {
         }
 
         loadUserProfile();
+        checkFollowStatus();
 
-        followButton.setOnClickListener(v -> {
-            Toast.makeText(
-                    UserProfileActivity.this,
-                    "Follow system next step mein connect hoga.",
-                    Toast.LENGTH_SHORT
-            ).show();
-        });
+        followButton.setOnClickListener(v -> toggleFollow());
     }
 
     private void loadUserProfile() {
@@ -111,9 +108,7 @@ public class UserProfileActivity extends AppCompatActivity {
                         if (username.startsWith("@")) {
                             usernameText.setText(username);
                         } else {
-                            usernameText.setText(
-                                    "@" + username
-                            );
+                            usernameText.setText("@" + username);
                         }
 
                     } else {
@@ -156,9 +151,7 @@ public class UserProfileActivity extends AppCompatActivity {
                     );
 
                     String imageUrl =
-                            document.getString(
-                                    "profileImageUrl"
-                            );
+                            document.getString("profileImageUrl");
 
                     if (!TextUtils.isEmpty(imageUrl)) {
                         profileImage.setContentDescription(
@@ -166,13 +159,152 @@ public class UserProfileActivity extends AppCompatActivity {
                         );
                     }
                 })
-                .addOnFailureListener(e -> {
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                UserProfileActivity.this,
+                                "Profile load nahi hui.",
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
+    }
 
-                    Toast.makeText(
-                            UserProfileActivity.this,
-                            "Profile load nahi hui.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                });
+    private void checkFollowStatus() {
+
+        FollowFirebaseHelper.checkFollowing(
+                userUid,
+                new FollowFirebaseHelper.StatusCallback() {
+
+                    @Override
+                    public void onResult(boolean following) {
+
+                        isFollowing = following;
+                        updateFollowButton();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+
+                        Toast.makeText(
+                                UserProfileActivity.this,
+                                message,
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+        );
+    }
+
+    private void toggleFollow() {
+
+        if (actionRunning) {
+            return;
+        }
+
+        if (isFollowing) {
+            unfollowUser();
+        } else {
+            followUser();
+        }
+    }
+
+    private void followUser() {
+
+        actionRunning = true;
+        followButton.setEnabled(false);
+        followButton.setText("Following...");
+
+        FollowFirebaseHelper.followUser(
+                userUid,
+                new FollowFirebaseHelper.ActionCallback() {
+
+                    @Override
+                    public void onSuccess() {
+
+                        isFollowing = true;
+                        actionRunning = false;
+
+                        followButton.setEnabled(true);
+                        updateFollowButton();
+
+                        loadUserProfile();
+
+                        Toast.makeText(
+                                UserProfileActivity.this,
+                                "Following",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+
+                        actionRunning = false;
+                        followButton.setEnabled(true);
+
+                        updateFollowButton();
+
+                        Toast.makeText(
+                                UserProfileActivity.this,
+                                message,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
+        );
+    }
+
+    private void unfollowUser() {
+
+        actionRunning = true;
+        followButton.setEnabled(false);
+        followButton.setText("Unfollowing...");
+
+        FollowFirebaseHelper.unfollowUser(
+                userUid,
+                new FollowFirebaseHelper.ActionCallback() {
+
+                    @Override
+                    public void onSuccess() {
+
+                        isFollowing = false;
+                        actionRunning = false;
+
+                        followButton.setEnabled(true);
+                        updateFollowButton();
+
+                        loadUserProfile();
+
+                        Toast.makeText(
+                                UserProfileActivity.this,
+                                "Unfollowed",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+
+                    @Override
+                    public void onError(String message) {
+
+                        actionRunning = false;
+                        followButton.setEnabled(true);
+
+                        updateFollowButton();
+
+                        Toast.makeText(
+                                UserProfileActivity.this,
+                                message,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
+        );
+    }
+
+    private void updateFollowButton() {
+
+        if (isFollowing) {
+            followButton.setText("Following");
+        } else {
+            followButton.setText("Follow");
+        }
     }
 }
