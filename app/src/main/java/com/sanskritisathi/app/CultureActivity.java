@@ -1,8 +1,6 @@
 package com.sanskritisathi.app;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,10 +14,9 @@ public class CultureActivity extends AppCompatActivity {
 
     private RecyclerView cultureRecyclerView;
     private CulturePostAdapter culturePostAdapter;
+
     private final ArrayList<CulturePost> culturePostList =
             new ArrayList<>();
-
-    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,9 +26,6 @@ public class CultureActivity extends AppCompatActivity {
 
         cultureRecyclerView =
                 findViewById(R.id.cultureRecyclerView);
-
-        progressBar =
-                findViewById(R.id.progressBar);
 
         cultureRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
@@ -54,8 +48,6 @@ public class CultureActivity extends AppCompatActivity {
 
     private void loadPosts() {
 
-        showLoading(true);
-
         CulturePostFirebaseHelper.getPublicPosts(
                 new CulturePostFirebaseHelper.PostsCallback() {
 
@@ -71,10 +63,7 @@ public class CultureActivity extends AppCompatActivity {
 
                         culturePostAdapter.notifyDataSetChanged();
 
-                        showLoading(false);
-
                         if (culturePostList.isEmpty()) {
-
                             Toast.makeText(
                                     CultureActivity.this,
                                     "Abhi koi public post available nahi hai.",
@@ -87,8 +76,6 @@ public class CultureActivity extends AppCompatActivity {
                     public void onError(
                             String message) {
 
-                        showLoading(false);
-
                         Toast.makeText(
                                 CultureActivity.this,
                                 message,
@@ -99,24 +86,10 @@ public class CultureActivity extends AppCompatActivity {
         );
     }
 
-    private void showLoading(
-            boolean loading) {
-
-        if (progressBar != null) {
-
-            progressBar.setVisibility(
-                    loading
-                            ? View.VISIBLE
-                            : View.GONE
-            );
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
 
-        // Feed refresh
         if (culturePostAdapter != null) {
             loadPosts();
         }
