@@ -48,6 +48,11 @@
             android:name=".MyProfileActivity"
             android:exported="false" />
 
+        <!-- Other User Profile -->
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false" />
+
         <!-- Raja -->
         <activity
             android:name=".RajaActivity"
