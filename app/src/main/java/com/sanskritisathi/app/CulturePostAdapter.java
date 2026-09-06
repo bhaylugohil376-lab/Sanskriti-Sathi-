@@ -69,9 +69,9 @@ public class CulturePostAdapter
 
         String authorUid = post.getAuthorUid();
 
-        // =========================
+        // =================================================
         // BASIC DATA
-        // =========================
+        // =================================================
 
         holder.postAuthor.setText(author);
 
@@ -89,9 +89,13 @@ public class CulturePostAdapter
                 )
         );
 
-        // =========================
-        // IMAGES
-        // =========================
+        holder.likeCount.setText(
+                "❤️ " + post.getLikeCount() + " likes"
+        );
+
+        // =================================================
+        // LOCAL IMAGE
+        // =================================================
 
         holder.postProfileImage.setImageResource(
                 post.getProfileImageResId()
@@ -101,125 +105,322 @@ public class CulturePostAdapter
                 post.getPostImageResId()
         );
 
-        // =========================
-        // OPEN USER PROFILE
-        // =========================
+        // =================================================
+        // PROFILE
+        // =================================================
 
         View.OnClickListener profileClick =
                 v -> openUserProfile(post);
 
-        holder.postProfileImage.setOnClickListener(profileClick);
-        holder.postAuthor.setOnClickListener(profileClick);
+        holder.postProfileImage.setOnClickListener(
+                profileClick
+        );
 
-        // =========================
-        // FOLLOW STATUS
-        // =========================
+        holder.postAuthor.setOnClickListener(
+                profileClick
+        );
+
+        // =================================================
+        // FOLLOW
+        // =================================================
 
         if (isValidUid(authorUid)) {
 
-            loadFollowStatus(
-                    holder,
-                    authorUid
-            );
+            FirebaseUser currentUser =
+                    FirebaseAuth.getInstance()
+                            .getCurrentUser();
 
-            holder.followStatus.setOnClickListener(v ->
-                    toggleFollow(
-                            holder,
-                            authorUid,
-                            author
-                    )
-            );
+            // Apni khud ki post
+            if (currentUser != null &&
+                    currentUser.getUid().equals(authorUid)) {
+
+                holder.followStatus.setText(
+                        "  •  You"
+                );
+
+                holder.followStatus.setTextColor(
+                        0xFF757575
+                );
+
+                holder.followStatus.setEnabled(false);
+
+            } else {
+
+                holder.followStatus.setEnabled(true);
+
+                loadFollowStatus(
+                        holder,
+                        authorUid
+                );
+
+                holder.followStatus.setOnClickListener(
+                        v -> toggleFollow(
+                                holder,
+                                authorUid
+                        )
+                );
+            }
 
         } else {
 
-            holder.followStatus.setText("  •  Follow");
+            holder.followStatus.setText(
+                    "  •  Follow"
+            );
+
             holder.followStatus.setTextColor(
                     0xFF1976D2
             );
 
-            holder.followStatus.setOnClickListener(v ->
-                    Toast.makeText(
-                            context,
-                            "Is profile ka account link available nahi hai.",
-                            Toast.LENGTH_SHORT
-                    ).show()
+            holder.followStatus.setEnabled(false);
+        }
+
+        // =================================================
+        // LIKE
+        // =================================================
+
+        updateLikeUI(
+                holder,
+                post
+        );
+
+        if (isValidPostId(post.getId())) {
+
+            CulturePostFirebaseHelper.checkLiked(
+                    post.getId(),
+                    liked -> {
+
+                        post.setLiked(liked);
+
+                        int currentPosition =
+                                holder.getBindingAdapterPosition();
+
+                        if (currentPosition !=
+                                RecyclerView.NO_POSITION) {
+
+                            updateLikeUI(
+                                    holder,
+                                    post
+                            );
+                        }
+                    }
             );
         }
 
-        // =========================
-        // LIKE
-        // =========================
+        holder.likeButton.setOnClickListener(
+                v -> handleLike(
+                        holder,
+                        post
+                )
+        );
 
-        updateLikeUI(holder, post);
-
-        holder.likeButton.setOnClickListener(v -> {
-
-            post.toggleLiked();
-
-            updateLikeUI(holder, post);
-        });
-
-        // =========================
+        // =================================================
         // COMMENT
-        // =========================
+        // =================================================
 
         holder.commentButton.setOnClickListener(
                 v -> showCommentDialog(post)
         );
 
-        // =========================
+        // =================================================
         // SHARE
-        // =========================
+        // =================================================
 
         holder.shareButton.setOnClickListener(
                 v -> sharePost(post)
         );
 
-        // =========================
+        // =================================================
         // SAVE
-        // =========================
+        // =================================================
 
-        updateSaveUI(holder, post);
-
-        holder.saveButton.setOnClickListener(v -> {
-
-            post.toggleSaved();
-
-            updateSaveUI(holder, post);
-        });
-
-        // =========================
-        // POST MENU
-        // =========================
-
-        holder.postMenu.setOnClickListener(
-                v -> showPostMenu(holder, post)
+        updateSaveUI(
+                holder,
+                post
         );
 
-        // =========================
-        // DELETE
-        // =========================
+        holder.saveButton.setOnClickListener(
+                v -> {
 
-        holder.deletePostButton.setOnClickListener(v -> {
+                    post.toggleSaved();
 
-            int adapterPosition =
-                    holder.getBindingAdapterPosition();
+                    updateSaveUI(
+                            holder,
+                            post
+                    );
+                }
+        );
 
-            if (adapterPosition == RecyclerView.NO_POSITION) {
-                return;
-            }
+        // =================================================
+        // MENU
+        // =================================================
 
-            showDeleteConfirmation(adapterPosition);
-        });
+        holder.postMenu.setOnClickListener(
+                v -> showPostMenu(
+                        holder,
+                        post
+                )
+        );
+
+        // =================================================
+        // DELETE VISIBILITY
+        // =================================================
+
+        if (isOwnPost(post)) {
+
+            holder.deletePostButton.setVisibility(
+                    View.VISIBLE
+            );
+
+            holder.deletePostButton.setOnClickListener(
+                    v -> {
+
+                        int adapterPosition =
+                                holder.getBindingAdapterPosition();
+
+                        if (adapterPosition ==
+                                RecyclerView.NO_POSITION) {
+                            return;
+                        }
+
+                        showDeleteConfirmation(
+                                adapterPosition
+                        );
+                    }
+            );
+
+        } else {
+
+            holder.deletePostButton.setVisibility(
+                    View.GONE
+            );
+
+            holder.deletePostButton.setOnClickListener(
+                    null
+            );
+        }
     }
 
     // =====================================================
-    // OPEN USER PROFILE
+    // LIKE HANDLER
     // =====================================================
 
-    private void openUserProfile(CulturePost post) {
+    private void handleLike(
+            PostViewHolder holder,
+            CulturePost post) {
 
-        String uid = post.getAuthorUid();
+        if (!isValidPostId(post.getId())) {
+
+            Toast.makeText(
+                    context,
+                    "Ye local post hai. Firebase ID available nahi hai.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        FirebaseUser user =
+                FirebaseAuth.getInstance()
+                        .getCurrentUser();
+
+        if (user == null) {
+
+            Toast.makeText(
+                    context,
+                    "Pehle Login karein.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        holder.likeButton.setEnabled(false);
+
+        CulturePostFirebaseHelper.toggleLike(
+                post.getId(),
+                new CulturePostFirebaseHelper.LikeCallback() {
+
+                    @Override
+                    public void onSuccess(
+                            boolean liked,
+                            int likeCount) {
+
+                        post.setLiked(liked);
+                        post.setLikeCount(likeCount);
+
+                        holder.likeButton.setEnabled(
+                                true
+                        );
+
+                        updateLikeUI(
+                                holder,
+                                post
+                        );
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        holder.likeButton.setEnabled(
+                                true
+                        );
+
+                        Toast.makeText(
+                                context,
+                                message,
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                }
+        );
+    }
+
+    // =====================================================
+    // LIKE UI
+    // =====================================================
+
+    private void updateLikeUI(
+            PostViewHolder holder,
+            CulturePost post) {
+
+        if (post.isLiked()) {
+
+            holder.likeButton.setText(
+                    "❤️  Liked"
+            );
+
+            holder.likeButton.setTextColor(
+                    0xFFE53935
+            );
+
+        } else {
+
+            holder.likeButton.setText(
+                    "♡  Like"
+            );
+
+            holder.likeButton.setTextColor(
+                    0xFF222222
+            );
+        }
+
+        holder.likeCount.setText(
+                "❤️ " +
+                        post.getLikeCount() +
+                        " likes"
+        );
+    }
+
+    // =====================================================
+    // PROFILE
+    // =====================================================
+
+    private void openUserProfile(
+            CulturePost post) {
+
+        String uid =
+                post.getAuthorUid();
 
         if (!isValidUid(uid)) {
 
@@ -233,7 +434,8 @@ public class CulturePostAdapter
         }
 
         FirebaseUser currentUser =
-                FirebaseAuth.getInstance().getCurrentUser();
+                FirebaseAuth.getInstance()
+                        .getCurrentUser();
 
         if (currentUser != null &&
                 currentUser.getUid().equals(uid)) {
@@ -263,12 +465,25 @@ public class CulturePostAdapter
     }
 
     // =====================================================
-    // LOAD FOLLOW STATUS
+    // FOLLOW STATUS
     // =====================================================
 
     private void loadFollowStatus(
             PostViewHolder holder,
             String authorUid) {
+
+        Boolean cached =
+                followingMap.get(authorUid);
+
+        if (cached != null) {
+
+            updateFollowText(
+                    holder.followStatus,
+                    cached
+            );
+
+            return;
+        }
 
         FollowFirebaseHelper.checkFollowing(
                 authorUid,
@@ -283,10 +498,14 @@ public class CulturePostAdapter
                                 following
                         );
 
-                        updateFollowText(
-                                holder.followStatus,
-                                following
-                        );
+                        if (holder.getBindingAdapterPosition()
+                                != RecyclerView.NO_POSITION) {
+
+                            updateFollowText(
+                                    holder.followStatus,
+                                    following
+                            );
+                        }
                     }
 
                     @Override
@@ -308,8 +527,7 @@ public class CulturePostAdapter
 
     private void toggleFollow(
             PostViewHolder holder,
-            String authorUid,
-            String author) {
+            String authorUid) {
 
         Boolean value =
                 followingMap.get(authorUid);
@@ -317,7 +535,9 @@ public class CulturePostAdapter
         boolean currentlyFollowing =
                 value != null && value;
 
-        holder.followStatus.setEnabled(false);
+        holder.followStatus.setEnabled(
+                false
+        );
 
         if (currentlyFollowing) {
 
@@ -337,7 +557,9 @@ public class CulturePostAdapter
                                     false
                             );
 
-                            holder.followStatus.setEnabled(true);
+                            holder.followStatus.setEnabled(
+                                    true
+                            );
 
                             updateFollowText(
                                     holder.followStatus,
@@ -349,7 +571,9 @@ public class CulturePostAdapter
                         public void onError(
                                 String message) {
 
-                            holder.followStatus.setEnabled(true);
+                            holder.followStatus.setEnabled(
+                                    true
+                            );
 
                             updateFollowText(
                                     holder.followStatus,
@@ -383,7 +607,9 @@ public class CulturePostAdapter
                                     true
                             );
 
-                            holder.followStatus.setEnabled(true);
+                            holder.followStatus.setEnabled(
+                                    true
+                            );
 
                             updateFollowText(
                                     holder.followStatus,
@@ -395,7 +621,9 @@ public class CulturePostAdapter
                         public void onError(
                                 String message) {
 
-                            holder.followStatus.setEnabled(true);
+                            holder.followStatus.setEnabled(
+                                    true
+                            );
 
                             updateFollowText(
                                     holder.followStatus,
@@ -444,73 +672,37 @@ public class CulturePostAdapter
     }
 
     // =====================================================
-    // LIKE UI
-    // =====================================================
-
-    private void updateLikeUI(
-            PostViewHolder holder,
-            CulturePost post) {
-
-        if (post.isLiked()) {
-
-            holder.likeButton.setText(
-                    "❤️  Liked"
-            );
-
-            holder.likeButton.setTextColor(
-                    0xFFE53935
-            );
-
-        } else {
-
-            holder.likeButton.setText(
-                    "♡  Like"
-            );
-
-            holder.likeButton.setTextColor(
-                    0xFF222222
-            );
-        }
-
-        holder.likeCount.setText(
-                "❤️ " +
-                        post.getLikeCount() +
-                        " likes"
-        );
-    }
-
-    // =====================================================
-    // SAVE UI
-    // =====================================================
-
-    private void updateSaveUI(
-            PostViewHolder holder,
-            CulturePost post) {
-
-        if (post.isSaved()) {
-
-            holder.saveButton.setText("🔖");
-
-            holder.saveButton.setTextColor(
-                    0xFFF57C00
-            );
-
-        } else {
-
-            holder.saveButton.setText("♡");
-
-            holder.saveButton.setTextColor(
-                    0xFF222222
-            );
-        }
-    }
-
-    // =====================================================
     // COMMENT
     // =====================================================
 
     private void showCommentDialog(
             CulturePost post) {
+
+        if (!isValidPostId(post.getId())) {
+
+            Toast.makeText(
+                    context,
+                    "Comment ke liye Firebase post chahiye.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        FirebaseUser user =
+                FirebaseAuth.getInstance()
+                        .getCurrentUser();
+
+        if (user == null) {
+
+            Toast.makeText(
+                    context,
+                    "Pehle Login karein.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
 
         EditText input =
                 new EditText(context);
@@ -536,7 +728,7 @@ public class CulturePostAdapter
         );
 
         new AlertDialog.Builder(context)
-                .setTitle("💬 Comment")
+                .setTitle("Comment")
                 .setView(input)
                 .setNegativeButton(
                         "Cancel",
@@ -551,22 +743,22 @@ public class CulturePostAdapter
                                             .toString()
                                             .trim();
 
-                            if (!comment.isEmpty()) {
-
-                                Toast.makeText(
-                                        context,
-                                        "Comment posted",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-
-                            } else {
+                            if (comment.isEmpty()) {
 
                                 Toast.makeText(
                                         context,
                                         "Comment खाली है",
                                         Toast.LENGTH_SHORT
                                 ).show();
+
+                                return;
                             }
+
+                            Toast.makeText(
+                                    context,
+                                    "Comment system next step mein Firebase se connect hoga.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         }
                 )
                 .show();
@@ -619,7 +811,7 @@ public class CulturePostAdapter
     }
 
     // =====================================================
-    // POST MENU
+    // MENU
     // =====================================================
 
     private void showPostMenu(
@@ -627,11 +819,30 @@ public class CulturePostAdapter
             CulturePost post) {
 
         String[] options = {
-                "🔗 Share",
-                "🔖 Save",
-                "🚫 Report",
-                "🗑️ Delete Post"
+                "Share",
+                "Save",
+                "Report"
         };
+
+        FirebaseUser user =
+                FirebaseAuth.getInstance()
+                        .getCurrentUser();
+
+        boolean ownPost =
+                user != null &&
+                        user.getUid().equals(
+                                post.getAuthorUid()
+                        );
+
+        if (ownPost) {
+
+            options = new String[]{
+                    "Share",
+                    "Save",
+                    "Report",
+                    "Delete Post"
+            };
+        }
 
         new AlertDialog.Builder(context)
                 .setTitle("Post Options")
@@ -639,61 +850,41 @@ public class CulturePostAdapter
                         options,
                         (dialog, which) -> {
 
-                            switch (which) {
+                            if (which == 0) {
 
-                                case 0:
-                                    sharePost(post);
-                                    break;
+                                sharePost(post);
 
-                                case 1:
+                            } else if (which == 1) {
 
-                                    post.toggleSaved();
+                                post.toggleSaved();
 
-                                    Toast.makeText(
-                                            context,
-                                            post.isSaved()
-                                                    ? "Post saved"
-                                                    : "Post unsaved",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
+                                updateSaveUI(
+                                        holder,
+                                        post
+                                );
 
-                                    int savePosition =
-                                            holder.getBindingAdapterPosition();
+                            } else if (which == 2) {
 
-                                    if (savePosition !=
-                                            RecyclerView.NO_POSITION) {
+                                Toast.makeText(
+                                        context,
+                                        "Report option selected.",
+                                        Toast.LENGTH_SHORT
+                                ).show();
 
-                                        notifyItemChanged(
-                                                savePosition
-                                        );
-                                    }
+                            } else if (
+                                    which == 3 &&
+                                            ownPost) {
 
-                                    break;
+                                int position =
+                                        holder.getBindingAdapterPosition();
 
-                                case 2:
+                                if (position !=
+                                        RecyclerView.NO_POSITION) {
 
-                                    Toast.makeText(
-                                            context,
-                                            "Report option selected",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-
-                                    break;
-
-                                case 3:
-
-                                    int position =
-                                            holder.getBindingAdapterPosition();
-
-                                    if (position !=
-                                            RecyclerView.NO_POSITION) {
-
-                                        showDeleteConfirmation(
-                                                position
-                                        );
-                                    }
-
-                                    break;
+                                    showDeleteConfirmation(
+                                            position
+                                    );
+                                }
                             }
                         }
                 )
@@ -701,7 +892,37 @@ public class CulturePostAdapter
     }
 
     // =====================================================
-    // DELETE
+    // SAVE UI
+    // =====================================================
+
+    private void updateSaveUI(
+            PostViewHolder holder,
+            CulturePost post) {
+
+        if (post.isSaved()) {
+
+            holder.saveButton.setText(
+                    "🔖"
+            );
+
+            holder.saveButton.setTextColor(
+                    0xFFF57C00
+            );
+
+        } else {
+
+            holder.saveButton.setText(
+                    "♡"
+            );
+
+            holder.saveButton.setTextColor(
+                    0xFF222222
+            );
+        }
+    }
+
+    // =====================================================
+    // DELETE CONFIRMATION
     // =====================================================
 
     private void showDeleteConfirmation(
@@ -709,6 +930,19 @@ public class CulturePostAdapter
 
         if (position < 0 ||
                 position >= postList.size()) {
+            return;
+        }
+
+        CulturePost post =
+                postList.get(position);
+
+        if (!isOwnPost(post)) {
+
+            Toast.makeText(
+                    context,
+                    "Aap sirf apni post delete kar sakte hain.",
+                    Toast.LENGTH_SHORT
+            ).show();
 
             return;
         }
@@ -716,7 +950,7 @@ public class CulturePostAdapter
         new AlertDialog.Builder(context)
                 .setTitle("Delete Post?")
                 .setMessage(
-                        "Kya aap is post ko delete karna chahte hain?"
+                        "Kya aap is post ko permanently delete karna chahte hain?"
                 )
                 .setNegativeButton(
                         "Cancel",
@@ -726,20 +960,69 @@ public class CulturePostAdapter
                         "Delete",
                         (dialog, which) -> {
 
-                            postList.remove(position);
+                            CulturePostFirebaseHelper.deletePost(
+                                    post.getId(),
+                                    new CulturePostFirebaseHelper.ActionCallback() {
 
-                            notifyItemRemoved(
-                                    position
+                                        @Override
+                                        public void onSuccess() {
+
+                                            int currentPosition =
+                                                    postList.indexOf(post);
+
+                                            if (currentPosition >= 0 &&
+                                                    currentPosition <
+                                                            postList.size()) {
+
+                                                postList.remove(
+                                                        currentPosition
+                                                );
+
+                                                notifyItemRemoved(
+                                                        currentPosition
+                                                );
+                                            }
+
+                                            Toast.makeText(
+                                                    context,
+                                                    "Post deleted.",
+                                                    Toast.LENGTH_SHORT
+                                            ).show();
+                                        }
+
+                                        @Override
+                                        public void onError(
+                                                String message) {
+
+                                            Toast.makeText(
+                                                    context,
+                                                    message,
+                                                    Toast.LENGTH_LONG
+                                            ).show();
+                                        }
+                                    }
                             );
-
-                            Toast.makeText(
-                                    context,
-                                    "Post deleted",
-                                    Toast.LENGTH_SHORT
-                            ).show();
                         }
                 )
                 .show();
+    }
+
+    // =====================================================
+    // OWN POST
+    // =====================================================
+
+    private boolean isOwnPost(
+            CulturePost post) {
+
+        FirebaseUser user =
+                FirebaseAuth.getInstance()
+                        .getCurrentUser();
+
+        return user != null &&
+                post != null &&
+                user.getUid().equals(
+                        post.getAuthorUid()
+                );
     }
 
     // =====================================================
@@ -760,7 +1043,18 @@ public class CulturePostAdapter
     }
 
     // =====================================================
-    // UID VALIDATION
+    // VALID POST ID
+    // =====================================================
+
+    private boolean isValidPostId(
+            String postId) {
+
+        return postId != null &&
+                !postId.trim().isEmpty();
+    }
+
+    // =====================================================
+    // VALID UID
     // =====================================================
 
     private boolean isValidUid(
