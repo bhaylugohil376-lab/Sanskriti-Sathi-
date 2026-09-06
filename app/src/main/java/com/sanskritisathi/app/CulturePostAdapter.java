@@ -8,15 +8,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.widget.ImageView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +28,8 @@ public class CulturePostAdapter
     private final Context context;
     private final List<CulturePost> postList;
 
-    // Author-wise Follow / Following state
-    private final Map<String, Boolean> followingMap = new HashMap<>();
+    private final Map<String, Boolean> followingMap =
+            new HashMap<>();
 
     public CulturePostAdapter(
             Context context,
@@ -61,16 +62,24 @@ public class CulturePostAdapter
 
         CulturePost post = postList.get(position);
 
-        // =========================
-        // BASIC POST DATA
-        // =========================
-
-        holder.postAuthor.setText(
-                safeText(post.getAuthor(), "Sanskriti Sathi")
+        String author = safeText(
+                post.getAuthor(),
+                "Sanskriti Sathi"
         );
 
+        String authorUid = post.getAuthorUid();
+
+        // =========================
+        // BASIC DATA
+        // =========================
+
+        holder.postAuthor.setText(author);
+
         holder.postCategory.setText(
-                safeText(post.getCategory(), "संस्कृति समाचार")
+                safeText(
+                        post.getCategory(),
+                        "संस्कृति समाचार"
+                )
         );
 
         holder.postCaption.setText(
@@ -93,59 +102,49 @@ public class CulturePostAdapter
         );
 
         // =========================
-        // FOLLOW / FOLLOWING
+        // OPEN USER PROFILE
         // =========================
 
-        String author = safeText(
-                post.getAuthor(),
-                "Sanskriti Sathi"
-        );
+        View.OnClickListener profileClick =
+                v -> openUserProfile(post);
 
-        boolean isFollowing =
-                followingMap.containsKey(author)
-                        && Boolean.TRUE.equals(
-                        followingMap.get(author)
-                );
+        holder.postProfileImage.setOnClickListener(profileClick);
+        holder.postAuthor.setOnClickListener(profileClick);
 
-        updateFollowText(
-                holder.followStatus,
-                isFollowing
-        );
+        // =========================
+        // FOLLOW STATUS
+        // =========================
 
-        holder.followStatus.setOnClickListener(v -> {
+        if (isValidUid(authorUid)) {
 
-            boolean currentState =
-                    followingMap.containsKey(author)
-                            && Boolean.TRUE.equals(
-                            followingMap.get(author)
-                    );
-
-            boolean newState = !currentState;
-
-            followingMap.put(author, newState);
-
-            updateFollowText(
-                    holder.followStatus,
-                    newState
+            loadFollowStatus(
+                    holder,
+                    authorUid
             );
 
-            if (newState) {
+            holder.followStatus.setOnClickListener(v ->
+                    toggleFollow(
+                            holder,
+                            authorUid,
+                            author
+                    )
+            );
 
-                Toast.makeText(
-                        context,
-                        "Following " + author,
-                        Toast.LENGTH_SHORT
-                ).show();
+        } else {
 
-            } else {
+            holder.followStatus.setText("  •  Follow");
+            holder.followStatus.setTextColor(
+                    0xFF1976D2
+            );
 
-                Toast.makeText(
-                        context,
-                        "Unfollowed " + author,
-                        Toast.LENGTH_SHORT
-                ).show();
-            }
-        });
+            holder.followStatus.setOnClickListener(v ->
+                    Toast.makeText(
+                            context,
+                            "Is profile ka account link available nahi hai.",
+                            Toast.LENGTH_SHORT
+                    ).show()
+            );
+        }
 
         // =========================
         // LIKE
@@ -158,10 +157,6 @@ public class CulturePostAdapter
             post.toggleLiked();
 
             updateLikeUI(holder, post);
-
-            notifyItemChanged(
-                    holder.getBindingAdapterPosition()
-            );
         });
 
         // =========================
@@ -219,6 +214,206 @@ public class CulturePostAdapter
     }
 
     // =====================================================
+    // OPEN USER PROFILE
+    // =====================================================
+
+    private void openUserProfile(CulturePost post) {
+
+        String uid = post.getAuthorUid();
+
+        if (!isValidUid(uid)) {
+
+            Toast.makeText(
+                    context,
+                    "User profile link available nahi hai.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        FirebaseUser currentUser =
+                FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null &&
+                currentUser.getUid().equals(uid)) {
+
+            context.startActivity(
+                    new Intent(
+                            context,
+                            MyProfileActivity.class
+                    )
+            );
+
+            return;
+        }
+
+        Intent intent =
+                new Intent(
+                        context,
+                        UserProfileActivity.class
+                );
+
+        intent.putExtra(
+                "user_uid",
+                uid
+        );
+
+        context.startActivity(intent);
+    }
+
+    // =====================================================
+    // LOAD FOLLOW STATUS
+    // =====================================================
+
+    private void loadFollowStatus(
+            PostViewHolder holder,
+            String authorUid) {
+
+        FollowFirebaseHelper.checkFollowing(
+                authorUid,
+                new FollowFirebaseHelper.StatusCallback() {
+
+                    @Override
+                    public void onResult(
+                            boolean following) {
+
+                        followingMap.put(
+                                authorUid,
+                                following
+                        );
+
+                        updateFollowText(
+                                holder.followStatus,
+                                following
+                        );
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        updateFollowText(
+                                holder.followStatus,
+                                false
+                        );
+                    }
+                }
+        );
+    }
+
+    // =====================================================
+    // FOLLOW / UNFOLLOW
+    // =====================================================
+
+    private void toggleFollow(
+            PostViewHolder holder,
+            String authorUid,
+            String author) {
+
+        Boolean value =
+                followingMap.get(authorUid);
+
+        boolean currentlyFollowing =
+                value != null && value;
+
+        holder.followStatus.setEnabled(false);
+
+        if (currentlyFollowing) {
+
+            holder.followStatus.setText(
+                    "  •  Unfollowing..."
+            );
+
+            FollowFirebaseHelper.unfollowUser(
+                    authorUid,
+                    new FollowFirebaseHelper.ActionCallback() {
+
+                        @Override
+                        public void onSuccess() {
+
+                            followingMap.put(
+                                    authorUid,
+                                    false
+                            );
+
+                            holder.followStatus.setEnabled(true);
+
+                            updateFollowText(
+                                    holder.followStatus,
+                                    false
+                            );
+                        }
+
+                        @Override
+                        public void onError(
+                                String message) {
+
+                            holder.followStatus.setEnabled(true);
+
+                            updateFollowText(
+                                    holder.followStatus,
+                                    true
+                            );
+
+                            Toast.makeText(
+                                    context,
+                                    message,
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    }
+            );
+
+        } else {
+
+            holder.followStatus.setText(
+                    "  •  Following..."
+            );
+
+            FollowFirebaseHelper.followUser(
+                    authorUid,
+                    new FollowFirebaseHelper.ActionCallback() {
+
+                        @Override
+                        public void onSuccess() {
+
+                            followingMap.put(
+                                    authorUid,
+                                    true
+                            );
+
+                            holder.followStatus.setEnabled(true);
+
+                            updateFollowText(
+                                    holder.followStatus,
+                                    true
+                            );
+                        }
+
+                        @Override
+                        public void onError(
+                                String message) {
+
+                            holder.followStatus.setEnabled(true);
+
+                            updateFollowText(
+                                    holder.followStatus,
+                                    false
+                            );
+
+                            Toast.makeText(
+                                    context,
+                                    message,
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    }
+            );
+        }
+    }
+
+    // =====================================================
     // FOLLOW UI
     // =====================================================
 
@@ -228,14 +423,20 @@ public class CulturePostAdapter
 
         if (following) {
 
-            textView.setText("  •  Following");
+            textView.setText(
+                    "  •  Following"
+            );
+
             textView.setTextColor(
                     0xFF757575
             );
 
         } else {
 
-            textView.setText("  •  Follow");
+            textView.setText(
+                    "  •  Follow"
+            );
+
             textView.setTextColor(
                     0xFF1976D2
             );
@@ -272,7 +473,9 @@ public class CulturePostAdapter
         }
 
         holder.likeCount.setText(
-                "❤️ " + post.getLikeCount() + " likes"
+                "❤️ " +
+                        post.getLikeCount() +
+                        " likes"
         );
     }
 
@@ -287,6 +490,7 @@ public class CulturePostAdapter
         if (post.isSaved()) {
 
             holder.saveButton.setText("🔖");
+
             holder.saveButton.setTextColor(
                     0xFFF57C00
             );
@@ -294,6 +498,7 @@ public class CulturePostAdapter
         } else {
 
             holder.saveButton.setText("♡");
+
             holder.saveButton.setTextColor(
                     0xFF222222
             );
@@ -301,13 +506,14 @@ public class CulturePostAdapter
     }
 
     // =====================================================
-    // COMMENT DIALOG
+    // COMMENT
     // =====================================================
 
     private void showCommentDialog(
             CulturePost post) {
 
-        EditText input = new EditText(context);
+        EditText input =
+                new EditText(context);
 
         input.setHint(
                 "अपनी टिप्पणी लिखें..."
@@ -440,6 +646,7 @@ public class CulturePostAdapter
                                     break;
 
                                 case 1:
+
                                     post.toggleSaved();
 
                                     Toast.makeText(
@@ -450,17 +657,27 @@ public class CulturePostAdapter
                                             Toast.LENGTH_SHORT
                                     ).show();
 
-                                    notifyItemChanged(
-                                            holder.getBindingAdapterPosition()
-                                    );
+                                    int savePosition =
+                                            holder.getBindingAdapterPosition();
+
+                                    if (savePosition !=
+                                            RecyclerView.NO_POSITION) {
+
+                                        notifyItemChanged(
+                                                savePosition
+                                        );
+                                    }
+
                                     break;
 
                                 case 2:
+
                                     Toast.makeText(
                                             context,
                                             "Report option selected",
                                             Toast.LENGTH_SHORT
                                     ).show();
+
                                     break;
 
                                 case 3:
@@ -484,7 +701,7 @@ public class CulturePostAdapter
     }
 
     // =====================================================
-    // DELETE CONFIRMATION
+    // DELETE
     // =====================================================
 
     private void showDeleteConfirmation(
@@ -492,6 +709,7 @@ public class CulturePostAdapter
 
         if (position < 0 ||
                 position >= postList.size()) {
+
             return;
         }
 
@@ -539,6 +757,17 @@ public class CulturePostAdapter
         }
 
         return value.trim();
+    }
+
+    // =====================================================
+    // UID VALIDATION
+    // =====================================================
+
+    private boolean isValidUid(
+            String uid) {
+
+        return uid != null &&
+                !uid.trim().isEmpty();
     }
 
     // =====================================================
