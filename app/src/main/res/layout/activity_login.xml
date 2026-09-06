@@ -14,7 +14,7 @@
         android:padding="24dp"
         android:gravity="center_horizontal">
 
-        <!-- Logo -->
+        <!-- OM LOGO -->
 
         <TextView
             android:layout_width="76dp"
@@ -25,9 +25,9 @@
             android:textSize="46sp"
             android:textStyle="bold"
             android:textColor="#6A1B9A"
-            android:background="#FFFFFF" />
+            android:background="#FFFFFF"/>
 
-        <!-- App Name -->
+        <!-- APP NAME -->
 
         <TextView
             android:layout_width="match_parent"
@@ -37,7 +37,7 @@
             android:text="Sanskriti Sathi"
             android:textSize="30sp"
             android:textStyle="bold"
-            android:textColor="#311B5E" />
+            android:textColor="#311B5E"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -46,9 +46,9 @@
             android:gravity="center"
             android:text="भारत की संस्कृति • ज्ञान • परंपरा"
             android:textSize="15sp"
-            android:textColor="#756B80" />
+            android:textColor="#756B80"/>
 
-        <!-- Login / Create Account -->
+        <!-- LOGIN / CREATE ACCOUNT -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -67,7 +67,7 @@
                 android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="#6A1B9A"
-                android:background="#E9D7FF" />
+                android:background="#E9D7FF"/>
 
             <TextView
                 android:id="@+id/registerTabText"
@@ -79,11 +79,11 @@
                 android:textSize="16sp"
                 android:textColor="#777777"
                 android:clickable="true"
-                android:focusable="true" />
+                android:focusable="true"/>
 
         </LinearLayout>
 
-        <!-- Email -->
+        <!-- EMAIL -->
 
         <TextView
             android:layout_width="match_parent"
@@ -92,7 +92,7 @@
             android:text="Email"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:textColor="#4A4052" />
+            android:textColor="#4A4052"/>
 
         <EditText
             android:id="@+id/emailInput"
@@ -104,9 +104,9 @@
             android:singleLine="true"
             android:padding="14dp"
             android:textSize="16sp"
-            android:background="#FFFFFF" />
+            android:background="#FFFFFF"/>
 
-        <!-- Password -->
+        <!-- PASSWORD -->
 
         <TextView
             android:layout_width="match_parent"
@@ -115,7 +115,7 @@
             android:text="Password"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:textColor="#4A4052" />
+            android:textColor="#4A4052"/>
 
         <EditText
             android:id="@+id/passwordInput"
@@ -127,9 +127,9 @@
             android:singleLine="true"
             android:padding="14dp"
             android:textSize="16sp"
-            android:background="#FFFFFF" />
+            android:background="#FFFFFF"/>
 
-        <!-- Forgot Password -->
+        <!-- FORGOT PASSWORD -->
 
         <TextView
             android:id="@+id/forgotPasswordText"
@@ -142,35 +142,35 @@
             android:textStyle="bold"
             android:textColor="#6A1B9A"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"/>
 
-        <!-- Login -->
+        <!-- LOGIN BUTTON -->
 
         <Button
             android:id="@+id/loginButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="20dp"
-            android:text="🔐  Login"
+            android:text="🔐  LOGIN"
             android:textSize="17sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#6A1B9A" />
+            android:backgroundTint="#6A1B9A"/>
 
-        <!-- Create Account -->
+        <!-- CREATE ACCOUNT -->
 
         <Button
             android:id="@+id/registerButton"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
-            android:text="Create New Account"
+            android:text="CREATE NEW ACCOUNT"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="#6A1B9A"
-            android:backgroundTint="#EDE0FF" />
+            android:backgroundTint="#EDE0FF"/>
 
-        <!-- Divider -->
+        <!-- DIVIDER -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -183,85 +183,39 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#D0C6D8" />
+                android:background="#D0C6D8"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="12dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
                 android:text="OR"
                 android:textSize="14sp"
-                android:textColor="#777777" />
+                android:textColor="#777777"/>
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#D0C6D8" />
+                android:background="#D0C6D8"/>
 
         </LinearLayout>
 
-        <!-- Phone Login -->
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Login with Phone"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:textColor="#4A4052" />
-
-        <EditText
-            android:id="@+id/phoneInput"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            android:hint="📱  Phone Number (+91...)"
-            android:inputType="phone"
-            android:maxLength="13"
-            android:singleLine="true"
-            android:padding="14dp"
-            android:textSize="16sp"
-            android:background="#FFFFFF" />
+        <!-- GOOGLE LOGIN -->
 
         <Button
-            android:id="@+id/sendOtpButton"
+            android:id="@+id/googleLoginButton"
             android:layout_width="match_parent"
             android:layout_height="54dp"
-            android:layout_marginTop="10dp"
-            android:text="Send OTP"
+            android:layout_marginTop="8dp"
+            android:text="G   Continue with Google"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="#6A1B9A"
-            android:backgroundTint="#EDE0FF" />
+            android:textColor="#333333"
+            android:backgroundTint="#FFFFFF"/>
 
-        <EditText
-            android:id="@+id/otpInput"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="10dp"
-            android:hint="6 Digit OTP"
-            android:inputType="number"
-            android:maxLength="6"
-            android:singleLine="true"
-            android:padding="14dp"
-            android:textSize="16sp"
-            android:background="#FFFFFF" />
-
-        <Button
-            android:id="@+id/verifyOtpButton"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="10dp"
-            android:text="✅  Verify OTP"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#6A1B9A" />
-
-        <!-- Bottom -->
+        <!-- BOTTOM -->
 
         <TextView
             android:layout_width="match_parent"
@@ -271,7 +225,7 @@
             android:gravity="center"
             android:text="सुरक्षित तरीके से Sanskriti Sathi से जुड़ें ✨"
             android:textSize="13sp"
-            android:textColor="#8A7F91" />
+            android:textColor="#8A7F91"/>
 
     </LinearLayout>
 
