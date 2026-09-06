@@ -2,6 +2,8 @@ package com.sanskritisathi.app;
 
 public class CulturePost {
 
+    private String id;
+    private String authorUid;
     private String author;
     private String category;
     private String caption;
@@ -21,6 +23,30 @@ public class CulturePost {
             int profileImageResId,
             int postImageResId
     ) {
+        this(
+                "",
+                "",
+                author,
+                category,
+                caption,
+                likeCount,
+                profileImageResId,
+                postImageResId
+        );
+    }
+
+    public CulturePost(
+            String id,
+            String authorUid,
+            String author,
+            String category,
+            String caption,
+            int likeCount,
+            int profileImageResId,
+            int postImageResId
+    ) {
+        this.id = id;
+        this.authorUid = authorUid;
         this.author = author;
         this.category = category;
         this.caption = caption;
@@ -34,6 +60,14 @@ public class CulturePost {
     // =========================
     // GETTERS
     // =========================
+
+    public String getId() {
+        return id;
+    }
+
+    public String getAuthorUid() {
+        return authorUid;
+    }
 
     public String getAuthor() {
         return author;
@@ -99,6 +133,14 @@ public class CulturePost {
     // =========================
     // SETTERS
     // =========================
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setAuthorUid(String authorUid) {
+        this.authorUid = authorUid;
+    }
 
     public void setAuthor(String author) {
         this.author = author;
