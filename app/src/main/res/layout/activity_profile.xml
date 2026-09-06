@@ -200,7 +200,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="22dp"
-            android:text="SAVE & CONTINUE"
+            android:text="SAVE &amp; CONTINUE"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
