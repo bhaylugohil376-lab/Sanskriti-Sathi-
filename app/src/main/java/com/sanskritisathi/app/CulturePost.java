@@ -8,12 +8,23 @@ public class CulturePost {
     private String category;
     private String caption;
 
+    private String imageUrl;
+    private String visibility;
+    private long createdAt;
+
     private int likeCount;
+    private int commentCount;
+
     private int profileImageResId;
     private int postImageResId;
 
     private boolean liked;
     private boolean saved;
+
+    // =====================================================
+    // OLD CONSTRUCTOR
+    // Existing local data ke liye compatible
+    // =====================================================
 
     public CulturePost(
             String author,
@@ -29,11 +40,19 @@ public class CulturePost {
                 author,
                 category,
                 caption,
+                "",
+                "Public",
+                0L,
                 likeCount,
+                0,
                 profileImageResId,
                 postImageResId
         );
     }
+
+    // =====================================================
+    // EXISTING 8-ARGUMENT CONSTRUCTOR
+    // =====================================================
 
     public CulturePost(
             String id,
@@ -45,21 +64,62 @@ public class CulturePost {
             int profileImageResId,
             int postImageResId
     ) {
+        this(
+                id,
+                authorUid,
+                author,
+                category,
+                caption,
+                "",
+                "Public",
+                0L,
+                likeCount,
+                0,
+                profileImageResId,
+                postImageResId
+        );
+    }
+
+    // =====================================================
+    // FULL CONSTRUCTOR
+    // =====================================================
+
+    public CulturePost(
+            String id,
+            String authorUid,
+            String author,
+            String category,
+            String caption,
+            String imageUrl,
+            String visibility,
+            long createdAt,
+            int likeCount,
+            int commentCount,
+            int profileImageResId,
+            int postImageResId
+    ) {
         this.id = id;
         this.authorUid = authorUid;
         this.author = author;
         this.category = category;
         this.caption = caption;
+        this.imageUrl = imageUrl;
+        this.visibility = visibility;
+        this.createdAt = createdAt;
+
         this.likeCount = Math.max(0, likeCount);
+        this.commentCount = Math.max(0, commentCount);
+
         this.profileImageResId = profileImageResId;
         this.postImageResId = postImageResId;
+
         this.liked = false;
         this.saved = false;
     }
 
-    // =========================
+    // =====================================================
     // GETTERS
-    // =========================
+    // =====================================================
 
     public String getId() {
         return id;
@@ -81,8 +141,24 @@ public class CulturePost {
         return caption;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public String getVisibility() {
+        return visibility;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
     public int getLikeCount() {
         return likeCount;
+    }
+
+    public int getCommentCount() {
+        return commentCount;
     }
 
     public int getProfileImageResId() {
@@ -101,9 +177,9 @@ public class CulturePost {
         return saved;
     }
 
-    // =========================
+    // =====================================================
     // LIKE
-    // =========================
+    // =====================================================
 
     public void toggleLiked() {
 
@@ -122,17 +198,17 @@ public class CulturePost {
         }
     }
 
-    // =========================
+    // =====================================================
     // SAVE
-    // =========================
+    // =====================================================
 
     public void toggleSaved() {
         saved = !saved;
     }
 
-    // =========================
+    // =====================================================
     // SETTERS
-    // =========================
+    // =====================================================
 
     public void setId(String id) {
         this.id = id;
@@ -154,8 +230,24 @@ public class CulturePost {
         this.caption = caption;
     }
 
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public void setLikeCount(int likeCount) {
         this.likeCount = Math.max(0, likeCount);
+    }
+
+    public void setCommentCount(int commentCount) {
+        this.commentCount = Math.max(0, commentCount);
     }
 
     public void setProfileImageResId(int profileImageResId) {
