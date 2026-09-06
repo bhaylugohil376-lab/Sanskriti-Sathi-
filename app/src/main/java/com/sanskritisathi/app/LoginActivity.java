@@ -9,81 +9,66 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.PhoneAuthCredential;
-import com.google.firebase.auth.PhoneAuthOptions;
-import com.google.firebase.auth.PhoneAuthProvider;
-
-import java.util.concurrent.TimeUnit;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText emailInput;
     private EditText passwordInput;
-    private EditText phoneInput;
-    private EditText otpInput;
 
     private Button loginButton;
     private Button registerButton;
-    private Button sendOtpButton;
-    private Button verifyOtpButton;
 
+    private TextView registerTabText;
     private TextView forgotPasswordText;
 
     private FirebaseAuth firebaseAuth;
 
-    private String verificationId;
-    private PhoneAuthProvider.ForceResendingToken resendToken;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_login);
 
         firebaseAuth = FirebaseAuth.getInstance();
 
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
-        phoneInput = findViewById(R.id.phoneInput);
-        otpInput = findViewById(R.id.otpInput);
 
         loginButton = findViewById(R.id.loginButton);
         registerButton = findViewById(R.id.registerButton);
-        sendOtpButton = findViewById(R.id.sendOtpButton);
-        verifyOtpButton = findViewById(R.id.verifyOtpButton);
+
+        registerTabText = findViewById(R.id.registerTabText);
         forgotPasswordText = findViewById(R.id.forgotPasswordText);
 
+        // LOGIN
         loginButton.setOnClickListener(v -> loginUser());
 
+        // CREATE ACCOUNT BUTTON
         registerButton.setOnClickListener(v -> registerUser());
 
+        // CREATE ACCOUNT TAB
+        registerTabText.setOnClickListener(v -> registerUser());
+
+        // FORGOT PASSWORD
         forgotPasswordText.setOnClickListener(v -> resetPassword());
-
-        sendOtpButton.setOnClickListener(v -> sendOtp());
-
-        verifyOtpButton.setOnClickListener(v -> verifyOtp());
     }
 
-    // --------------------------------------------------
-    // EMAIL LOGIN
-    // --------------------------------------------------
+    // ==================================================
+    // LOGIN
+    // ==================================================
 
     private void loginUser() {
 
-        String email =
-                emailInput.getText()
-                        .toString()
-                        .trim();
+        String email = emailInput.getText()
+                .toString()
+                .trim();
 
-        String password =
-                passwordInput.getText()
-                        .toString()
-                        .trim();
+        String password = passwordInput.getText()
+                .toString()
+                .trim();
 
         if (!validateInput(email, password)) {
             return;
@@ -92,10 +77,7 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.setEnabled(false);
 
         firebaseAuth
-                .signInWithEmailAndPassword(
-                        email,
-                        password
-                )
+                .signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
 
                     loginButton.setEnabled(true);
@@ -104,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         Toast.makeText(
                                 LoginActivity.this,
-                                "Login successful",
+                                "Login successful ✅",
                                 Toast.LENGTH_SHORT
                         ).show();
 
@@ -112,41 +94,37 @@ public class LoginActivity extends AppCompatActivity {
 
                     } else {
 
-                        String errorMessage =
-                                "Login failed";
+                        String message = "Login failed";
 
                         if (task.getException() != null &&
                                 task.getException().getMessage() != null) {
 
-                            errorMessage =
-                                    task.getException()
-                                            .getMessage();
+                            message = task.getException()
+                                    .getMessage();
                         }
 
                         Toast.makeText(
                                 LoginActivity.this,
-                                errorMessage,
+                                message,
                                 Toast.LENGTH_LONG
                         ).show();
                     }
                 });
     }
 
-    // --------------------------------------------------
-    // EMAIL REGISTER
-    // --------------------------------------------------
+    // ==================================================
+    // CREATE ACCOUNT
+    // ==================================================
 
     private void registerUser() {
 
-        String email =
-                emailInput.getText()
-                        .toString()
-                        .trim();
+        String email = emailInput.getText()
+                .toString()
+                .trim();
 
-        String password =
-                passwordInput.getText()
-                        .toString()
-                        .trim();
+        String password = passwordInput.getText()
+                .toString()
+                .trim();
 
         if (!validateInput(email, password)) {
             return;
@@ -167,44 +145,46 @@ public class LoginActivity extends AppCompatActivity {
 
                         Toast.makeText(
                                 LoginActivity.this,
-                                "Account created successfully",
+                                "Account created successfully ✅",
                                 Toast.LENGTH_SHORT
                         ).show();
 
-                        openMainActivity();
+                        /*
+                         * New account ke baad
+                         * profile setup screen open hogi.
+                         */
+                        openProfileActivity();
 
                     } else {
 
-                        String errorMessage =
-                                "Registration failed";
+                        String message =
+                                "Account creation failed";
 
                         if (task.getException() != null &&
                                 task.getException().getMessage() != null) {
 
-                            errorMessage =
-                                    task.getException()
-                                            .getMessage();
+                            message = task.getException()
+                                    .getMessage();
                         }
 
                         Toast.makeText(
                                 LoginActivity.this,
-                                errorMessage,
+                                message,
                                 Toast.LENGTH_LONG
                         ).show();
                     }
                 });
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // FORGOT PASSWORD
-    // --------------------------------------------------
+    // ==================================================
 
     private void resetPassword() {
 
-        String email =
-                emailInput.getText()
-                        .toString()
-                        .trim();
+        String email = emailInput.getText()
+                .toString()
+                .trim();
 
         if (TextUtils.isEmpty(email)) {
 
@@ -238,7 +218,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         Toast.makeText(
                                 LoginActivity.this,
-                                "Password reset email भेज दिया गया",
+                                "Password reset email भेज दिया गया 📧",
                                 Toast.LENGTH_LONG
                         ).show();
 
@@ -253,216 +233,9 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    // --------------------------------------------------
-    // SEND PHONE OTP
-    // --------------------------------------------------
-
-    private void sendOtp() {
-
-        String phone =
-                phoneInput.getText()
-                        .toString()
-                        .trim();
-
-        if (TextUtils.isEmpty(phone)) {
-
-            phoneInput.setError(
-                    "Phone number डालें"
-            );
-
-            phoneInput.requestFocus();
-
-            return;
-        }
-
-        if (!phone.startsWith("+")) {
-
-            phoneInput.setError(
-                    "Country code के साथ नंबर डालें, जैसे +91XXXXXXXXXX"
-            );
-
-            phoneInput.requestFocus();
-
-            return;
-        }
-
-        if (phone.length() < 10) {
-
-            phoneInput.setError(
-                    "Valid phone number डालें"
-            );
-
-            phoneInput.requestFocus();
-
-            return;
-        }
-
-        sendOtpButton.setEnabled(false);
-
-        PhoneAuthOptions options =
-                PhoneAuthOptions.newBuilder(firebaseAuth)
-                        .setPhoneNumber(phone)
-                        .setTimeout(
-                                60L,
-                                TimeUnit.SECONDS
-                        )
-                        .setActivity(this)
-                        .setCallbacks(
-                                new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-
-                                    @Override
-                                    public void onVerificationCompleted(
-                                            @NonNull PhoneAuthCredential credential) {
-
-                                        signInWithPhoneCredential(
-                                                credential
-                                        );
-                                    }
-
-                                    @Override
-                                    public void onVerificationFailed(
-                                            @NonNull FirebaseException e) {
-
-                                        sendOtpButton.setEnabled(true);
-
-                                        Toast.makeText(
-                                                LoginActivity.this,
-                                                "OTP भेजना failed: "
-                                                        + e.getMessage(),
-                                                Toast.LENGTH_LONG
-                                        ).show();
-                                    }
-
-                                    @Override
-                                    public void onCodeSent(
-                                            @NonNull String id,
-                                            @NonNull PhoneAuthProvider.ForceResendingToken token) {
-
-                                        verificationId = id;
-                                        resendToken = token;
-
-                                        sendOtpButton.setEnabled(true);
-
-                                        otpInput.requestFocus();
-
-                                        Toast.makeText(
-                                                LoginActivity.this,
-                                                "OTP भेज दिया गया",
-                                                Toast.LENGTH_SHORT
-                                        ).show();
-                                    }
-                                }
-                        )
-                        .build();
-
-        PhoneAuthProvider.verifyPhoneNumber(
-                options
-        );
-    }
-
-    // --------------------------------------------------
-    // VERIFY OTP
-    // --------------------------------------------------
-
-    private void verifyOtp() {
-
-        String otp =
-                otpInput.getText()
-                        .toString()
-                        .trim();
-
-        if (verificationId == null ||
-                verificationId.trim().isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "पहले OTP भेजें",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            return;
-        }
-
-        if (otp.length() != 6) {
-
-            otpInput.setError(
-                    "6 digit OTP डालें"
-            );
-
-            otpInput.requestFocus();
-
-            return;
-        }
-
-        verifyOtpButton.setEnabled(false);
-
-        PhoneAuthCredential credential =
-                PhoneAuthProvider.getCredential(
-                        verificationId,
-                        otp
-                );
-
-        signInWithPhoneCredential(
-                credential
-        );
-    }
-
-    // --------------------------------------------------
-    // PHONE LOGIN
-    // --------------------------------------------------
-
-    private void signInWithPhoneCredential(
-            PhoneAuthCredential credential) {
-
-        firebaseAuth
-                .signInWithCredential(credential)
-                .addOnCompleteListener(
-                        this,
-                        task -> {
-
-                            verifyOtpButton.setEnabled(true);
-
-                            if (task.isSuccessful()) {
-
-                                FirebaseUser user =
-                                        firebaseAuth.getCurrentUser();
-
-                                Toast.makeText(
-                                        LoginActivity.this,
-                                        "Phone login successful",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-
-                                if (user != null) {
-                                    openMainActivity();
-                                }
-
-                            } else {
-
-                                String errorMessage =
-                                        "OTP verification failed";
-
-                                if (task.getException() != null &&
-                                        task.getException().getMessage() != null) {
-
-                                    errorMessage =
-                                            task.getException()
-                                                    .getMessage();
-                                }
-
-                                Toast.makeText(
-                                        LoginActivity.this,
-                                        errorMessage,
-                                        Toast.LENGTH_LONG
-                                ).show();
-                            }
-                        }
-                );
-    }
-
-    // --------------------------------------------------
-    // VALIDATE EMAIL
-    // --------------------------------------------------
+    // ==================================================
+    // VALIDATION
+    // ==================================================
 
     private boolean validateInput(
             String email,
@@ -517,20 +290,33 @@ public class LoginActivity extends AppCompatActivity {
         return true;
     }
 
-    // --------------------------------------------------
+    // ==================================================
     // OPEN MAIN
-    // --------------------------------------------------
+    // ==================================================
 
     private void openMainActivity() {
 
-        Intent intent =
-                new Intent(
-                        LoginActivity.this,
-                        MainActivity.class
-                );
+        Intent intent = new Intent(
+                LoginActivity.this,
+                MainActivity.class
+        );
 
         startActivity(intent);
+        finish();
+    }
 
+    // ==================================================
+    // OPEN PROFILE
+    // ==================================================
+
+    private void openProfileActivity() {
+
+        Intent intent = new Intent(
+                LoginActivity.this,
+                ProfileActivity.class
+        );
+
+        startActivity(intent);
         finish();
     }
 }
