@@ -28,36 +28,35 @@
 
         </activity>
 
-
         <!-- Main / Home -->
         <activity
             android:name=".MainActivity"
             android:exported="false" />
-
 
         <!-- Authentication -->
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
 
-
-        <!-- Profile -->
+        <!-- Profile Setup / Edit -->
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
 
+        <!-- My Profile -->
+        <activity
+            android:name=".MyProfileActivity"
+            android:exported="false" />
 
         <!-- Raja -->
         <activity
             android:name=".RajaActivity"
             android:exported="false" />
 
-
         <!-- Temple -->
         <activity
             android:name=".TempleActivity"
             android:exported="false" />
-
 
         <!-- Bhagavad Gita -->
         <activity
@@ -68,30 +67,25 @@
             android:name=".GitaDetailActivity"
             android:exported="false" />
 
-
         <!-- Devi Devta -->
         <activity
             android:name=".DeviDevtaActivity"
             android:exported="false" />
-
 
         <!-- RSS News -->
         <activity
             android:name=".RssActivity"
             android:exported="false" />
 
-
         <!-- About -->
         <activity
             android:name=".AboutActivity"
             android:exported="false" />
 
-
         <!-- Culture / Instagram Feed -->
         <activity
             android:name=".CultureActivity"
             android:exported="false" />
-
 
         <!-- Stories -->
         <activity
@@ -101,7 +95,6 @@
         <activity
             android:name=".StoryUploadActivity"
             android:exported="false" />
-
 
         <!-- Reels -->
         <activity
@@ -116,19 +109,18 @@
             android:name=".ReelCommentsActivity"
             android:exported="false" />
 
-
         <!-- Chat -->
-<activity
-    android:name=".ChatActivity"
-    android:exported="false" />
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
 
-<activity
-    android:name=".OneToOneChatActivity"
-    android:exported="false" />
+        <activity
+            android:name=".OneToOneChatActivity"
+            android:exported="false" />
 
-<activity
-    android:name=".GroupChatActivity"
-    android:exported="false" />
+        <activity
+            android:name=".GroupChatActivity"
+            android:exported="false" />
 
     </application>
 
