@@ -4,8 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="#0B0F19">
+    android:background="#0B0F19"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,9 +19,9 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="8dp"
-            android:background="#0B0F19">
+            android:paddingStart="18dp"
+            android:paddingEnd="12dp"
+            android:background="#111827">
 
             <TextView
                 android:layout_width="0dp"
@@ -32,31 +32,27 @@
                 android:textSize="20sp"
                 android:textStyle="bold"/>
 
-            <TextView
+            <ImageView
                 android:id="@+id/settingsButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:gravity="center"
-                android:text="⚙"
-                android:textColor="#FFFFFF"
-                android:textSize="23sp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_settings"
+                android:tint="#FFFFFF"
+                android:contentDescription="Settings"
                 android:clickable="true"
                 android:focusable="true"/>
 
         </LinearLayout>
 
 
-        <!-- PROFILE -->
+        <!-- PROFILE TOP -->
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="8dp">
-
-            <!-- PHOTO + STATS -->
+            android:padding="18dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -64,19 +60,18 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <!-- PROFILE PHOTO -->
+                <!-- PROFILE IMAGE -->
 
                 <FrameLayout
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
-                    android:padding="3dp"
-                    android:background="@drawable/story_ring"
-                    android:clipToOutline="true">
+                    android:layout_width="108dp"
+                    android:layout_height="108dp"
+                    android:padding="4dp"
+                    android:background="@drawable/story_ring">
 
                     <ImageView
                         android:id="@+id/profileImage"
-                        android:layout_width="90dp"
-                        android:layout_height="90dp"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
                         android:layout_gravity="center"
                         android:background="@drawable/profile_circle_bg"
                         android:src="@drawable/icon_foreground"
@@ -95,9 +90,7 @@
                     android:layout_weight="1"
                     android:orientation="horizontal"
                     android:gravity="center"
-                    android:paddingStart="12dp">
-
-                    <!-- POSTS -->
+                    android:paddingStart="10dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -112,7 +105,7 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="#FFFFFF"
-                            android:textSize="18sp"
+                            android:textSize="19sp"
                             android:textStyle="bold"/>
 
                         <TextView
@@ -123,9 +116,6 @@
                             android:textSize="12sp"/>
 
                     </LinearLayout>
-
-
-                    <!-- FOLLOWERS -->
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -140,7 +130,7 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="#FFFFFF"
-                            android:textSize="18sp"
+                            android:textSize="19sp"
                             android:textStyle="bold"/>
 
                         <TextView
@@ -151,9 +141,6 @@
                             android:textSize="12sp"/>
 
                     </LinearLayout>
-
-
-                    <!-- FOLLOWING -->
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -168,7 +155,7 @@
                             android:layout_height="wrap_content"
                             android:text="0"
                             android:textColor="#FFFFFF"
-                            android:textSize="18sp"
+                            android:textSize="19sp"
                             android:textStyle="bold"/>
 
                         <TextView
@@ -191,10 +178,10 @@
                 android:id="@+id/nameText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
                 android:text="Sanskriti Sathi User"
                 android:textColor="#FFFFFF"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold"/>
 
 
@@ -216,20 +203,19 @@
                 android:id="@+id/bioText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="8dp"
                 android:text="Apni Sanskriti se judein."
                 android:textColor="#D4D8E0"
                 android:textSize="14sp"
-                android:maxLines="3"
-                android:lineSpacingExtra="2dp"/>
+                android:lineSpacingExtra="3dp"/>
 
 
             <!-- BUTTONS -->
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:layout_marginTop="12dp"
+                android:layout_height="46dp"
+                android:layout_marginTop="16dp"
                 android:orientation="horizontal">
 
                 <Button
@@ -268,47 +254,46 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:paddingStart="16dp"
+            android:paddingStart="18dp"
             android:text="Highlights"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textStyle="bold"/>
 
         <HorizontalScrollView
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginTop="5dp"
+            android:layout_height="105dp"
+            android:layout_marginTop="8dp"
             android:scrollbars="none">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp">
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp">
 
                 <!-- NEW -->
 
                 <LinearLayout
-                    android:layout_width="78dp"
+                    android:layout_width="82dp"
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
                         android:gravity="center"
                         android:text="+"
-                        android:textColor="#FFFFFF"
+                        android:textColor="#FFB300"
                         android:textSize="27sp"
-                        android:background="@drawable/profile_circle_bg"/>
+                        android:background="#1D2636"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="5dp"
                         android:text="New"
                         android:textColor="#AAB2C0"
                         android:textSize="11sp"/>
@@ -319,25 +304,22 @@
                 <!-- TEMPLES -->
 
                 <LinearLayout
-                    android:layout_width="78dp"
+                    android:layout_width="82dp"
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:background="@drawable/profile_circle_bg"
-                        android:padding="2dp"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
                         android:src="@drawable/somnath"
                         android:scaleType="centerCrop"
-                        android:clipToOutline="true"
                         android:contentDescription="Temples"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="5dp"
                         android:text="Temples"
                         android:textColor="#AAB2C0"
                         android:textSize="11sp"/>
@@ -348,25 +330,22 @@
                 <!-- DEVI DEVTA -->
 
                 <LinearLayout
-                    android:layout_width="78dp"
+                    android:layout_width="82dp"
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:orientation="vertical">
 
                     <ImageView
-                        android:layout_width="62dp"
-                        android:layout_height="62dp"
-                        android:background="@drawable/profile_circle_bg"
-                        android:padding="2dp"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
                         android:src="@drawable/shiva"
                         android:scaleType="centerCrop"
-                        android:clipToOutline="true"
                         android:contentDescription="Devi Devta"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="5dp"
                         android:text="Devi Devta"
                         android:textColor="#AAB2C0"
                         android:textSize="11sp"/>
@@ -382,61 +361,61 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="8dp"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
             android:background="#111827"
             android:gravity="center"
             android:orientation="horizontal">
 
-            <TextView
+            <ImageView
                 android:id="@+id/postsTab"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:text="▦"
-                android:textColor="#FFB300"
-                android:textSize="22sp"/>
+                android:padding="15dp"
+                android:src="@drawable/ic_grid"
+                android:tint="#FFB300"
+                android:contentDescription="Posts"/>
 
-            <TextView
+            <ImageView
                 android:id="@+id/reelsTab"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:text="▶"
-                android:textColor="#AAB2C0"
-                android:textSize="19sp"/>
+                android:padding="15dp"
+                android:src="@drawable/ic_reels"
+                android:tint="#AAB2C0"
+                android:contentDescription="Reels"/>
 
-            <TextView
+            <ImageView
                 android:id="@+id/repostsTab"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:text="↻"
-                android:textColor="#AAB2C0"
-                android:textSize="22sp"/>
+                android:padding="15dp"
+                android:src="@drawable/ic_repost"
+                android:tint="#AAB2C0"
+                android:contentDescription="Reposts"/>
 
-            <TextView
+            <ImageView
                 android:id="@+id/taggedTab"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:gravity="center"
-                android:text="♙"
-                android:textColor="#AAB2C0"
-                android:textSize="20sp"/>
+                android:padding="15dp"
+                android:src="@drawable/ic_tagged"
+                android:tint="#AAB2C0"
+                android:contentDescription="Tagged"/>
 
         </LinearLayout>
 
 
-        <!-- EMPTY CONTENT -->
+        <!-- CONTENT -->
 
         <LinearLayout
             android:id="@+id/contentEmpty"
             android:layout_width="match_parent"
-            android:layout_height="170dp"
+            android:layout_height="190dp"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="20dp">
@@ -444,15 +423,15 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No posts yet"
+                android:text="Your content will appear here"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="6dp"
                 android:gravity="center"
                 android:text="Posts aur Reels publish karne ke baad yahan dikhenge."
                 android:textColor="#8F98A8"
