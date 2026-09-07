@@ -1,6 +1,8 @@
 package com.sanskritisathi.app;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -17,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class MyProfileActivity extends AppCompatActivity {
 
     private ImageView profileImage;
+
     private TextView nameText;
     private TextView usernameText;
     private TextView bioText;
@@ -28,14 +31,17 @@ public class MyProfileActivity extends AppCompatActivity {
     private Button editProfileButton;
     private Button shareProfileButton;
 
-    private TextView settingsButton;
-    private TextView postsTab;
-    private TextView reelsTab;
-    private TextView repostsTab;
-    private TextView taggedTab;
+    private ImageView settingsButton;
+    private ImageView postsTab;
+    private ImageView reelsTab;
+    private ImageView repostsTab;
+    private ImageView taggedTab;
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
+
+    private final int ACTIVE_COLOR = Color.parseColor("#FFB300");
+    private final int INACTIVE_COLOR = Color.parseColor("#AAB2C0");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +52,7 @@ public class MyProfileActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
 
         profileImage = findViewById(R.id.profileImage);
+
         nameText = findViewById(R.id.nameText);
         usernameText = findViewById(R.id.usernameText);
         bioText = findViewById(R.id.bioText);
@@ -103,6 +110,8 @@ public class MyProfileActivity extends AppCompatActivity {
         reelsTab.setOnClickListener(v -> selectTab(reelsTab));
         repostsTab.setOnClickListener(v -> selectTab(repostsTab));
         taggedTab.setOnClickListener(v -> selectTab(taggedTab));
+
+        updateTabColors(postsTab);
     }
 
     @Override
@@ -222,43 +231,62 @@ public class MyProfileActivity extends AppCompatActivity {
         return value;
     }
 
-    private void selectTab(TextView selected) {
+    private void selectTab(ImageView selected) {
 
-        postsTab.setTextColor(
-                selected == postsTab
-                        ? 0xFFFFB300
-                        : 0xFFAAB2C0
-        );
+        updateTabColors(selected);
 
-        reelsTab.setTextColor(
-                selected == reelsTab
-                        ? 0xFFFFB300
-                        : 0xFFAAB2C0
-        );
+        String message;
 
-        repostsTab.setTextColor(
-                selected == repostsTab
-                        ? 0xFFFFB300
-                        : 0xFFAAB2C0
-        );
-
-        taggedTab.setTextColor(
-                selected == taggedTab
-                        ? 0xFFFFB300
-                        : 0xFFAAB2C0
-        );
+        if (selected == postsTab) {
+            message = "Posts";
+        } else if (selected == reelsTab) {
+            message = "Reels";
+        } else if (selected == repostsTab) {
+            message = "Reposts";
+        } else {
+            message = "Tagged";
+        }
 
         Toast.makeText(
                 this,
-                selected == postsTab
-                        ? "Posts"
-                        : selected == reelsTab
-                        ? "Reels"
-                        : selected == repostsTab
-                        ? "Reposts"
-                        : "Tagged",
+                message,
                 Toast.LENGTH_SHORT
         ).show();
+    }
+
+    private void updateTabColors(ImageView selected) {
+
+        postsTab.setImageTintList(
+                ColorStateList.valueOf(
+                        selected == postsTab
+                                ? ACTIVE_COLOR
+                                : INACTIVE_COLOR
+                )
+        );
+
+        reelsTab.setImageTintList(
+                ColorStateList.valueOf(
+                        selected == reelsTab
+                                ? ACTIVE_COLOR
+                                : INACTIVE_COLOR
+                )
+        );
+
+        repostsTab.setImageTintList(
+                ColorStateList.valueOf(
+                        selected == repostsTab
+                                ? ACTIVE_COLOR
+                                : INACTIVE_COLOR
+                )
+        );
+
+        taggedTab.setImageTintList(
+                ColorStateList.valueOf(
+                        selected == taggedTab
+                                ? ACTIVE_COLOR
+                                : INACTIVE_COLOR
+                )
+        );
     }
 
     private void shareProfile() {
