@@ -20,6 +20,7 @@ public class MyProfileActivity extends AppCompatActivity {
     private TextView nameText;
     private TextView usernameText;
     private TextView bioText;
+
     private TextView postsCountText;
     private TextView followersCountText;
     private TextView followingCountText;
@@ -27,13 +28,18 @@ public class MyProfileActivity extends AppCompatActivity {
     private Button editProfileButton;
     private Button shareProfileButton;
 
+    private TextView settingsButton;
+    private TextView postsTab;
+    private TextView reelsTab;
+    private TextView repostsTab;
+    private TextView taggedTab;
+
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_my_profile);
 
         auth = FirebaseAuth.getInstance();
@@ -50,6 +56,13 @@ public class MyProfileActivity extends AppCompatActivity {
 
         editProfileButton = findViewById(R.id.editProfileButton);
         shareProfileButton = findViewById(R.id.shareProfileButton);
+
+        settingsButton = findViewById(R.id.settingsButton);
+
+        postsTab = findViewById(R.id.postsTab);
+        reelsTab = findViewById(R.id.reelsTab);
+        repostsTab = findViewById(R.id.repostsTab);
+        taggedTab = findViewById(R.id.taggedTab);
 
         FirebaseUser currentUser = auth.getCurrentUser();
 
@@ -76,6 +89,20 @@ public class MyProfileActivity extends AppCompatActivity {
         });
 
         shareProfileButton.setOnClickListener(v -> shareProfile());
+
+        settingsButton.setOnClickListener(v -> {
+            startActivity(
+                    new Intent(
+                            MyProfileActivity.this,
+                            SettingsActivity.class
+                    )
+            );
+        });
+
+        postsTab.setOnClickListener(v -> selectTab(postsTab));
+        reelsTab.setOnClickListener(v -> selectTab(reelsTab));
+        repostsTab.setOnClickListener(v -> selectTab(repostsTab));
+        taggedTab.setOnClickListener(v -> selectTab(taggedTab));
     }
 
     @Override
@@ -99,12 +126,7 @@ public class MyProfileActivity extends AppCompatActivity {
                 .addOnSuccessListener(document -> {
 
                     if (!document.exists()) {
-                        nameText.setText("Sanskriti Sathi User");
-                        usernameText.setText("@user");
-                        bioText.setText("Apni Sanskriti se judein.");
-                        postsCountText.setText("0");
-                        followersCountText.setText("0");
-                        followingCountText.setText("0");
+                        showDefaultProfile();
                         return;
                     }
 
@@ -112,66 +134,59 @@ public class MyProfileActivity extends AppCompatActivity {
                     String username = document.getString("username");
                     String bio = document.getString("bio");
 
-                    if (!TextUtils.isEmpty(name)) {
-                        nameText.setText(name);
-                    } else {
-                        nameText.setText("Sanskriti Sathi User");
-                    }
+                    nameText.setText(
+                            TextUtils.isEmpty(name)
+                                    ? "Sanskriti Sathi User"
+                                    : name
+                    );
 
-                    if (!TextUtils.isEmpty(username)) {
-
-                        if (username.startsWith("@")) {
-                            usernameText.setText(username);
-                        } else {
-                            usernameText.setText("@" + username);
-                        }
-
-                    } else {
+                    if (TextUtils.isEmpty(username)) {
                         usernameText.setText("@user");
-                    }
-
-                    if (!TextUtils.isEmpty(bio)) {
-                        bioText.setText(bio);
+                    } else if (username.startsWith("@")) {
+                        usernameText.setText(username);
                     } else {
-                        bioText.setText("Apni Sanskriti se judein.");
+                        usernameText.setText("@" + username);
                     }
 
-                    /*
-                     * Initial profile counters.
-                     * Baad mein real Posts / Followers / Following
-                     * Firebase collections se connect karenge.
-                     */
+                    bioText.setText(
+                            TextUtils.isEmpty(bio)
+                                    ? "Apni Sanskriti se judein."
+                                    : bio
+                    );
+
                     postsCountText.setText(
                             String.valueOf(
-                                    getLongValue(document.getLong("posts"))
+                                    getLongValue(
+                                            document.getLong("posts")
+                                    )
                             )
                     );
 
                     followersCountText.setText(
                             String.valueOf(
-                                    getLongValue(document.getLong("followers"))
+                                    getLongValue(
+                                            document.getLong("followers")
+                                    )
                             )
                     );
 
                     followingCountText.setText(
                             String.valueOf(
-                                    getLongValue(document.getLong("following"))
+                                    getLongValue(
+                                            document.getLong("following")
+                                    )
                             )
                     );
 
                     String imageUrl =
                             document.getString("profileImageUrl");
 
-                    if (!TextUtils.isEmpty(imageUrl)) {
-                        /*
-                         * Profile image loading Firebase Storage/
-                         * image library integration ke next step
-                         * mein add karenge.
-                         */
-                        profileImage.setContentDescription(
-                                "Profile photo"
+                    if (TextUtils.isEmpty(imageUrl)) {
+                        profileImage.setImageResource(
+                                R.drawable.icon_foreground
                         );
                     }
+
                 })
                 .addOnFailureListener(e -> {
 
@@ -183,6 +198,21 @@ public class MyProfileActivity extends AppCompatActivity {
                 });
     }
 
+    private void showDefaultProfile() {
+
+        nameText.setText("Sanskriti Sathi User");
+        usernameText.setText("@user");
+        bioText.setText("Apni Sanskriti se judein.");
+
+        postsCountText.setText("0");
+        followersCountText.setText("0");
+        followingCountText.setText("0");
+
+        profileImage.setImageResource(
+                R.drawable.icon_foreground
+        );
+    }
+
     private long getLongValue(Long value) {
 
         if (value == null) {
@@ -190,6 +220,45 @@ public class MyProfileActivity extends AppCompatActivity {
         }
 
         return value;
+    }
+
+    private void selectTab(TextView selected) {
+
+        postsTab.setTextColor(
+                selected == postsTab
+                        ? 0xFFFFB300
+                        : 0xFFAAB2C0
+        );
+
+        reelsTab.setTextColor(
+                selected == reelsTab
+                        ? 0xFFFFB300
+                        : 0xFFAAB2C0
+        );
+
+        repostsTab.setTextColor(
+                selected == repostsTab
+                        ? 0xFFFFB300
+                        : 0xFFAAB2C0
+        );
+
+        taggedTab.setTextColor(
+                selected == taggedTab
+                        ? 0xFFFFB300
+                        : 0xFFAAB2C0
+        );
+
+        Toast.makeText(
+                this,
+                selected == postsTab
+                        ? "Posts"
+                        : selected == reelsTab
+                        ? "Reels"
+                        : selected == repostsTab
+                        ? "Reposts"
+                        : "Tagged",
+                Toast.LENGTH_SHORT
+        ).show();
     }
 
     private void shareProfile() {
@@ -200,7 +269,8 @@ public class MyProfileActivity extends AppCompatActivity {
             return;
         }
 
-        String username = usernameText.getText().toString();
+        String username =
+                usernameText.getText().toString();
 
         String shareText =
                 "Sanskriti Sathi par " +
@@ -211,6 +281,7 @@ public class MyProfileActivity extends AppCompatActivity {
                 new Intent(Intent.ACTION_SEND);
 
         shareIntent.setType("text/plain");
+
         shareIntent.putExtra(
                 Intent.EXTRA_TEXT,
                 shareText
