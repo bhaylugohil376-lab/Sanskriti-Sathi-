@@ -79,7 +79,7 @@
             android:layout_marginStart="8dp"
             android:background="@android:color/transparent"
             android:hint="Search"
-            android:hintTextColor="#8D95A5"
+            android:textColorHint="#8D95A5"
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:singleLine="true"
