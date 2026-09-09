@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFF8F0">
+    android:background="#0B0F19">
 
     <!-- HEADER -->
 
@@ -14,183 +14,510 @@
         android:layout_height="64dp"
         android:gravity="center_vertical"
         android:paddingStart="18dp"
-        android:paddingEnd="18dp"
-        android:background="#FFFFFF"
-        android:elevation="4dp">
+        android:paddingEnd="14dp"
+        android:background="#0B0F19">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="💬 Chat"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#311B5E"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="Sanskriti Sathi"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"/>
+
+        <TextView
+            android:id="@+id/cameraButton"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="▣"
+            android:textSize="23sp"
+            android:textColor="#FFFFFF"
+            android:clickable="true"
+            android:focusable="true"/>
+
+        <TextView
+            android:id="@+id/newMessageButton"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:text="✎"
+            android:textSize="25sp"
+            android:textColor="#FFFFFF"
+            android:clickable="true"
+            android:focusable="true"/>
+
+    </LinearLayout>
+
+
+    <!-- SEARCH -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center_vertical"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:background="#1A202C">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⌕"
+            android:textSize="24sp"
+            android:textColor="#AAB2C0"/>
+
+        <EditText
+            android:id="@+id/chatSearchInput"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:background="@android:color/transparent"
+            android:hint="Search"
+            android:hintTextColor="#8D95A5"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:singleLine="true"
+            android:inputType="text"/>
+
+    </LinearLayout>
+
+
+    <!-- STORIES TITLE -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center_vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Stories"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"/>
+
+        <TextView
+            android:id="@+id/seeAllStoriesButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="See all"
+            android:textSize="13sp"
+            android:textColor="#FFB300"
+            android:clickable="true"
+            android:focusable="true"/>
+
+    </LinearLayout>
+
+
+    <!-- STORIES -->
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="92dp"
+        android:scrollbars="none"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:id="@+id/chatStoriesContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp">
+
+            <!-- YOUR STORY -->
+
+            <LinearLayout
+                android:layout_width="76dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="58dp"
+                    android:layout_height="58dp"
+                    android:gravity="center"
+                    android:text="+"
+                    android:textSize="30sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#1F2633"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Your story"
+                    android:textSize="10sp"
+                    android:textColor="#AAB2C0"/>
+
+            </LinearLayout>
+
+
+            <!-- STORY 1 -->
+
+            <LinearLayout
+                android:layout_width="76dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="58dp"
+                    android:layout_height="58dp"
+                    android:gravity="center"
+                    android:text="🕉"
+                    android:textSize="26sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#513B75"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Shiv"
+                    android:textSize="10sp"
+                    android:textColor="#AAB2C0"/>
+
+            </LinearLayout>
+
+
+            <!-- STORY 2 -->
+
+            <LinearLayout
+                android:layout_width="76dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="58dp"
+                    android:layout_height="58dp"
+                    android:gravity="center"
+                    android:text="🛕"
+                    android:textSize="25sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#704B35"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Temple"
+                    android:textSize="10sp"
+                    android:textColor="#AAB2C0"/>
+
+            </LinearLayout>
+
+
+            <!-- STORY 3 -->
+
+            <LinearLayout
+                android:layout_width="76dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="58dp"
+                    android:layout_height="58dp"
+                    android:gravity="center"
+                    android:text="☀"
+                    android:textSize="27sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#795548"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Culture"
+                    android:textSize="10sp"
+                    android:textColor="#AAB2C0"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+
+    <!-- CHAT TABS -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp">
+
+        <TextView
+            android:id="@+id/primaryTab"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#FFB300"/>
+
+        <TextView
+            android:id="@+id/generalTab"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="General"
+            android:textSize="14sp"
+            android:textColor="#8D95A5"/>
+
+        <TextView
+            android:id="@+id/requestsTab"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Requests"
+            android:textSize="14sp"
+            android:textColor="#8D95A5"/>
+
+    </LinearLayout>
+
+
+    <!-- CHAT LIST -->
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/chatListContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="20dp">
+
+
+            <!-- CHAT ITEM 1 -->
+
+            <LinearLayout
+                android:id="@+id/chatItem1"
+                android:layout_width="match_parent"
+                android:layout_height="76dp"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:gravity="center"
+                    android:text="ॐ"
+                    android:textSize="24sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#4A3B65"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sanskriti Sathi"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Welcome to Sanskriti Sathi"
+                        android:textSize="13sp"
+                        android:textColor="#8D95A5"/>
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Active"
+                    android:textSize="10sp"
+                    android:textColor="#FFB300"/>
+
+            </LinearLayout>
+
+
+            <!-- CHAT ITEM 2 -->
+
+            <LinearLayout
+                android:id="@+id/chatItem2"
+                android:layout_width="match_parent"
+                android:layout_height="76dp"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:gravity="center"
+                    android:text="🕉"
+                    android:textSize="24sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#384C66"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Shiv Bhakt"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Jai Mahadev 🙏"
+                        android:textSize="13sp"
+                        android:textColor="#8D95A5"/>
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10:42 PM"
+                    android:textSize="10sp"
+                    android:textColor="#6F7787"/>
+
+            </LinearLayout>
+
+
+            <!-- CHAT ITEM 3 -->
+
+            <LinearLayout
+                android:id="@+id/chatItem3"
+                android:layout_width="match_parent"
+                android:layout_height="76dp"
+                android:gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:gravity="center"
+                    android:text="🛕"
+                    android:textSize="23sp"
+                    android:textColor="#FFFFFF"
+                    android:background="#614738"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Temple Group"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:text="Somnath Temple discussion"
+                        android:textSize="13sp"
+                        android:textColor="#8D95A5"/>
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2"
+                    android:textSize="11sp"
+                    android:textColor="#FFFFFF"
+                    android:gravity="center"
+                    android:background="#FFB300"
+                    android:paddingStart="7dp"
+                    android:paddingEnd="7dp"
+                    android:paddingTop="3dp"
+                    android:paddingBottom="3dp"/>
+
+            </LinearLayout>
+
+
+            <!-- EMPTY MESSAGE -->
+
+            <TextView
+                android:id="@+id/emptyChatText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginTop="18dp"
+                android:padding="20dp"
+                android:text="Your conversations will appear here."
+                android:textSize="13sp"
+                android:textColor="#687080"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+    <!-- BOTTOM INFO -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:background="#0B0F19">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔐 Private &amp; secure conversations"
             android:textSize="11sp"
-            android:textColor="#F57C00"/>
+            android:textColor="#687080"/>
 
     </LinearLayout>
-
-
-    <!-- TITLE -->
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="20dp"
-        android:text="Connect with people"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#222222"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="20dp"
-        android:text="Private chat ya group conversation start karein."
-        android:textSize="14sp"
-        android:textColor="#666666"/>
-
-
-    <!-- 1-TO-1 CHAT -->
-
-    <LinearLayout
-        android:id="@+id/oneToOneChatButton"
-        android:layout_width="match_parent"
-        android:layout_height="90dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="20dp"
-        android:padding="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:background="#FFFFFF"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="3dp">
-
-        <TextView
-            android:layout_width="58dp"
-            android:layout_height="58dp"
-            android:gravity="center"
-            android:text="💬"
-            android:textSize="30sp"
-            android:background="#F3E5F5"/>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1-to-1 Chat"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#311B5E"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Kisi ek user ke saath private chat"
-                android:textSize="13sp"
-                android:textColor="#777777"/>
-
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="›"
-            android:textSize="30sp"
-            android:textColor="#F57C00"/>
-
-    </LinearLayout>
-
-
-    <!-- GROUP CHAT -->
-
-    <LinearLayout
-        android:id="@+id/groupChatButton"
-        android:layout_width="match_parent"
-        android:layout_height="90dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="20dp"
-        android:padding="16dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:background="#FFFFFF"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="3dp">
-
-        <TextView
-            android:layout_width="58dp"
-            android:layout_height="58dp"
-            android:gravity="center"
-            android:text="👥"
-            android:textSize="30sp"
-            android:background="#FFF3E0"/>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="16dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Group Chat"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#311B5E"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Multiple users ke saath group conversation"
-                android:textSize="13sp"
-                android:textColor="#777777"/>
-
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="›"
-            android:textSize="30sp"
-            android:textColor="#F57C00"/>
-
-    </LinearLayout>
-
-
-    <!-- INFORMATION -->
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="24dp"
-        android:padding="16dp"
-        android:text="🔐 Aapki conversations Firebase ke through securely store hongi."
-        android:textSize="13sp"
-        android:textColor="#666666"
-        android:background="#FFF3E0"/>
 
 </LinearLayout>
