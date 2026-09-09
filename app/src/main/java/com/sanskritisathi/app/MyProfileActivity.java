@@ -3,6 +3,7 @@ package com.sanskritisathi.app;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -10,11 +11,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class MyProfileActivity extends AppCompatActivity {
 
@@ -39,6 +44,9 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
+    private FirebaseStorage storage;
+
+    private ActivityResultLauncher<String> imagePickerLauncher;
 
     private final int ACTIVE_COLOR = Color.parseColor("#FFB300");
     private final int INACTIVE_COLOR = Color.parseColor("#AAB2C0");
@@ -50,6 +58,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
 
         profileImage = findViewById(R.id.profileImage);
 
@@ -71,6 +80,17 @@ public class MyProfileActivity extends AppCompatActivity {
         repostsTab = findViewById(R.id.repostsTab);
         taggedTab = findViewById(R.id.taggedTab);
 
+        // Gallery picker
+        imagePickerLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.GetContent(),
+                        uri -> {
+                            if (uri != null) {
+                                uploadProfilePhoto(uri);
+                            }
+                        }
+                );
+
         FirebaseUser currentUser = auth.getCurrentUser();
 
         if (currentUser == null) {
@@ -85,6 +105,11 @@ public class MyProfileActivity extends AppCompatActivity {
         }
 
         loadProfile(currentUser);
+
+        // Profile photo change
+        profileImage.setOnClickListener(v ->
+                imagePickerLauncher.launch("image/*")
+        );
 
         editProfileButton.setOnClickListener(v -> {
             startActivity(
@@ -190,7 +215,17 @@ public class MyProfileActivity extends AppCompatActivity {
                     String imageUrl =
                             document.getString("profileImageUrl");
 
-                    if (TextUtils.isEmpty(imageUrl)) {
+                    if (!TextUtils.isEmpty(imageUrl)) {
+
+                        com.bumptech.glide.Glide
+                                .with(MyProfileActivity.this)
+                                .load(imageUrl)
+                                .placeholder(R.drawable.icon_foreground)
+                                .error(R.drawable.icon_foreground)
+                                .into(profileImage);
+
+                    } else {
+
                         profileImage.setImageResource(
                                 R.drawable.icon_foreground
                         );
@@ -205,6 +240,78 @@ public class MyProfileActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT
                     ).show();
                 });
+    }
+
+    private void uploadProfilePhoto(Uri imageUri) {
+
+        FirebaseUser currentUser = auth.getCurrentUser();
+
+        if (currentUser == null) {
+            Toast.makeText(
+                    this,
+                    "Pehle Login karein",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+
+        String uid = currentUser.getUid();
+
+        Toast.makeText(
+                this,
+                "Profile photo upload ho rahi hai...",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        StorageReference imageRef =
+                storage.getReference()
+                        .child("profile_images")
+                        .child(uid + ".jpg");
+
+        imageRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        imageRef.getDownloadUrl()
+                                .addOnSuccessListener(downloadUri -> {
+
+                                    String imageUrl =
+                                            downloadUri.toString();
+
+                                    firestore.collection("users")
+                                            .document(uid)
+                                            .update(
+                                                    "profileImageUrl",
+                                                    imageUrl
+                                            )
+                                            .addOnSuccessListener(unused -> {
+
+                                                com.bumptech.glide.Glide
+                                                        .with(MyProfileActivity.this)
+                                                        .load(imageUrl)
+                                                        .into(profileImage);
+
+                                                Toast.makeText(
+                                                        MyProfileActivity.this,
+                                                        "Profile photo update ho gayi ✅",
+                                                        Toast.LENGTH_SHORT
+                                                ).show();
+
+                                            })
+                                            .addOnFailureListener(e ->
+                                                    Toast.makeText(
+                                                            MyProfileActivity.this,
+                                                            "Profile save nahi hui",
+                                                            Toast.LENGTH_SHORT
+                                                    ).show()
+                                            );
+                                })
+                )
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                MyProfileActivity.this,
+                                "Photo upload failed",
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
     }
 
     private void showDefaultProfile() {
