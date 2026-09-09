@@ -8,13 +8,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -25,35 +26,53 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private ImageView profileImage;
 
-    private TextView nameText;
-    private TextView usernameText;
-    private TextView bioText;
+    private android.widget.TextView nameText;
+    private android.widget.TextView usernameText;
+    private android.widget.TextView bioText;
 
-    private TextView postsCountText;
-    private TextView followersCountText;
-    private TextView followingCountText;
+    private android.widget.TextView postsCountText;
+    private android.widget.TextView followersCountText;
+    private android.widget.TextView followingCountText;
 
     private Button editProfileButton;
     private Button shareProfileButton;
 
     private ImageView settingsButton;
+
     private ImageView postsTab;
     private ImageView reelsTab;
     private ImageView repostsTab;
     private ImageView taggedTab;
 
+    private LinearLayout newHighlightButton;
+    private LinearLayout templeHighlightButton;
+    private LinearLayout deviHighlightButton;
+
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
     private FirebaseStorage storage;
 
-    private ActivityResultLauncher<String> imagePickerLauncher;
+    private final int ACTIVE_COLOR =
+            Color.parseColor("#FFB300");
 
-    private final int ACTIVE_COLOR = Color.parseColor("#FFB300");
-    private final int INACTIVE_COLOR = Color.parseColor("#AAB2C0");
+    private final int INACTIVE_COLOR =
+            Color.parseColor("#AAB2C0");
+
+    private final ActivityResultLauncher<String> profileImagePicker =
+            registerForActivityResult(
+                    new ActivityResultContracts.GetContent(),
+                    uri -> {
+
+                        if (uri != null) {
+                            uploadProfilePhoto(uri);
+                        }
+                    }
+            );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_my_profile);
 
         auth = FirebaseAuth.getInstance();
@@ -70,30 +89,41 @@ public class MyProfileActivity extends AppCompatActivity {
         followersCountText = findViewById(R.id.followersCountText);
         followingCountText = findViewById(R.id.followingCountText);
 
-        editProfileButton = findViewById(R.id.editProfileButton);
-        shareProfileButton = findViewById(R.id.shareProfileButton);
+        editProfileButton =
+                findViewById(R.id.editProfileButton);
 
-        settingsButton = findViewById(R.id.settingsButton);
+        shareProfileButton =
+                findViewById(R.id.shareProfileButton);
 
-        postsTab = findViewById(R.id.postsTab);
-        reelsTab = findViewById(R.id.reelsTab);
-        repostsTab = findViewById(R.id.repostsTab);
-        taggedTab = findViewById(R.id.taggedTab);
+        settingsButton =
+                findViewById(R.id.settingsButton);
 
-        // Gallery picker
-        imagePickerLauncher =
-                registerForActivityResult(
-                        new ActivityResultContracts.GetContent(),
-                        uri -> {
-                            if (uri != null) {
-                                uploadProfilePhoto(uri);
-                            }
-                        }
-                );
+        postsTab =
+                findViewById(R.id.postsTab);
 
-        FirebaseUser currentUser = auth.getCurrentUser();
+        reelsTab =
+                findViewById(R.id.reelsTab);
+
+        repostsTab =
+                findViewById(R.id.repostsTab);
+
+        taggedTab =
+                findViewById(R.id.taggedTab);
+
+        newHighlightButton =
+                findViewById(R.id.newHighlightButton);
+
+        templeHighlightButton =
+                findViewById(R.id.templeHighlightButton);
+
+        deviHighlightButton =
+                findViewById(R.id.deviHighlightButton);
+
+        FirebaseUser currentUser =
+                auth.getCurrentUser();
 
         if (currentUser == null) {
+
             Toast.makeText(
                     this,
                     "Pehle Login karein",
@@ -106,12 +136,14 @@ public class MyProfileActivity extends AppCompatActivity {
 
         loadProfile(currentUser);
 
-        // Profile photo change
+        // PROFILE PHOTO
         profileImage.setOnClickListener(v ->
-                imagePickerLauncher.launch("image/*")
+                profileImagePicker.launch("image/*")
         );
 
+        // EDIT PROFILE
         editProfileButton.setOnClickListener(v -> {
+
             startActivity(
                     new Intent(
                             MyProfileActivity.this,
@@ -120,9 +152,14 @@ public class MyProfileActivity extends AppCompatActivity {
             );
         });
 
-        shareProfileButton.setOnClickListener(v -> shareProfile());
+        // SHARE PROFILE
+        shareProfileButton.setOnClickListener(v ->
+                shareProfile()
+        );
 
+        // SETTINGS
         settingsButton.setOnClickListener(v -> {
+
             startActivity(
                     new Intent(
                             MyProfileActivity.this,
@@ -131,24 +168,55 @@ public class MyProfileActivity extends AppCompatActivity {
             );
         });
 
-        postsTab.setOnClickListener(v -> selectTab(postsTab));
-        reelsTab.setOnClickListener(v -> selectTab(reelsTab));
-        repostsTab.setOnClickListener(v -> selectTab(repostsTab));
-        taggedTab.setOnClickListener(v -> selectTab(taggedTab));
+        // TABS
+        postsTab.setOnClickListener(v ->
+                selectTab(postsTab)
+        );
+
+        reelsTab.setOnClickListener(v ->
+                selectTab(reelsTab)
+        );
+
+        repostsTab.setOnClickListener(v ->
+                selectTab(repostsTab)
+        );
+
+        taggedTab.setOnClickListener(v ->
+                selectTab(taggedTab)
+        );
 
         updateTabColors(postsTab);
+
+        // HIGHLIGHTS
+
+        newHighlightButton.setOnClickListener(v ->
+                createNewHighlight()
+        );
+
+        templeHighlightButton.setOnClickListener(v ->
+                openTempleHighlight()
+        );
+
+        deviHighlightButton.setOnClickListener(v ->
+                openDeviDevtaHighlight()
+        );
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        FirebaseUser currentUser = auth.getCurrentUser();
+        FirebaseUser currentUser =
+                auth.getCurrentUser();
 
         if (currentUser != null) {
             loadProfile(currentUser);
         }
     }
+
+    // ==============================
+    // LOAD PROFILE
+    // ==============================
 
     private void loadProfile(FirebaseUser currentUser) {
 
@@ -160,13 +228,19 @@ public class MyProfileActivity extends AppCompatActivity {
                 .addOnSuccessListener(document -> {
 
                     if (!document.exists()) {
+
                         showDefaultProfile();
                         return;
                     }
 
-                    String name = document.getString("name");
-                    String username = document.getString("username");
-                    String bio = document.getString("bio");
+                    String name =
+                            document.getString("name");
+
+                    String username =
+                            document.getString("username");
+
+                    String bio =
+                            document.getString("bio");
 
                     nameText.setText(
                             TextUtils.isEmpty(name)
@@ -175,11 +249,18 @@ public class MyProfileActivity extends AppCompatActivity {
                     );
 
                     if (TextUtils.isEmpty(username)) {
+
                         usernameText.setText("@user");
+
                     } else if (username.startsWith("@")) {
+
                         usernameText.setText(username);
+
                     } else {
-                        usernameText.setText("@" + username);
+
+                        usernameText.setText(
+                                "@" + username
+                        );
                     }
 
                     bioText.setText(
@@ -213,15 +294,21 @@ public class MyProfileActivity extends AppCompatActivity {
                     );
 
                     String imageUrl =
-                            document.getString("profileImageUrl");
+                            document.getString(
+                                    "profileImageUrl"
+                            );
 
                     if (!TextUtils.isEmpty(imageUrl)) {
 
-                        com.bumptech.glide.Glide
-                                .with(MyProfileActivity.this)
+                        Glide.with(this)
                                 .load(imageUrl)
-                                .placeholder(R.drawable.icon_foreground)
-                                .error(R.drawable.icon_foreground)
+                                .placeholder(
+                                        R.drawable.icon_foreground
+                                )
+                                .error(
+                                        R.drawable.icon_foreground
+                                )
+                                .circleCrop()
                                 .into(profileImage);
 
                     } else {
@@ -242,83 +329,21 @@ public class MyProfileActivity extends AppCompatActivity {
                 });
     }
 
-    private void uploadProfilePhoto(Uri imageUri) {
-
-        FirebaseUser currentUser = auth.getCurrentUser();
-
-        if (currentUser == null) {
-            Toast.makeText(
-                    this,
-                    "Pehle Login karein",
-                    Toast.LENGTH_SHORT
-            ).show();
-            return;
-        }
-
-        String uid = currentUser.getUid();
-
-        Toast.makeText(
-                this,
-                "Profile photo upload ho rahi hai...",
-                Toast.LENGTH_SHORT
-        ).show();
-
-        StorageReference imageRef =
-                storage.getReference()
-                        .child("profile_images")
-                        .child(uid + ".jpg");
-
-        imageRef.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        imageRef.getDownloadUrl()
-                                .addOnSuccessListener(downloadUri -> {
-
-                                    String imageUrl =
-                                            downloadUri.toString();
-
-                                    firestore.collection("users")
-                                            .document(uid)
-                                            .update(
-                                                    "profileImageUrl",
-                                                    imageUrl
-                                            )
-                                            .addOnSuccessListener(unused -> {
-
-                                                com.bumptech.glide.Glide
-                                                        .with(MyProfileActivity.this)
-                                                        .load(imageUrl)
-                                                        .into(profileImage);
-
-                                                Toast.makeText(
-                                                        MyProfileActivity.this,
-                                                        "Profile photo update ho gayi ✅",
-                                                        Toast.LENGTH_SHORT
-                                                ).show();
-
-                                            })
-                                            .addOnFailureListener(e ->
-                                                    Toast.makeText(
-                                                            MyProfileActivity.this,
-                                                            "Profile save nahi hui",
-                                                            Toast.LENGTH_SHORT
-                                                    ).show()
-                                            );
-                                })
-                )
-                .addOnFailureListener(e ->
-                        Toast.makeText(
-                                MyProfileActivity.this,
-                                "Photo upload failed",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
-    }
+    // ==============================
+    // DEFAULT PROFILE
+    // ==============================
 
     private void showDefaultProfile() {
 
-        nameText.setText("Sanskriti Sathi User");
+        nameText.setText(
+                "Sanskriti Sathi User"
+        );
+
         usernameText.setText("@user");
-        bioText.setText("Apni Sanskriti se judein.");
+
+        bioText.setText(
+                "Apni Sanskriti se judein."
+        );
 
         postsCountText.setText("0");
         followersCountText.setText("0");
@@ -329,14 +354,145 @@ public class MyProfileActivity extends AppCompatActivity {
         );
     }
 
-    private long getLongValue(Long value) {
+    // ==============================
+    // PROFILE PHOTO UPLOAD
+    // ==============================
 
-        if (value == null) {
-            return 0;
+    private void uploadProfilePhoto(Uri imageUri) {
+
+        FirebaseUser currentUser =
+                auth.getCurrentUser();
+
+        if (currentUser == null) {
+            return;
         }
 
-        return value;
+        String uid =
+                currentUser.getUid();
+
+        Toast.makeText(
+                this,
+                "Profile photo upload ho rahi hai...",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        StorageReference imageReference =
+                storage.getReference()
+                        .child(
+                                "profile_images/"
+                                        + uid
+                                        + ".jpg"
+                        );
+
+        imageReference.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+
+                    imageReference
+                            .getDownloadUrl()
+                            .addOnSuccessListener(downloadUri -> {
+
+                                String imageUrl =
+                                        downloadUri.toString();
+
+                                firestore.collection("users")
+                                        .document(uid)
+                                        .update(
+                                                "profileImageUrl",
+                                                imageUrl
+                                        )
+                                        .addOnSuccessListener(unused -> {
+
+                                            Glide.with(
+                                                    MyProfileActivity.this
+                                            )
+                                                    .load(imageUrl)
+                                                    .circleCrop()
+                                                    .into(profileImage);
+
+                                            Toast.makeText(
+                                                    MyProfileActivity.this,
+                                                    "Profile photo update ho gayi ✅",
+                                                    Toast.LENGTH_SHORT
+                                            ).show();
+
+                                        })
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(
+                                                        MyProfileActivity.this,
+                                                        "Photo URL save nahi hua.",
+                                                        Toast.LENGTH_SHORT
+                                                ).show()
+                                        );
+
+                            });
+
+                })
+                .addOnFailureListener(e -> {
+
+                    Toast.makeText(
+                            MyProfileActivity.this,
+                            "Profile photo upload failed.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
     }
+
+    // ==============================
+    // HIGHLIGHTS
+    // ==============================
+
+    private void createNewHighlight() {
+
+        Toast.makeText(
+                this,
+                "New Highlight feature ready hai ✨",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        /*
+         * Next phase:
+         * User apni Story se Highlight create karega.
+         * Firebase me highlight data save hoga.
+         */
+    }
+
+    private void openTempleHighlight() {
+
+        Toast.makeText(
+                this,
+                "Temples Highlight",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        Intent intent =
+                new Intent(
+                        MyProfileActivity.this,
+                        TempleActivity.class
+                );
+
+        startActivity(intent);
+    }
+
+    private void openDeviDevtaHighlight() {
+
+        Toast.makeText(
+                this,
+                "Devi Devta Highlight",
+                Toast.LENGTH_SHORT
+        ).show();
+
+        Intent intent =
+                new Intent(
+                        MyProfileActivity.this,
+                        DeviDevtaActivity.class
+                );
+
+        startActivity(intent);
+    }
+
+    // ==============================
+    // TABS
+    // ==============================
 
     private void selectTab(ImageView selected) {
 
@@ -345,12 +501,19 @@ public class MyProfileActivity extends AppCompatActivity {
         String message;
 
         if (selected == postsTab) {
+
             message = "Posts";
+
         } else if (selected == reelsTab) {
+
             message = "Reels";
+
         } else if (selected == repostsTab) {
+
             message = "Reposts";
+
         } else {
+
             message = "Tagged";
         }
 
@@ -396,9 +559,14 @@ public class MyProfileActivity extends AppCompatActivity {
         );
     }
 
+    // ==============================
+    // SHARE PROFILE
+    // ==============================
+
     private void shareProfile() {
 
-        FirebaseUser currentUser = auth.getCurrentUser();
+        FirebaseUser currentUser =
+                auth.getCurrentUser();
 
         if (currentUser == null) {
             return;
@@ -408,9 +576,9 @@ public class MyProfileActivity extends AppCompatActivity {
                 usernameText.getText().toString();
 
         String shareText =
-                "Sanskriti Sathi par " +
-                username +
-                " ki profile dekhein.";
+                "Sanskriti Sathi par "
+                        + username
+                        + " ki profile dekhein.";
 
         Intent shareIntent =
                 new Intent(Intent.ACTION_SEND);
@@ -428,5 +596,18 @@ public class MyProfileActivity extends AppCompatActivity {
                         "Share Profile"
                 )
         );
+    }
+
+    // ==============================
+    // SAFE LONG VALUE
+    // ==============================
+
+    private long getLongValue(Long value) {
+
+        if (value == null) {
+            return 0;
+        }
+
+        return value;
     }
 }
