@@ -13,18 +13,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView homeFeedRecyclerView;
 
-    private static final String PREFS_NAME =
-            "SanskritiSathiPrefs";
-
-    private static final String THEME_KEY =
-            "dark_mode";
+    private static final String PREFS_NAME = "SanskritiSathiPrefs";
+    private static final String THEME_KEY = "dark_mode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        // =====================================================
+        // =========================
         // HOME FEED
-        // =====================================================
+        // =========================
 
         homeFeedRecyclerView =
                 findViewById(R.id.homeFeedRecyclerView);
@@ -45,13 +39,18 @@ public class MainActivity extends AppCompatActivity {
 
         homeFeedRecyclerView.setHasFixedSize(false);
 
-        // Firebase se real public posts load karo
-        loadHomeFeed();
+        CulturePostAdapter feedAdapter =
+                new CulturePostAdapter(
+                        this,
+                        CulturePostData.getAllPosts()
+                );
+
+        homeFeedRecyclerView.setAdapter(feedAdapter);
 
 
-        // =====================================================
+        // =========================
         // TEMPLE
-        // =====================================================
+        // =========================
 
         findViewById(R.id.templeStoryButton)
                 .setOnClickListener(v ->
@@ -64,9 +63,9 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
+        // =========================
         // RAJA
-        // =====================================================
+        // =========================
 
         findViewById(R.id.rajaStoryButton)
                 .setOnClickListener(v ->
@@ -79,9 +78,9 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
+        // =========================
         // DEVI DEVTA
-        // =====================================================
+        // =========================
 
         findViewById(R.id.deviStoryButton)
                 .setOnClickListener(v ->
@@ -94,9 +93,9 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
+        // =========================
         // GITA
-        // =====================================================
+        // =========================
 
         findViewById(R.id.gitaStoryButton)
                 .setOnClickListener(v ->
@@ -109,9 +108,9 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
+        // =========================
         // FESTIVAL / RSS
-        // =====================================================
+        // =========================
 
         findViewById(R.id.festivalStoryButton)
                 .setOnClickListener(v ->
@@ -124,9 +123,9 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
+        // =========================
         // YOUR STORY
-        // =====================================================
+        // =========================
 
         findViewById(R.id.yourStoryButton)
                 .setOnClickListener(v ->
@@ -139,9 +138,9 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
-        // CREATE
-        // =====================================================
+        // =========================
+        // TOP CREATE
+        // =========================
 
         findViewById(R.id.createTopButton)
                 .setOnClickListener(v ->
@@ -149,24 +148,23 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
+        // =========================
         // NOTIFICATIONS
-        // =====================================================
+        // =========================
 
         findViewById(R.id.notificationButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        NotificationsActivity.class
-                                )
-                        )
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Notifications next step mein add honge.",
+                                Toast.LENGTH_SHORT
+                        ).show()
                 );
 
 
-        // =====================================================
+        // =========================
         // DAY / NIGHT MODE
-        // =====================================================
+        // =========================
 
         TextView themeToggleButton =
                 findViewById(R.id.themeToggleButton);
@@ -209,21 +207,20 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        // =====================================================
+        // =========================
         // HOME
-        // =====================================================
+        // =========================
 
         findViewById(R.id.homeNavButton)
-                .setOnClickListener(v -> {
+                .setOnClickListener(v ->
+                        homeFeedRecyclerView
+                                .smoothScrollToPosition(0)
+                );
 
-                    homeFeedRecyclerView
-                            .smoothScrollToPosition(0);
-                });
 
-
-        // =====================================================
+        // =========================
         // REELS
-        // =====================================================
+        // =========================
 
         findViewById(R.id.reelsNavButton)
                 .setOnClickListener(v ->
@@ -236,9 +233,9 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
+        // =========================
         // CHAT
-        // =====================================================
+        // =========================
 
         findViewById(R.id.chatNavButton)
                 .setOnClickListener(v ->
@@ -251,24 +248,23 @@ public class MainActivity extends AppCompatActivity {
                 );
 
 
-        // =====================================================
+        // =========================
         // SEARCH
-        // =====================================================
+        // =========================
 
         findViewById(R.id.searchNavButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        SearchActivity.class
-                                )
-                        )
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Search next step mein add hoga.",
+                                Toast.LENGTH_SHORT
+                        ).show()
                 );
 
 
-        // =====================================================
+        // =========================
         // PROFILE / LOGIN
-        // =====================================================
+        // =========================
 
         findViewById(R.id.profileNavButton)
                 .setOnClickListener(v -> {
@@ -298,89 +294,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // =====================================================
-    // FIREBASE HOME FEED
-    // =====================================================
-
-    private void loadHomeFeed() {
-
-        CulturePostFirebaseHelper.getPublicPosts(
-                new CulturePostFirebaseHelper.PostsCallback() {
-
-                    @Override
-                    public void onSuccess(
-                            List<CulturePost> posts) {
-
-                        if (posts == null) {
-                            posts = new ArrayList<>();
-                        }
-
-                        List<CulturePost> firebasePosts =
-                                new ArrayList<>(posts);
-
-                        /*
-                         * Firebase mein posts available hain
-                         */
-                        if (!firebasePosts.isEmpty()) {
-
-                            CulturePostAdapter adapter =
-                                    new CulturePostAdapter(
-                                            MainActivity.this,
-                                            firebasePosts
-                                    );
-
-                            homeFeedRecyclerView
-                                    .setAdapter(adapter);
-
-                        } else {
-
-                            /*
-                             * Agar Firebase par abhi koi
-                             * public post nahi hai to local
-                             * cultural content fallback rahega.
-                             */
-                            List<CulturePost> localPosts =
-                                    CulturePostData.getAllPosts();
-
-                            CulturePostAdapter adapter =
-                                    new CulturePostAdapter(
-                                            MainActivity.this,
-                                            localPosts
-                                    );
-
-                            homeFeedRecyclerView
-                                    .setAdapter(adapter);
-                        }
-                    }
-
-                    @Override
-                    public void onError(String message) {
-
-                        /*
-                         * Internet/Firebase error par app
-                         * blank nahi hogi. Local content
-                         * fallback ke roop mein dikhega.
-                         */
-                        List<CulturePost> localPosts =
-                                CulturePostData.getAllPosts();
-
-                        CulturePostAdapter adapter =
-                                new CulturePostAdapter(
-                                        MainActivity.this,
-                                        localPosts
-                                );
-
-                        homeFeedRecyclerView
-                                .setAdapter(adapter);
-                    }
-                }
-        );
-    }
-
-
-    // =====================================================
+    // =========================
     // THEME ICON
-    // =====================================================
+    // =========================
 
     private void updateThemeIcon(TextView button) {
 
@@ -397,19 +313,16 @@ public class MainActivity extends AppCompatActivity {
                 );
 
         if (darkMode) {
-
             button.setText("☀️");
-
         } else {
-
             button.setText("🌙");
         }
     }
 
 
-    // =====================================================
+    // =========================
     // CREATE MENU
-    // =====================================================
+    // =========================
 
     private void showCreateMenu() {
 
@@ -439,6 +352,7 @@ public class MainActivity extends AppCompatActivity {
                             } else if (which == 1) {
 
                                 // CREATE POST
+                                // Open real post upload screen
 
                                 startActivity(
                                         new Intent(
