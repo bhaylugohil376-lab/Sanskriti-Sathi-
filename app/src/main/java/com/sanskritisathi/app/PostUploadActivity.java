@@ -1,498 +1,428 @@
 package com.sanskritisathi.app;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 
 public class PostUploadActivity extends AppCompatActivity {
 
-    private ImageView postImagePreview;
-    private EditText captionInput;
-    private Spinner categorySpinner;
-    private ProgressBar progressBar;
-    private Button publishButton;
-
-    private Uri selectedImageUri;
-    private Bitmap cameraBitmap;
+    private ImageView postPreviewImage;
+    private Button selectPostImageButton;
+    private Button uploadPostButton;
+    private EditText postCaptionInput;
+    private Spinner postCategorySpinner;
+    private Spinner postVisibilitySpinner;
+    private ProgressBar postUploadProgress;
 
     private FirebaseAuth auth;
-    private FirebaseFirestore firestore;
     private FirebaseStorage storage;
 
-    private ActivityResultLauncher<String> galleryLauncher;
-    private ActivityResultLauncher<Intent> cameraLauncher;
+    private Uri selectedImageUri;
 
-    private final ActivityResultLauncher<String> cameraPermissionLauncher =
-            registerForActivityResult(
-                    new ActivityResultContracts.RequestPermission(),
-                    granted -> {
-                        if (granted) {
-                            openCamera();
-                        } else {
-                            Toast.makeText(
-                                    this,
-                                    "Camera permission required.",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
-                    }
-            );
+    private ActivityResultLauncher<String> imagePickerLauncher;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_post_upload);
 
         auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
 
-        ImageButton backButton =
-                findViewById(R.id.postBackButton);
-
-        postImagePreview =
-                findViewById(R.id.postImagePreview);
-
-        captionInput =
-                findViewById(R.id.postCaptionInput);
-
-        categorySpinner =
-                findViewById(R.id.postCategorySpinner);
-
-        progressBar =
-                findViewById(R.id.postUploadProgress);
-
-        publishButton =
-                findViewById(R.id.postPublishButton);
-
-        Button galleryButton =
-                findViewById(R.id.postGalleryButton);
-
-        Button cameraButton =
-                findViewById(R.id.postCameraButton);
-
-        setupCategorySpinner();
-
-        galleryLauncher =
-                registerForActivityResult(
-                        new ActivityResultContracts.GetContent(),
-                        uri -> {
-                            if (uri != null) {
-                                selectedImageUri = uri;
-                                cameraBitmap = null;
-                                postImagePreview.setImageURI(uri);
-                            }
-                        }
-                );
-
-        cameraLauncher =
-                registerForActivityResult(
-                        new ActivityResultContracts.StartActivityForResult(),
-                        result -> {
-
-                            if (result.getResultCode()
-                                    == Activity.RESULT_OK
-                                    && result.getData() != null) {
-
-                                Bundle extras =
-                                        result.getData().getExtras();
-
-                                if (extras != null) {
-
-                                    Object image =
-                                            extras.get("data");
-
-                                    if (image instanceof Bitmap) {
-
-                                        cameraBitmap =
-                                                (Bitmap) image;
-
-                                        selectedImageUri = null;
-
-                                        postImagePreview
-                                                .setImageBitmap(
-                                                        cameraBitmap
-                                                );
-                                    }
-                                }
-                            }
-                        }
-                );
-
-        backButton.setOnClickListener(
-                v -> finish()
-        );
-
-        galleryButton.setOnClickListener(
-                v -> galleryLauncher.launch("image/*")
-        );
-
-        cameraButton.setOnClickListener(
-                v -> checkCameraPermission()
-        );
-
-        publishButton.setOnClickListener(
-                v -> publishPost()
-        );
+        initializeViews();
+        setupSpinners();
+        setupImagePicker();
+        setupButtons();
     }
 
-    private void setupCategorySpinner() {
+    private void initializeViews() {
 
-        String[] categories = {
+        postPreviewImage =
+                findViewById(R.id.postPreviewImage);
+
+        selectPostImageButton =
+                findViewById(R.id.selectPostImageButton);
+
+        uploadPostButton =
+                findViewById(R.id.uploadPostButton);
+
+        postCaptionInput =
+                findViewById(R.id.postCaptionInput);
+
+        postCategorySpinner =
+                findViewById(R.id.postCategorySpinner);
+
+        postVisibilitySpinner =
+                findViewById(R.id.postVisibilitySpinner);
+
+        postUploadProgress =
+                findViewById(R.id.postUploadProgress);
+    }
+
+    private void setupSpinners() {
+
+        List<String> categories = Arrays.asList(
                 "Raja",
                 "Temple",
                 "Devi Devta",
                 "Bhagavad Gita",
-                "Culture",
-                "Festival",
-                "General"
-        };
+                "Indian Culture",
+                "History"
+        );
 
-        ArrayAdapter<String> adapter =
+        ArrayAdapter<String> categoryAdapter =
                 new ArrayAdapter<>(
                         this,
                         android.R.layout.simple_spinner_item,
                         categories
                 );
 
-        adapter.setDropDownViewResource(
+        categoryAdapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item
         );
 
-        categorySpinner.setAdapter(adapter);
+        postCategorySpinner.setAdapter(
+                categoryAdapter
+        );
+
+        List<String> visibilityOptions = Arrays.asList(
+                "Public",
+                "Followers"
+        );
+
+        ArrayAdapter<String> visibilityAdapter =
+                new ArrayAdapter<>(
+                        this,
+                        android.R.layout.simple_spinner_item,
+                        visibilityOptions
+                );
+
+        visibilityAdapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        postVisibilitySpinner.setAdapter(
+                visibilityAdapter
+        );
     }
 
-    private void checkCameraPermission() {
+    private void setupImagePicker() {
 
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED) {
+        imagePickerLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.GetContent(),
+                        uri -> {
 
-            openCamera();
+                            if (uri != null) {
 
-        } else {
+                                selectedImageUri = uri;
 
-            cameraPermissionLauncher.launch(
-                    Manifest.permission.CAMERA
-            );
-        }
+                                postPreviewImage.setImageURI(
+                                        selectedImageUri
+                                );
+                            }
+                        }
+                );
     }
 
-    private void openCamera() {
+    private void setupButtons() {
 
-        Intent intent =
-                new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        selectPostImageButton.setOnClickListener(
+                view -> openImagePicker()
+        );
 
-        cameraLauncher.launch(intent);
+        uploadPostButton.setOnClickListener(
+                view -> publishPost()
+        );
+    }
+
+    private void openImagePicker() {
+
+        imagePickerLauncher.launch(
+                "image/*"
+        );
     }
 
     private void publishPost() {
 
-        if (auth.getCurrentUser() == null) {
+        FirebaseUser user =
+                auth.getCurrentUser();
+
+        if (user == null) {
 
             Toast.makeText(
                     this,
-                    "Please login first.",
-                    Toast.LENGTH_SHORT
+                    "Pehle Login karein.",
+                    Toast.LENGTH_LONG
             ).show();
 
             return;
         }
 
         String caption =
-                captionInput.getText()
+                postCaptionInput
+                        .getText()
                         .toString()
                         .trim();
 
         if (TextUtils.isEmpty(caption)) {
 
-            captionInput.setError(
-                    "Write something about your post"
+            postCaptionInput.setError(
+                    "Caption likhiye"
             );
 
-            captionInput.requestFocus();
+            postCaptionInput.requestFocus();
 
             return;
         }
 
-        if (selectedImageUri == null
-                && cameraBitmap == null) {
+        if (caption.length() > 2000) {
+
+            postCaptionInput.setError(
+                    "Caption maximum 2000 characters ka ho sakta hai."
+            );
+
+            return;
+        }
+
+        String category =
+                postCategorySpinner
+                        .getSelectedItem()
+                        .toString();
+
+        String visibility =
+                postVisibilitySpinner
+                        .getSelectedItem()
+                        .toString();
+
+        setUploading(true);
+
+        /*
+         * Photo optional rakhi gayi hai.
+         * Agar photo select nahi hai to Firestore
+         * mein empty imageUrl save hoga.
+         */
+        if (selectedImageUri == null) {
+
+            createFirestorePost(
+                    category,
+                    caption,
+                    "",
+                    visibility
+            );
+
+            return;
+        }
+
+        uploadImageToFirebase(
+                category,
+                caption,
+                visibility
+        );
+    }
+
+    private void uploadImageToFirebase(
+            String category,
+            String caption,
+            String visibility) {
+
+        FirebaseUser user =
+                auth.getCurrentUser();
+
+        if (user == null) {
+
+            setUploading(false);
 
             Toast.makeText(
                     this,
-                    "Please select a photo first.",
-                    Toast.LENGTH_SHORT
+                    "Login session nahi mila.",
+                    Toast.LENGTH_LONG
             ).show();
 
             return;
         }
 
-        setUploading(true);
-
-        String uid =
-                auth.getCurrentUser().getUid();
-
-        String category =
-                categorySpinner
-                        .getSelectedItem()
-                        .toString();
-
-        String postId =
-                firestore.collection("posts")
-                        .document()
-                        .getId();
+        String fileName =
+                "post_" +
+                System.currentTimeMillis() +
+                ".jpg";
 
         StorageReference imageReference =
-                storage.getReference()
-                        .child("posts")
-                        .child(uid)
-                        .child(postId + ".jpg");
+                storage
+                        .getReference()
+                        .child("culture_posts")
+                        .child(user.getUid())
+                        .child(fileName);
 
-        if (selectedImageUri != null) {
+        imageReference
+                .putFile(selectedImageUri)
+                .addOnProgressListener(
+                        taskSnapshot -> {
 
-            uploadUriImage(
-                    imageReference,
-                    selectedImageUri,
-                    uid,
-                    postId,
-                    category,
-                    caption
+                            long total =
+                                    taskSnapshot.getTotalByteCount();
+
+                            long uploaded =
+                                    taskSnapshot.getBytesTransferred();
+
+                            if (total > 0) {
+
+                                int progress =
+                                        (int)
+                                                ((uploaded * 100)
+                                                        / total);
+
+                                postUploadProgress
+                                        .setProgress(progress);
+                            }
+                        }
+                )
+                .continueWithTask(
+                        task -> {
+
+                            if (!task.isSuccessful()
+                                    && task.getException() != null) {
+
+                                throw task.getException();
+                            }
+
+                            return imageReference
+                                    .getDownloadUrl();
+                        }
+                )
+                .addOnSuccessListener(
+                        downloadUri -> {
+
+                            String imageUrl =
+                                    downloadUri.toString();
+
+                            createFirestorePost(
+                                    category,
+                                    caption,
+                                    imageUrl,
+                                    visibility
+                            );
+                        }
+                )
+                .addOnFailureListener(
+                        e -> {
+
+                            setUploading(false);
+
+                            Toast.makeText(
+                                    PostUploadActivity.this,
+                                    "Photo upload failed: "
+                                            + e.getMessage(),
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+                );
+    }
+
+    private void createFirestorePost(
+            String category,
+            String caption,
+            String imageUrl,
+            String visibility) {
+
+        CulturePostFirebaseHelper.createPost(
+                category,
+                caption,
+                imageUrl,
+                visibility,
+                new CulturePostFirebaseHelper.ActionCallback() {
+
+                    @Override
+                    public void onSuccess() {
+
+                        setUploading(false);
+
+                        Toast.makeText(
+                                PostUploadActivity.this,
+                                "Post successfully publish ho gayi.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        setUploading(false);
+
+                        Toast.makeText(
+                                PostUploadActivity.this,
+                                message,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
+        );
+    }
+
+    private void setUploading(
+            boolean uploading) {
+
+        if (uploading) {
+
+            postUploadProgress.setVisibility(
+                    View.VISIBLE
+            );
+
+            postUploadProgress.setIndeterminate(
+                    selectedImageUri == null
+            );
+
+            selectPostImageButton.setEnabled(
+                    false
+            );
+
+            uploadPostButton.setEnabled(
+                    false
             );
 
         } else {
 
-            uploadCameraImage(
-                    imageReference,
-                    cameraBitmap,
-                    uid,
-                    postId,
-                    category,
-                    caption
+            postUploadProgress.setVisibility(
+                    View.GONE
+            );
+
+            postUploadProgress.setIndeterminate(
+                    false
+            );
+
+            selectPostImageButton.setEnabled(
+                    true
+            );
+
+            uploadPostButton.setEnabled(
+                    true
             );
         }
-    }
-
-    private void uploadUriImage(
-            StorageReference imageReference,
-            Uri imageUri,
-            String uid,
-            String postId,
-            String category,
-            String caption
-    ) {
-
-        imageReference
-                .putFile(imageUri)
-                .continueWithTask(task -> {
-
-                    if (!task.isSuccessful()
-                            && task.getException() != null) {
-
-                        throw task.getException();
-                    }
-
-                    return imageReference
-                            .getDownloadUrl();
-
-                })
-                .addOnSuccessListener(downloadUri -> {
-
-                    savePost(
-                            uid,
-                            postId,
-                            category,
-                            caption,
-                            downloadUri.toString()
-                    );
-
-                })
-                .addOnFailureListener(error -> {
-
-                    setUploading(false);
-
-                    Toast.makeText(
-                            this,
-                            "Image upload failed: "
-                                    + error.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
-    }
-
-    private void uploadCameraImage(
-            StorageReference imageReference,
-            Bitmap bitmap,
-            String uid,
-            String postId,
-            String category,
-            String caption
-    ) {
-
-        ByteArrayOutputStream outputStream =
-                new ByteArrayOutputStream();
-
-        bitmap.compress(
-                Bitmap.CompressFormat.JPEG,
-                90,
-                outputStream
-        );
-
-        byte[] imageBytes =
-                outputStream.toByteArray();
-
-        imageReference
-                .putBytes(imageBytes)
-                .continueWithTask(task -> {
-
-                    if (!task.isSuccessful()
-                            && task.getException() != null) {
-
-                        throw task.getException();
-                    }
-
-                    return imageReference
-                            .getDownloadUrl();
-
-                })
-                .addOnSuccessListener(downloadUri -> {
-
-                    savePost(
-                            uid,
-                            postId,
-                            category,
-                            caption,
-                            downloadUri.toString()
-                    );
-
-                })
-                .addOnFailureListener(error -> {
-
-                    setUploading(false);
-
-                    Toast.makeText(
-                            this,
-                            "Image upload failed: "
-                                    + error.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
-    }
-
-    private void savePost(
-            String uid,
-            String postId,
-            String category,
-            String caption,
-            String imageUrl
-    ) {
-
-        String authorName =
-                auth.getCurrentUser().getDisplayName();
-
-        if (authorName == null
-                || authorName.trim().isEmpty()) {
-
-            authorName = "Sanskriti Sathi User";
-        }
-
-        Map<String, Object> post =
-                new HashMap<>();
-
-        post.put("authorUid", uid);
-        post.put("author", authorName);
-        post.put("category", category);
-        post.put("caption", caption);
-        post.put("imageUrl", imageUrl);
-
-        post.put("profileImageUrl", "");
-
-        post.put("likeCount", 0L);
-        post.put("comments", 0L);
-
-        post.put("liked", false);
-        post.put("saved", false);
-
-        post.put("visibility", "public");
-
-        post.put(
-                "createdAt",
-                com.google.firebase.firestore.FieldValue
-                        .serverTimestamp()
-        );
-
-        firestore.collection("posts")
-                .document(postId)
-                .set(post)
-                .addOnSuccessListener(unused -> {
-
-                    setUploading(false);
-
-                    Toast.makeText(
-                            this,
-                            "Post published successfully!",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
-                    finish();
-                })
-                .addOnFailureListener(error -> {
-
-                    setUploading(false);
-
-                    Toast.makeText(
-                            this,
-                            "Post save failed: "
-                                    + error.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
-    }
-
-    private void setUploading(boolean uploading) {
-
-        progressBar.setVisibility(
-                uploading
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-
-        publishButton.setEnabled(!uploading);
-
-        publishButton.setText(
-                uploading
-                        ? "Publishing..."
-                        : "Publish Post"
-        );
     }
 }
