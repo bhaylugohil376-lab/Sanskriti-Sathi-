@@ -1,180 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:fillViewport="true"
     android:background="#FFF8F0">
 
-    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="8dp"
-        android:paddingEnd="16dp"
-        android:background="#FFFFFF"
-        android:elevation="4dp">
-
-        <ImageButton
-            android:id="@+id/postBackButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Back"
-            android:src="@android:drawable/ic_menu_revert"
-            android:tint="#6D3218" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Create Post"
-            android:textColor="#4A2112"
-            android:textSize="21sp"
+            android:text="Create Culture Post"
+            android:textColor="#6D2600"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:paddingBottom="16dp" />
+
+        <ImageView
+            android:id="@+id/postPreviewImage"
+            android:layout_width="match_parent"
+            android:layout_height="230dp"
+            android:layout_marginBottom="14dp"
+            android:background="#FFE0B2"
+            android:scaleType="centerCrop"
+            android:src="@drawable/icon_foreground"
+            android:contentDescription="Post preview" />
+
+        <Button
+            android:id="@+id/selectPostImageButton"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="📷 Select Photo"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="Category"
+            android:textColor="#6D2600"
+            android:textSize="15sp"
             android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/postCategorySpinner"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="6dp" />
+
+        <EditText
+            android:id="@+id/postCaptionInput"
+            android:layout_width="match_parent"
+            android:layout_height="130dp"
+            android:layout_marginTop="14dp"
+            android:gravity="top|start"
+            android:hint="Write something about Indian culture..."
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLength="2000"
+            android:padding="14dp"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Visibility"
+            android:textColor="#6D2600"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/postVisibilitySpinner"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="6dp" />
+
+        <Button
+            android:id="@+id/uploadPostButton"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="22dp"
+            android:text="📤 Publish Post"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/postUploadProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
 
     </LinearLayout>
 
-    <!-- Scrollable Content -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true"
-        android:clipToPadding="false">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingTop="18dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="30dp">
-
-            <!-- Image Preview -->
-            <androidx.cardview.widget.CardView
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                android:layout_width="match_parent"
-                android:layout_height="260dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="#FFFFFF">
-
-                <ImageView
-                    android:id="@+id/postImagePreview"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#F1DED0"
-                    android:contentDescription="Post image"
-                    android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery" />
-
-            </androidx.cardview.widget.CardView>
-
-            <!-- Image Buttons -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/postGalleryButton"
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    android:text="📷 Gallery"
-                    android:textAllCaps="false"
-                    android:textColor="#6D3218"
-                    android:textSize="14sp" />
-
-                <Button
-                    android:id="@+id/postCameraButton"
-                    android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:text="📸 Camera"
-                    android:textAllCaps="false"
-                    android:textColor="#6D3218"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
-
-            <!-- Category Label -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:text="Category"
-                android:textColor="#4A2112"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <!-- Category -->
-            <Spinner
-                android:id="@+id/postCategorySpinner"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="8dp"
-                android:background="#FFFFFF"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp" />
-
-            <!-- Caption Label -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:text="Caption"
-                android:textColor="#4A2112"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <!-- Caption -->
-            <EditText
-                android:id="@+id/postCaptionInput"
-                android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginTop="8dp"
-                android:background="#FFFFFF"
-                android:gravity="top|start"
-                android:hint="Share something about Indian culture..."
-                android:inputType="textCapSentences|textMultiLine"
-                android:maxLength="2000"
-                android:padding="14dp"
-                android:textColor="#3B2117"
-                android:textColorHint="#9B8175"
-                android:textSize="15sp" />
-
-            <!-- Progress -->
-            <ProgressBar
-                android:id="@+id/postUploadProgress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="18dp"
-                android:visibility="gone" />
-
-            <!-- Publish -->
-            <Button
-                android:id="@+id/postPublishButton"
-                android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:layout_marginTop="18dp"
-                android:text="Publish Post"
-                android:textAllCaps="false"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-    </ScrollView>
-
-</LinearLayout>
+</ScrollView>
