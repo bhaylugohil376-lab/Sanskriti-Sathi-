@@ -2,15 +2,13 @@
 
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#FFF8F0">
 
-    <!-- ========================= -->
     <!-- TOP HEADER -->
-    <!-- ========================= -->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
@@ -21,20 +19,17 @@
         android:background="#FFFFFF"
         android:elevation="4dp">
 
-        <!-- CREATE -->
-
         <TextView
             android:id="@+id/createTopButton"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:gravity="center"
-            android:text="＋"
-            android:textSize="30sp"
+            android:text="+"
+            android:textSize="29sp"
             android:textStyle="bold"
             android:textColor="#F57C00"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
-
-        <!-- APP TITLE -->
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Create"/>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -49,7 +44,8 @@
                 android:text="ॐ  Sanskriti Sathi"
                 android:textColor="#311B5E"
                 android:textStyle="bold"
-                android:textSize="22sp"/>
+                android:textSize="21sp"
+                android:maxLines="1"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -60,18 +56,15 @@
 
         </LinearLayout>
 
-        <!-- DAY / NIGHT -->
-
         <TextView
             android:id="@+id/themeToggleButton"
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:gravity="center"
             android:text="🌙"
-            android:textSize="21sp"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
-
-        <!-- NOTIFICATION -->
+            android:textSize="20sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Theme"/>
 
         <TextView
             android:id="@+id/notificationButton"
@@ -79,36 +72,32 @@
             android:layout_height="42dp"
             android:gravity="center"
             android:text="🔔"
-            android:textSize="21sp"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:textSize="20sp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Notifications"/>
 
     </LinearLayout>
 
-
-    <!-- ========================= -->
     <!-- STORIES -->
-    <!-- ========================= -->
-
     <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="116dp"
+        android:layout_height="118dp"
         android:scrollbars="none"
-        android:background="#FFFFFF"
-        android:paddingTop="8dp"
-        android:paddingBottom="6dp">
+        android:fillViewport="false"
+        android:background="#FFFFFF">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp">
+            android:gravity="center_vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp">
 
             <!-- YOUR STORY -->
-
             <LinearLayout
                 android:id="@+id/yourStoryButton"
-                android:layout_width="82dp"
+                android:layout_width="84dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -122,7 +111,8 @@
                         android:layout_height="68dp"
                         android:src="@drawable/icon_foreground"
                         android:scaleType="centerCrop"
-                        android:background="#FFE082"/>
+                        android:background="#FFE082"
+                        android:contentDescription="Your story"/>
 
                     <TextView
                         android:layout_width="25dp"
@@ -143,16 +133,15 @@
                     android:text="Your Story"
                     android:textSize="12sp"
                     android:textColor="#333333"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="5dp"
+                    android:maxLines="1"/>
 
             </LinearLayout>
 
-
             <!-- TEMPLE -->
-
             <LinearLayout
                 android:id="@+id/templeStoryButton"
-                android:layout_width="82dp"
+                android:layout_width="84dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -162,7 +151,8 @@
                     android:layout_height="68dp"
                     android:src="@drawable/somnath"
                     android:scaleType="centerCrop"
-                    android:background="#FFB74D"/>
+                    android:background="#FFB74D"
+                    android:contentDescription="Temple"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -170,16 +160,14 @@
                     android:text="🛕 Temple"
                     android:textSize="12sp"
                     android:textColor="#333333"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="5dp"/>
 
             </LinearLayout>
 
-
             <!-- RAJA -->
-
             <LinearLayout
                 android:id="@+id/rajaStoryButton"
-                android:layout_width="82dp"
+                android:layout_width="84dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -189,7 +177,8 @@
                     android:layout_height="68dp"
                     android:src="@drawable/icon_foreground"
                     android:scaleType="centerCrop"
-                    android:background="#FFCC80"/>
+                    android:background="#FFCC80"
+                    android:contentDescription="Raja"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -197,16 +186,14 @@
                     android:text="👑 Raja"
                     android:textSize="12sp"
                     android:textColor="#333333"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="5dp"/>
 
             </LinearLayout>
 
-
             <!-- DEVI DEVTA -->
-
             <LinearLayout
                 android:id="@+id/deviStoryButton"
-                android:layout_width="82dp"
+                android:layout_width="84dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -216,7 +203,8 @@
                     android:layout_height="68dp"
                     android:src="@drawable/shiva"
                     android:scaleType="centerCrop"
-                    android:background="#F8BBD0"/>
+                    android:background="#F8BBD0"
+                    android:contentDescription="Devi Devta"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -224,16 +212,14 @@
                     android:text="🕉️ Devi-Devta"
                     android:textSize="12sp"
                     android:textColor="#333333"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="5dp"/>
 
             </LinearLayout>
 
-
             <!-- GITA -->
-
             <LinearLayout
                 android:id="@+id/gitaStoryButton"
-                android:layout_width="82dp"
+                android:layout_width="84dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -243,7 +229,8 @@
                     android:layout_height="68dp"
                     android:src="@drawable/gita"
                     android:scaleType="centerCrop"
-                    android:background="#D7CCC8"/>
+                    android:background="#D7CCC8"
+                    android:contentDescription="Bhagavad Gita"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -251,16 +238,14 @@
                     android:text="📖 Gita"
                     android:textSize="12sp"
                     android:textColor="#333333"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="5dp"/>
 
             </LinearLayout>
 
-
             <!-- FESTIVAL -->
-
             <LinearLayout
                 android:id="@+id/festivalStoryButton"
-                android:layout_width="82dp"
+                android:layout_width="84dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -270,7 +255,8 @@
                     android:layout_height="68dp"
                     android:src="@drawable/rss"
                     android:scaleType="centerCrop"
-                    android:background="#FFE0B2"/>
+                    android:background="#FFE0B2"
+                    android:contentDescription="Festival"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -278,7 +264,7 @@
                     android:text="🎉 Festival"
                     android:textSize="12sp"
                     android:textColor="#333333"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="5dp"/>
 
             </LinearLayout>
 
@@ -286,11 +272,7 @@
 
     </HorizontalScrollView>
 
-
-    <!-- ========================= -->
-    <!-- FEED -->
-    <!-- ========================= -->
-
+    <!-- SOCIAL FEED -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/homeFeedRecyclerView"
         android:layout_width="match_parent"
@@ -298,13 +280,10 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp"/>
+        android:paddingBottom="8dp"
+        android:overScrollMode="never"/>
 
-
-    <!-- ========================= -->
-    <!-- BOTTOM NAVIGATION -->
-    <!-- ========================= -->
-
+    <!-- BOTTOM NAV -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="70dp"
@@ -313,15 +292,14 @@
         android:background="#FFFFFF"
         android:elevation="10dp">
 
-        <!-- HOME -->
-
         <LinearLayout
             android:id="@+id/homeNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -339,16 +317,14 @@
 
         </LinearLayout>
 
-
-        <!-- REELS -->
-
         <LinearLayout
             android:id="@+id/reelsNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -366,16 +342,14 @@
 
         </LinearLayout>
 
-
-        <!-- CHAT -->
-
         <LinearLayout
             android:id="@+id/chatNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -392,16 +366,14 @@
 
         </LinearLayout>
 
-
-        <!-- SEARCH -->
-
         <LinearLayout
             android:id="@+id/searchNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -419,16 +391,14 @@
 
         </LinearLayout>
 
-
-        <!-- PROFILE -->
-
         <LinearLayout
             android:id="@+id/profileNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="?attr/selectableItemBackground">
 
             <TextView
                 android:layout_width="wrap_content"
