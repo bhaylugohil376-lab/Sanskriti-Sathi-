@@ -4,10 +4,16 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,11 +30,46 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        // =========================
-        // HOME FEED
-        // =========================
+        /*
+         * =====================================================
+         * SAFE AREA
+         * Motorola Edge 50 + other screen sizes
+         * =====================================================
+         */
+
+        View root = findViewById(R.id.mainRoot);
+
+        if (root != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(
+                    root,
+                    (view, windowInsets) -> {
+
+                        Insets insets =
+                                windowInsets.getInsets(
+                                        WindowInsetsCompat.Type.systemBars()
+                                                | WindowInsetsCompat.Type.displayCutout()
+                                );
+
+                        view.setPadding(
+                                insets.left,
+                                insets.top,
+                                insets.right,
+                                insets.bottom
+                        );
+
+                        return windowInsets;
+                    }
+            );
+        }
+
+        /*
+         * =====================================================
+         * HOME FEED
+         * =====================================================
+         */
 
         homeFeedRecyclerView =
                 findViewById(R.id.homeFeedRecyclerView);
@@ -47,224 +88,195 @@ public class MainActivity extends AppCompatActivity {
 
         homeFeedRecyclerView.setAdapter(feedAdapter);
 
-
-        // =========================
-        // TEMPLE
-        // =========================
+        /*
+         * =====================================================
+         * TEMPLE
+         * =====================================================
+         */
 
         findViewById(R.id.templeStoryButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        TempleActivity.class
-                                )
-                        )
+                        openActivity(TempleActivity.class)
                 );
 
-
-        // =========================
-        // RAJA
-        // =========================
+        /*
+         * =====================================================
+         * RAJA
+         * =====================================================
+         */
 
         findViewById(R.id.rajaStoryButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        RajaActivity.class
-                                )
-                        )
+                        openActivity(RajaActivity.class)
                 );
 
-
-        // =========================
-        // DEVI DEVTA
-        // =========================
+        /*
+         * =====================================================
+         * DEVI DEVTA
+         * =====================================================
+         */
 
         findViewById(R.id.deviStoryButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        DeviDevtaActivity.class
-                                )
-                        )
+                        openActivity(DeviDevtaActivity.class)
                 );
 
-
-        // =========================
-        // GITA
-        // =========================
+        /*
+         * =====================================================
+         * GITA
+         * =====================================================
+         */
 
         findViewById(R.id.gitaStoryButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        GitaActivity.class
-                                )
-                        )
+                        openActivity(GitaActivity.class)
                 );
 
-
-        // =========================
-        // FESTIVAL / RSS
-        // =========================
+        /*
+         * =====================================================
+         * NEWS / RSS
+         * =====================================================
+         */
 
         findViewById(R.id.festivalStoryButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        RssActivity.class
-                                )
-                        )
+                        openActivity(RssActivity.class)
                 );
 
-
-        // =========================
-        // YOUR STORY
-        // =========================
+        /*
+         * =====================================================
+         * YOUR STORY
+         * =====================================================
+         */
 
         findViewById(R.id.yourStoryButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        StoryUploadActivity.class
-                                )
-                        )
+                        openActivity(StoryUploadActivity.class)
                 );
 
-
-        // =========================
-        // TOP CREATE
-        // =========================
+        /*
+         * =====================================================
+         * CREATE
+         * =====================================================
+         */
 
         findViewById(R.id.createTopButton)
                 .setOnClickListener(v ->
                         showCreateMenu()
                 );
 
-
-        // =========================
-        // NOTIFICATIONS
-        // =========================
+        /*
+         * =====================================================
+         * NOTIFICATIONS
+         * =====================================================
+         */
 
         findViewById(R.id.notificationButton)
                 .setOnClickListener(v ->
-                        Toast.makeText(
-                                MainActivity.this,
-                                "Notifications next step mein add honge.",
-                                Toast.LENGTH_SHORT
-                        ).show()
+                        openActivity(NotificationsActivity.class)
                 );
 
-
-        // =========================
-        // DAY / NIGHT MODE
-        // =========================
+        /*
+         * =====================================================
+         * THEME
+         * =====================================================
+         */
 
         TextView themeToggleButton =
                 findViewById(R.id.themeToggleButton);
 
-        updateThemeIcon(themeToggleButton);
-
-        themeToggleButton.setOnClickListener(v -> {
-
-            SharedPreferences preferences =
-                    getSharedPreferences(
-                            PREFS_NAME,
-                            MODE_PRIVATE
-                    );
-
-            boolean currentDarkMode =
-                    preferences.getBoolean(
-                            THEME_KEY,
-                            false
-                    );
-
-            boolean newDarkMode =
-                    !currentDarkMode;
-
-            preferences.edit()
-                    .putBoolean(
-                            THEME_KEY,
-                            newDarkMode
-                    )
-                    .apply();
+        if (themeToggleButton != null) {
 
             updateThemeIcon(themeToggleButton);
 
-            Toast.makeText(
-                    MainActivity.this,
-                    newDarkMode
-                            ? "🌙 Night Mode"
-                            : "☀️ Day Mode",
-                    Toast.LENGTH_SHORT
-            ).show();
-        });
+            themeToggleButton.setOnClickListener(v -> {
 
+                SharedPreferences preferences =
+                        getSharedPreferences(
+                                PREFS_NAME,
+                                MODE_PRIVATE
+                        );
 
-        // =========================
-        // HOME
-        // =========================
+                boolean currentDarkMode =
+                        preferences.getBoolean(
+                                THEME_KEY,
+                                false
+                        );
+
+                boolean newDarkMode =
+                        !currentDarkMode;
+
+                preferences.edit()
+                        .putBoolean(
+                                THEME_KEY,
+                                newDarkMode
+                        )
+                        .apply();
+
+                updateThemeIcon(themeToggleButton);
+
+                Toast.makeText(
+                        MainActivity.this,
+                        newDarkMode
+                                ? "🌙 Night Mode"
+                                : "☀️ Day Mode",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
+        }
+
+        /*
+         * =====================================================
+         * HOME
+         * =====================================================
+         */
 
         findViewById(R.id.homeNavButton)
-                .setOnClickListener(v ->
-                        homeFeedRecyclerView
-                                .smoothScrollToPosition(0)
-                );
+                .setOnClickListener(v -> {
 
+                    if (homeFeedRecyclerView != null) {
+                        homeFeedRecyclerView.smoothScrollToPosition(0);
+                    }
+                });
 
-        // =========================
-        // REELS
-        // =========================
+        /*
+         * =====================================================
+         * REELS
+         * =====================================================
+         */
 
         findViewById(R.id.reelsNavButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        ReelActivity.class
-                                )
-                        )
+                        openActivity(ReelActivity.class)
                 );
 
-
-        // =========================
-        // CHAT
-        // =========================
+        /*
+         * =====================================================
+         * CHAT
+         * =====================================================
+         */
 
         findViewById(R.id.chatNavButton)
                 .setOnClickListener(v ->
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        ChatActivity.class
-                                )
-                        )
+                        openActivity(ChatActivity.class)
                 );
 
-
-        // =========================
-        // SEARCH
-        // =========================
+        /*
+         * =====================================================
+         * SEARCH
+         * =====================================================
+         */
 
         findViewById(R.id.searchNavButton)
                 .setOnClickListener(v ->
-                        Toast.makeText(
-                                MainActivity.this,
-                                "Search next step mein add hoga.",
-                                Toast.LENGTH_SHORT
-                        ).show()
+                        openActivity(SearchActivity.class)
                 );
 
-
-        // =========================
-        // PROFILE / LOGIN
-        // =========================
+        /*
+         * =====================================================
+         * PROFILE
+         * =====================================================
+         */
 
         findViewById(R.id.profileNavButton)
                 .setOnClickListener(v -> {
@@ -274,32 +286,41 @@ public class MainActivity extends AppCompatActivity {
 
                     if (auth.getCurrentUser() == null) {
 
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        LoginActivity.class
-                                )
-                        );
+                        openActivity(LoginActivity.class);
 
                     } else {
 
-                        // Logged-in user ki actual profile
-                        startActivity(
-                                new Intent(
-                                        MainActivity.this,
-                                        MyProfileActivity.class
-                                )
-                        );
+                        openActivity(MyProfileActivity.class);
                     }
                 });
     }
 
+    /*
+     * =========================================================
+     * OPEN ACTIVITY
+     * =========================================================
+     */
 
-    // =========================
-    // THEME ICON
-    // =========================
+    private void openActivity(
+            @NonNull Class<?> activityClass) {
 
-    private void updateThemeIcon(TextView button) {
+        Intent intent =
+                new Intent(
+                        MainActivity.this,
+                        activityClass
+                );
+
+        startActivity(intent);
+    }
+
+    /*
+     * =========================================================
+     * THEME ICON
+     * =========================================================
+     */
+
+    private void updateThemeIcon(
+            TextView button) {
 
         SharedPreferences preferences =
                 getSharedPreferences(
@@ -313,63 +334,61 @@ public class MainActivity extends AppCompatActivity {
                         false
                 );
 
-        if (darkMode) {
-            button.setText("☀️");
-        } else {
-            button.setText("🌙");
-        }
+        button.setText(
+                darkMode
+                        ? "☀️"
+                        : "🌙"
+        );
     }
 
-
-    // =========================
-    // CREATE MENU
-    // =========================
+    /*
+     * =========================================================
+     * CREATE MENU
+     * =========================================================
+     */
 
     private void showCreateMenu() {
 
         String[] options = {
-                "🎬 Create Reel",
-                "📸 Create Post",
-                "⭕ Create Story"
+                "🎬  Create Reel",
+                "📸  Create Post",
+                "⭕  Create Story"
         };
 
         new AlertDialog.Builder(this)
-                .setTitle("Create")
+                .setTitle("Create on Sanskriti Sathi")
                 .setItems(
                         options,
                         (dialog, which) -> {
 
-                            if (which == 0) {
+                            switch (which) {
 
-                                // CREATE REEL
+                                case 0:
 
-                                startActivity(
-                                        new Intent(
-                                                MainActivity.this,
-                                                ReelUploadActivity.class
-                                        )
-                                );
+                                    // Reel upload
+                                    openActivity(
+                                            ReelUploadActivity.class
+                                    );
 
-                            } else if (which == 1) {
+                                    break;
 
-                                // CREATE POST
+                                case 1:
 
-                                Toast.makeText(
-                                        MainActivity.this,
-                                        "Post creation next step mein add hoga.",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                                    // Real Post creation
+                                    openActivity(
+                                            PostUploadActivity.class
+                                    );
 
-                            } else {
+                                    break;
 
-                                // CREATE STORY
+                                case 2:
 
-                                startActivity(
-                                        new Intent(
-                                                MainActivity.this,
-                                                StoryUploadActivity.class
-                                        )
-                                );
+                                    // Story upload
+                                    openActivity(
+                                            StoryUploadActivity.class
+                                    );
+
+                                    break;
                             }
                         }
                 )
