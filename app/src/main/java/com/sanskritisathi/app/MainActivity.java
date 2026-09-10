@@ -4,72 +4,37 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView homeFeedRecyclerView;
 
-    private static final String PREFS_NAME = "SanskritiSathiPrefs";
-    private static final String THEME_KEY = "dark_mode";
+    private static final String PREFS_NAME =
+            "SanskritiSathiPrefs";
+
+    private static final String THEME_KEY =
+            "dark_mode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        /*
-         * =====================================================
-         * SAFE AREA
-         * Motorola Edge 50 + other screen sizes
-         * =====================================================
-         */
-
-        View root = findViewById(R.id.mainRoot);
-
-        if (root != null) {
-            ViewCompat.setOnApplyWindowInsetsListener(
-                    root,
-                    (view, windowInsets) -> {
-
-                        Insets insets =
-                                windowInsets.getInsets(
-                                        WindowInsetsCompat.Type.systemBars()
-                                                | WindowInsetsCompat.Type.displayCutout()
-                                );
-
-                        view.setPadding(
-                                insets.left,
-                                insets.top,
-                                insets.right,
-                                insets.bottom
-                        );
-
-                        return windowInsets;
-                    }
-            );
-        }
-
-        /*
-         * =====================================================
-         * HOME FEED
-         * =====================================================
-         */
+        // =====================================================
+        // HOME FEED
+        // =====================================================
 
         homeFeedRecyclerView =
                 findViewById(R.id.homeFeedRecyclerView);
@@ -80,203 +45,230 @@ public class MainActivity extends AppCompatActivity {
 
         homeFeedRecyclerView.setHasFixedSize(false);
 
-        CulturePostAdapter feedAdapter =
-                new CulturePostAdapter(
-                        this,
-                        CulturePostData.getAllPosts()
-                );
+        // Firebase se real public posts load karo
+        loadHomeFeed();
 
-        homeFeedRecyclerView.setAdapter(feedAdapter);
 
-        /*
-         * =====================================================
-         * TEMPLE
-         * =====================================================
-         */
+        // =====================================================
+        // TEMPLE
+        // =====================================================
 
         findViewById(R.id.templeStoryButton)
                 .setOnClickListener(v ->
-                        openActivity(TempleActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        TempleActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * RAJA
-         * =====================================================
-         */
+
+        // =====================================================
+        // RAJA
+        // =====================================================
 
         findViewById(R.id.rajaStoryButton)
                 .setOnClickListener(v ->
-                        openActivity(RajaActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        RajaActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * DEVI DEVTA
-         * =====================================================
-         */
+
+        // =====================================================
+        // DEVI DEVTA
+        // =====================================================
 
         findViewById(R.id.deviStoryButton)
                 .setOnClickListener(v ->
-                        openActivity(DeviDevtaActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        DeviDevtaActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * GITA
-         * =====================================================
-         */
+
+        // =====================================================
+        // GITA
+        // =====================================================
 
         findViewById(R.id.gitaStoryButton)
                 .setOnClickListener(v ->
-                        openActivity(GitaActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        GitaActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * NEWS / RSS
-         * =====================================================
-         */
+
+        // =====================================================
+        // FESTIVAL / RSS
+        // =====================================================
 
         findViewById(R.id.festivalStoryButton)
                 .setOnClickListener(v ->
-                        openActivity(RssActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        RssActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * YOUR STORY
-         * =====================================================
-         */
+
+        // =====================================================
+        // YOUR STORY
+        // =====================================================
 
         findViewById(R.id.yourStoryButton)
                 .setOnClickListener(v ->
-                        openActivity(StoryUploadActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        StoryUploadActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * CREATE
-         * =====================================================
-         */
+
+        // =====================================================
+        // CREATE
+        // =====================================================
 
         findViewById(R.id.createTopButton)
                 .setOnClickListener(v ->
                         showCreateMenu()
                 );
 
-        /*
-         * =====================================================
-         * NOTIFICATIONS
-         * =====================================================
-         */
+
+        // =====================================================
+        // NOTIFICATIONS
+        // =====================================================
 
         findViewById(R.id.notificationButton)
                 .setOnClickListener(v ->
-                        openActivity(NotificationsActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        NotificationsActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * THEME
-         * =====================================================
-         */
+
+        // =====================================================
+        // DAY / NIGHT MODE
+        // =====================================================
 
         TextView themeToggleButton =
                 findViewById(R.id.themeToggleButton);
 
-        if (themeToggleButton != null) {
+        updateThemeIcon(themeToggleButton);
+
+        themeToggleButton.setOnClickListener(v -> {
+
+            SharedPreferences preferences =
+                    getSharedPreferences(
+                            PREFS_NAME,
+                            MODE_PRIVATE
+                    );
+
+            boolean currentDarkMode =
+                    preferences.getBoolean(
+                            THEME_KEY,
+                            false
+                    );
+
+            boolean newDarkMode =
+                    !currentDarkMode;
+
+            preferences.edit()
+                    .putBoolean(
+                            THEME_KEY,
+                            newDarkMode
+                    )
+                    .apply();
 
             updateThemeIcon(themeToggleButton);
 
-            themeToggleButton.setOnClickListener(v -> {
+            Toast.makeText(
+                    MainActivity.this,
+                    newDarkMode
+                            ? "🌙 Night Mode"
+                            : "☀️ Day Mode",
+                    Toast.LENGTH_SHORT
+            ).show();
+        });
 
-                SharedPreferences preferences =
-                        getSharedPreferences(
-                                PREFS_NAME,
-                                MODE_PRIVATE
-                        );
 
-                boolean currentDarkMode =
-                        preferences.getBoolean(
-                                THEME_KEY,
-                                false
-                        );
-
-                boolean newDarkMode =
-                        !currentDarkMode;
-
-                preferences.edit()
-                        .putBoolean(
-                                THEME_KEY,
-                                newDarkMode
-                        )
-                        .apply();
-
-                updateThemeIcon(themeToggleButton);
-
-                Toast.makeText(
-                        MainActivity.this,
-                        newDarkMode
-                                ? "🌙 Night Mode"
-                                : "☀️ Day Mode",
-                        Toast.LENGTH_SHORT
-                ).show();
-            });
-        }
-
-        /*
-         * =====================================================
-         * HOME
-         * =====================================================
-         */
+        // =====================================================
+        // HOME
+        // =====================================================
 
         findViewById(R.id.homeNavButton)
                 .setOnClickListener(v -> {
 
-                    if (homeFeedRecyclerView != null) {
-                        homeFeedRecyclerView.smoothScrollToPosition(0);
-                    }
+                    homeFeedRecyclerView
+                            .smoothScrollToPosition(0);
                 });
 
-        /*
-         * =====================================================
-         * REELS
-         * =====================================================
-         */
+
+        // =====================================================
+        // REELS
+        // =====================================================
 
         findViewById(R.id.reelsNavButton)
                 .setOnClickListener(v ->
-                        openActivity(ReelActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        ReelActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * CHAT
-         * =====================================================
-         */
+
+        // =====================================================
+        // CHAT
+        // =====================================================
 
         findViewById(R.id.chatNavButton)
                 .setOnClickListener(v ->
-                        openActivity(ChatActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        ChatActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * SEARCH
-         * =====================================================
-         */
+
+        // =====================================================
+        // SEARCH
+        // =====================================================
 
         findViewById(R.id.searchNavButton)
                 .setOnClickListener(v ->
-                        openActivity(SearchActivity.class)
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        SearchActivity.class
+                                )
+                        )
                 );
 
-        /*
-         * =====================================================
-         * PROFILE
-         * =====================================================
-         */
+
+        // =====================================================
+        // PROFILE / LOGIN
+        // =====================================================
 
         findViewById(R.id.profileNavButton)
                 .setOnClickListener(v -> {
@@ -286,41 +278,111 @@ public class MainActivity extends AppCompatActivity {
 
                     if (auth.getCurrentUser() == null) {
 
-                        openActivity(LoginActivity.class);
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        LoginActivity.class
+                                )
+                        );
 
                     } else {
 
-                        openActivity(MyProfileActivity.class);
+                        startActivity(
+                                new Intent(
+                                        MainActivity.this,
+                                        MyProfileActivity.class
+                                )
+                        );
                     }
                 });
     }
 
-    /*
-     * =========================================================
-     * OPEN ACTIVITY
-     * =========================================================
-     */
 
-    private void openActivity(
-            @NonNull Class<?> activityClass) {
+    // =====================================================
+    // FIREBASE HOME FEED
+    // =====================================================
 
-        Intent intent =
-                new Intent(
-                        MainActivity.this,
-                        activityClass
-                );
+    private void loadHomeFeed() {
 
-        startActivity(intent);
+        CulturePostFirebaseHelper.getPublicPosts(
+                new CulturePostFirebaseHelper.PostsCallback() {
+
+                    @Override
+                    public void onSuccess(
+                            List<CulturePost> posts) {
+
+                        if (posts == null) {
+                            posts = new ArrayList<>();
+                        }
+
+                        List<CulturePost> firebasePosts =
+                                new ArrayList<>(posts);
+
+                        /*
+                         * Firebase mein posts available hain
+                         */
+                        if (!firebasePosts.isEmpty()) {
+
+                            CulturePostAdapter adapter =
+                                    new CulturePostAdapter(
+                                            MainActivity.this,
+                                            firebasePosts
+                                    );
+
+                            homeFeedRecyclerView
+                                    .setAdapter(adapter);
+
+                        } else {
+
+                            /*
+                             * Agar Firebase par abhi koi
+                             * public post nahi hai to local
+                             * cultural content fallback rahega.
+                             */
+                            List<CulturePost> localPosts =
+                                    CulturePostData.getAllPosts();
+
+                            CulturePostAdapter adapter =
+                                    new CulturePostAdapter(
+                                            MainActivity.this,
+                                            localPosts
+                                    );
+
+                            homeFeedRecyclerView
+                                    .setAdapter(adapter);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+
+                        /*
+                         * Internet/Firebase error par app
+                         * blank nahi hogi. Local content
+                         * fallback ke roop mein dikhega.
+                         */
+                        List<CulturePost> localPosts =
+                                CulturePostData.getAllPosts();
+
+                        CulturePostAdapter adapter =
+                                new CulturePostAdapter(
+                                        MainActivity.this,
+                                        localPosts
+                                );
+
+                        homeFeedRecyclerView
+                                .setAdapter(adapter);
+                    }
+                }
+        );
     }
 
-    /*
-     * =========================================================
-     * THEME ICON
-     * =========================================================
-     */
 
-    private void updateThemeIcon(
-            TextView button) {
+    // =====================================================
+    // THEME ICON
+    // =====================================================
+
+    private void updateThemeIcon(TextView button) {
 
         SharedPreferences preferences =
                 getSharedPreferences(
@@ -334,61 +396,67 @@ public class MainActivity extends AppCompatActivity {
                         false
                 );
 
-        button.setText(
-                darkMode
-                        ? "☀️"
-                        : "🌙"
-        );
+        if (darkMode) {
+
+            button.setText("☀️");
+
+        } else {
+
+            button.setText("🌙");
+        }
     }
 
-    /*
-     * =========================================================
-     * CREATE MENU
-     * =========================================================
-     */
+
+    // =====================================================
+    // CREATE MENU
+    // =====================================================
 
     private void showCreateMenu() {
 
         String[] options = {
-                "🎬  Create Reel",
-                "📸  Create Post",
-                "⭕  Create Story"
+                "🎬 Create Reel",
+                "📸 Create Post",
+                "⭕ Create Story"
         };
 
         new AlertDialog.Builder(this)
-                .setTitle("Create on Sanskriti Sathi")
+                .setTitle("Create")
                 .setItems(
                         options,
                         (dialog, which) -> {
 
-                            switch (which) {
+                            if (which == 0) {
 
-                                case 0:
+                                // CREATE REEL
 
-                                    // Reel upload
-                                    openActivity(
-                                            ReelUploadActivity.class
-                                    );
+                                startActivity(
+                                        new Intent(
+                                                MainActivity.this,
+                                                ReelUploadActivity.class
+                                        )
+                                );
 
-                                    break;
+                            } else if (which == 1) {
 
-                                case 1:
+                                // CREATE POST
 
-                                    // Real Post creation
-                                    openActivity(
-                                            PostUploadActivity.class
-                                    );
+                                startActivity(
+                                        new Intent(
+                                                MainActivity.this,
+                                                PostUploadActivity.class
+                                        )
+                                );
 
-                                    break;
+                            } else {
 
-                                case 2:
+                                // CREATE STORY
 
-                                    // Story upload
-                                    openActivity(
-                                            StoryUploadActivity.class
-                                    );
-
-                                    break;
+                                startActivity(
+                                        new Intent(
+                                                MainActivity.this,
+                                                StoryUploadActivity.class
+                                        )
+                                );
                             }
                         }
                 )
