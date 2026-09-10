@@ -2,6 +2,7 @@ package com.sanskritisathi.app;
 
 import androidx.annotation.NonNull;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -11,6 +12,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,7 @@ import java.util.Map;
 public class CulturePostFirebaseHelper {
 
     private static final String POSTS = "posts";
+    private static final String LIKES = "likes";
 
     private static final FirebaseFirestore db =
             FirebaseFirestore.getInstance();
@@ -25,22 +29,21 @@ public class CulturePostFirebaseHelper {
     private static final FirebaseAuth auth =
             FirebaseAuth.getInstance();
 
-    // =====================================================
-    // CALLBACKS
-    // =====================================================
-
     public interface PostsCallback {
         void onSuccess(List<CulturePost> posts);
+
         void onError(String message);
     }
 
     public interface ActionCallback {
         void onSuccess();
+
         void onError(String message);
     }
 
     public interface LikeCallback {
         void onSuccess(boolean liked, int likeCount);
+
         void onError(String message);
     }
 
@@ -49,7 +52,7 @@ public class CulturePostFirebaseHelper {
     }
 
     // =====================================================
-    // GET PUBLIC POSTS
+    // LOAD PUBLIC POSTS
     // =====================================================
 
     public static void getPublicPosts(
@@ -70,38 +73,91 @@ public class CulturePostFirebaseHelper {
                     for (DocumentSnapshot document :
                             snapshot.getDocuments()) {
 
-                        CulturePost post =
-                                documentToPost(document);
+                        String visibility =
+                                document.getString(
+                                        "visibility"
+                                );
 
-                        if (post == null) {
+                        /*
+                         * Client-side visibility filtering.
+                         * Isse visibility + createdAt ka
+                         * composite index required nahi hota.
+                         */
+                        if (!"Public".equalsIgnoreCase(
+                                visibility
+                        )) {
                             continue;
                         }
 
-                        String visibility =
-                                post.getVisibility();
+                        CulturePost post =
+                                documentToPost(document);
 
-                        if (visibility == null ||
-                                visibility.trim().isEmpty() ||
-                                "Public".equalsIgnoreCase(
-                                        visibility
-                                )) {
-
+                        if (post != null) {
                             posts.add(post);
                         }
                     }
 
                     callback.onSuccess(posts);
                 })
-                .addOnFailureListener(e ->
-                        callback.onError(
-                                "Posts load nahi hue: "
-                                        + e.getMessage()
-                        )
-                );
+                .addOnFailureListener(e -> {
+
+                    /*
+                     * createdAt missing/invalid ho to
+                     * fallback simple query try karte hain.
+                     */
+                    db.collection(POSTS)
+                            .limit(100)
+                            .get()
+                            .addOnSuccessListener(
+                                    fallbackSnapshot -> {
+
+                                        List<CulturePost> posts =
+                                                new ArrayList<>();
+
+                                        for (DocumentSnapshot document :
+                                                fallbackSnapshot
+                                                        .getDocuments()) {
+
+                                            String visibility =
+                                                    document.getString(
+                                                            "visibility"
+                                                    );
+
+                                            if (!"Public"
+                                                    .equalsIgnoreCase(
+                                                            visibility
+                                                    )) {
+                                                continue;
+                                            }
+
+                                            CulturePost post =
+                                                    documentToPost(
+                                                            document
+                                                    );
+
+                                            if (post != null) {
+                                                posts.add(post);
+                                            }
+                                        }
+
+                                        sortNewestFirst(posts);
+
+                                        callback.onSuccess(posts);
+                                    }
+                            )
+                            .addOnFailureListener(
+                                    fallbackError ->
+                                            callback.onError(
+                                                    "Posts load nahi hue: "
+                                                            + fallbackError
+                                                            .getMessage()
+                                            )
+                            );
+                });
     }
 
     // =====================================================
-    // GET MY POSTS
+    // LOAD MY POSTS
     // =====================================================
 
     public static void getMyPosts(
@@ -111,23 +167,24 @@ public class CulturePostFirebaseHelper {
                 auth.getCurrentUser();
 
         if (user == null) {
-
             callback.onError(
                     "Pehle Login karein."
             );
-
             return;
         }
 
+        String uid =
+                user.getUid();
+
         /*
-         * Composite index avoid karne ke liye
-         * sirf authorUid query kar rahe hain.
-         * Sorting client side hogi.
+         * Sirf authorUid query.
+         * createdAt ke saath composite index ki
+         * requirement avoid hoti hai.
          */
         db.collection(POSTS)
                 .whereEqualTo(
                         "authorUid",
-                        user.getUid()
+                        uid
                 )
                 .limit(100)
                 .get()
@@ -147,13 +204,7 @@ public class CulturePostFirebaseHelper {
                         }
                     }
 
-                    posts.sort(
-                            (a, b) ->
-                                    Long.compare(
-                                            b.getCreatedAt(),
-                                            a.getCreatedAt()
-                                    )
-                    );
+                    sortNewestFirst(posts);
 
                     callback.onSuccess(posts);
                 })
@@ -180,11 +231,9 @@ public class CulturePostFirebaseHelper {
                 auth.getCurrentUser();
 
         if (user == null) {
-
             callback.onError(
                     "Pehle Login karein."
             );
-
             return;
         }
 
@@ -194,7 +243,6 @@ public class CulturePostFirebaseHelper {
             callback.onError(
                     "Caption khali hai."
             );
-
             return;
         }
 
@@ -206,16 +254,18 @@ public class CulturePostFirebaseHelper {
             callback.onError(
                     "Caption maximum 5000 characters ka ho sakta hai."
             );
-
             return;
         }
 
-        String cleanVisibility =
-                "Followers".equalsIgnoreCase(
+        if (!"Followers".equals(
+                visibility
+        ) &&
+                !"Public".equals(
                         visibility
-                )
-                        ? "Followers"
-                        : "Public";
+                )) {
+
+            visibility = "Public";
+        }
 
         String postId =
                 db.collection(POSTS)
@@ -228,7 +278,7 @@ public class CulturePostFirebaseHelper {
         if (author == null ||
                 author.trim().isEmpty()) {
 
-            author = "Sanskriti Sathi User";
+            author = "Sanskriti Sathi";
         }
 
         Map<String, Object> data =
@@ -246,7 +296,7 @@ public class CulturePostFirebaseHelper {
 
         data.put(
                 "author",
-                author
+                author.trim()
         );
 
         data.put(
@@ -271,16 +321,11 @@ public class CulturePostFirebaseHelper {
 
         data.put(
                 "visibility",
-                cleanVisibility
+                visibility
         );
 
         data.put(
                 "likes",
-                0
-        );
-
-        data.put(
-                "likeCount",
                 0
         );
 
@@ -312,218 +357,6 @@ public class CulturePostFirebaseHelper {
 
     // =====================================================
     // LIKE / UNLIKE
-    //
-    // Main adapter ke liye:
-    // toggleLike(postId, liked, count, success, error)
-    // =====================================================
-
-    public static void toggleLike(
-            String postId,
-            boolean requestedLiked,
-            int currentLikeCount,
-            @NonNull final SimpleLikeSuccess success,
-            @NonNull final SimpleLikeError error) {
-
-        FirebaseUser user =
-                auth.getCurrentUser();
-
-        if (user == null) {
-
-            error.onError(
-                    "Pehle Login karein."
-            );
-
-            return;
-        }
-
-        if (postId == null ||
-                postId.trim().isEmpty()) {
-
-            error.onError(
-                    "Post ID available nahi hai."
-            );
-
-            return;
-        }
-
-        String uid =
-                user.getUid();
-
-        DocumentReference postRef =
-                db.collection(POSTS)
-                        .document(postId);
-
-        DocumentReference likeRef =
-                postRef.collection("likes")
-                        .document(uid);
-
-        db.runTransaction(transaction -> {
-
-            DocumentSnapshot postSnapshot =
-                    transaction.get(postRef);
-
-            if (!postSnapshot.exists()) {
-
-                throw new IllegalStateException(
-                        "Post available nahi hai."
-                );
-            }
-
-            DocumentSnapshot likeSnapshot =
-                    transaction.get(likeRef);
-
-            boolean alreadyLiked =
-                    likeSnapshot.exists();
-
-            Long likesValue =
-                    postSnapshot.getLong("likes");
-
-            if (likesValue == null) {
-
-                likesValue =
-                        postSnapshot.getLong(
-                                "likeCount"
-                        );
-            }
-
-            int likes =
-                    likesValue == null
-                            ? 0
-                            : likesValue.intValue();
-
-            /*
-             * Actual Firebase state ke according
-             * toggle karo. Isse double-like issue
-             * kam hota hai.
-             */
-            if (alreadyLiked) {
-
-                transaction.delete(
-                        likeRef
-                );
-
-                likes =
-                        Math.max(
-                                0,
-                                likes - 1
-                        );
-
-            } else {
-
-                Map<String, Object> likeData =
-                        new HashMap<>();
-
-                likeData.put(
-                        "userId",
-                        uid
-                );
-
-                likeData.put(
-                        "createdAt",
-                        FieldValue.serverTimestamp()
-                );
-
-                transaction.set(
-                        likeRef,
-                        likeData
-                );
-
-                likes++;
-            }
-
-            Map<String, Object> update =
-                    new HashMap<>();
-
-            update.put(
-                    "likes",
-                    likes
-            );
-
-            update.put(
-                    "likeCount",
-                    likes
-            );
-
-            transaction.update(
-                    postRef,
-                    update
-            );
-
-            return new LikeResult(
-                    !alreadyLiked,
-                    likes
-            );
-
-        }).addOnSuccessListener(result -> {
-
-            success.onSuccess(
-                    result.liked,
-                    result.likeCount
-            );
-
-            /*
-             * Like hone par post owner ko
-             * in-app notification.
-             */
-            if (result.liked) {
-
-                postRef.get()
-                        .addOnSuccessListener(
-                                document -> {
-
-                                    if (!document.exists()) {
-                                        return;
-                                    }
-
-                                    String ownerUid =
-                                            document.getString(
-                                                    "authorUid"
-                                            );
-
-                                    if (ownerUid == null ||
-                                            ownerUid.isEmpty() ||
-                                            ownerUid.equals(uid)) {
-                                        return;
-                                    }
-
-                                    String actorName =
-                                            user.getDisplayName();
-
-                                    if (actorName == null ||
-                                            actorName.trim().isEmpty()) {
-
-                                        actorName =
-                                                "Sanskriti User";
-                                    }
-
-                                    try {
-
-                                        NotificationFirebaseHelper
-                                                .create(
-                                                        ownerUid,
-                                                        "like",
-                                                        actorName
-                                                                + " liked your post",
-                                                        postId
-                                                );
-
-                                    } catch (Exception ignored) {
-                                    }
-                                }
-                        );
-            }
-
-        }).addOnFailureListener(
-                e ->
-                        error.onError(
-                                "Like update nahi hua: "
-                                        + e.getMessage()
-                        )
-        );
-    }
-
-    // =====================================================
-    // COMPATIBILITY LIKE METHOD
     // =====================================================
 
     public static void toggleLike(
@@ -552,15 +385,17 @@ public class CulturePostFirebaseHelper {
             return;
         }
 
+        String uid =
+                user.getUid();
+
         DocumentReference postRef =
                 db.collection(POSTS)
                         .document(postId);
 
         DocumentReference likeRef =
-                postRef.collection("likes")
-                        .document(
-                                user.getUid()
-                        );
+                postRef
+                        .collection(LIKES)
+                        .document(uid);
 
         db.runTransaction(transaction -> {
 
@@ -578,14 +413,14 @@ public class CulturePostFirebaseHelper {
                     transaction.get(likeRef);
 
             Long likesValue =
-                    postSnapshot.getLong("likes");
+                    postSnapshot.getLong(
+                            "likes"
+                    );
 
             int likes =
                     likesValue == null
                             ? 0
                             : likesValue.intValue();
-
-            boolean liked;
 
             if (likeSnapshot.exists()) {
 
@@ -599,7 +434,16 @@ public class CulturePostFirebaseHelper {
                                 likes - 1
                         );
 
-                liked = false;
+                transaction.update(
+                        postRef,
+                        "likes",
+                        likes
+                );
+
+                return new LikeResult(
+                        false,
+                        likes
+                );
 
             } else {
 
@@ -608,7 +452,7 @@ public class CulturePostFirebaseHelper {
 
                 likeData.put(
                         "userId",
-                        user.getUid()
+                        uid
                 );
 
                 likeData.put(
@@ -622,45 +466,34 @@ public class CulturePostFirebaseHelper {
                 );
 
                 likes++;
-                liked = true;
+
+                transaction.update(
+                        postRef,
+                        "likes",
+                        likes
+                );
+
+                return new LikeResult(
+                        true,
+                        likes
+                );
             }
 
-            Map<String, Object> update =
-                    new HashMap<>();
-
-            update.put(
-                    "likes",
-                    likes
-            );
-
-            update.put(
-                    "likeCount",
-                    likes
-            );
-
-            transaction.update(
-                    postRef,
-                    update
-            );
-
-            return new LikeResult(
-                    liked,
-                    likes
-            );
-
-        }).addOnSuccessListener(
-                result ->
-                        callback.onSuccess(
-                                result.liked,
-                                result.likeCount
-                        )
-        ).addOnFailureListener(
-                e ->
-                        callback.onError(
-                                "Like update nahi hua: "
-                                        + e.getMessage()
-                        )
-        );
+        })
+                .addOnSuccessListener(
+                        result ->
+                                callback.onSuccess(
+                                        result.liked,
+                                        result.likeCount
+                                )
+                )
+                .addOnFailureListener(
+                        e ->
+                                callback.onError(
+                                        "Like update nahi hua: "
+                                                + e.getMessage()
+                                )
+                );
     }
 
     // =====================================================
@@ -679,15 +512,14 @@ public class CulturePostFirebaseHelper {
                 postId.trim().isEmpty()) {
 
             callback.onResult(false);
+
             return;
         }
 
         db.collection(POSTS)
                 .document(postId)
-                .collection("likes")
-                .document(
-                        user.getUid()
-                )
+                .collection(LIKES)
+                .document(user.getUid())
                 .get()
                 .addOnSuccessListener(
                         document ->
@@ -788,7 +620,7 @@ public class CulturePostFirebaseHelper {
     }
 
     // =====================================================
-    // DOCUMENT → CULTURE POST
+    // FIRESTORE DOCUMENT → CULTURE POST
     // =====================================================
 
     private static CulturePost documentToPost(
@@ -850,35 +682,15 @@ public class CulturePostFirebaseHelper {
                         "likes"
                 );
 
-        if (likes == null) {
-
-            likes =
-                    document.getLong(
-                            "likeCount"
-                    );
-        }
-
         Long comments =
                 document.getLong(
                         "comments"
                 );
 
-        long createdAt = 0L;
-
-        Object timestamp =
-                document.get(
-                        "createdAt"
+        long createdAt =
+                getCreatedAt(
+                        document
                 );
-
-        if (timestamp instanceof
-                com.google.firebase.Timestamp) {
-
-            createdAt =
-                    ((com.google.firebase.Timestamp)
-                            timestamp)
-                            .toDate()
-                            .getTime();
-        }
 
         return new CulturePost(
                 id,
@@ -891,18 +703,65 @@ public class CulturePostFirebaseHelper {
                 createdAt,
                 likes == null
                         ? 0
-                        : Math.max(
-                                0,
-                                likes.intValue()
-                        ),
+                        : likes.intValue(),
                 comments == null
                         ? 0
-                        : Math.max(
-                                0,
-                                comments.intValue()
-                        ),
+                        : comments.intValue(),
                 R.drawable.icon_foreground,
-                R.drawable.icon_foreground
+                R.drawable.icon_foreground,
+                false,
+                false
+        );
+    }
+
+    // =====================================================
+    // CREATED AT
+    // =====================================================
+
+    private static long getCreatedAt(
+            DocumentSnapshot document) {
+
+        Object value =
+                document.get(
+                        "createdAt"
+                );
+
+        if (value instanceof Timestamp) {
+
+            return ((Timestamp) value)
+                    .toDate()
+                    .getTime();
+        }
+
+        if (value instanceof Long) {
+            return (Long) value;
+        }
+
+        return 0L;
+    }
+
+    // =====================================================
+    // SORT
+    // =====================================================
+
+    private static void sortNewestFirst(
+            List<CulturePost> posts) {
+
+        Collections.sort(
+                posts,
+                new Comparator<CulturePost>() {
+
+                    @Override
+                    public int compare(
+                            CulturePost first,
+                            CulturePost second) {
+
+                        return Long.compare(
+                                second.getCreatedAt(),
+                                first.getCreatedAt()
+                        );
+                    }
+                }
         );
     }
 
@@ -934,23 +793,5 @@ public class CulturePostFirebaseHelper {
             this.liked = liked;
             this.likeCount = likeCount;
         }
-    }
-
-    // =====================================================
-    // SIMPLE CALLBACKS
-    // Adapter ke 4-argument toggleLike ke liye
-    // =====================================================
-
-    public interface SimpleLikeSuccess {
-        void onSuccess(
-                boolean liked,
-                int likeCount
-        );
-    }
-
-    public interface SimpleLikeError {
-        void onError(
-                String message
-        );
     }
 }
