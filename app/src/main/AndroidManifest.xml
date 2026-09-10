@@ -48,11 +48,11 @@
             android:name=".MyProfileActivity"
             android:exported="false" />
 
-       <!-- Settings -->
+        <!-- Settings -->
         <activity
             android:name=".SettingsActivity"
             android:exported="false" />
-        
+
         <!-- Other User Profile -->
         <activity
             android:name=".UserProfileActivity"
@@ -95,6 +95,11 @@
         <!-- Culture / Instagram Feed -->
         <activity
             android:name=".CultureActivity"
+            android:exported="false" />
+
+        <!-- Create Culture Post -->
+        <activity
+            android:name=".PostUploadActivity"
             android:exported="false" />
 
         <!-- Stories -->
