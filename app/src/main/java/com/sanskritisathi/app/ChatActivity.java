@@ -5,6 +5,8 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,23 +14,26 @@ import androidx.appcompat.app.AppCompatActivity;
 public class ChatActivity extends AppCompatActivity {
 
     private EditText chatSearchInput;
-    private View chatItem1, chatItem2, chatItem3;
-    private View primaryTab, generalTab, requestsTab;
+    private View chatItem1, chatItem2;
+    private TextView primaryTab, generalTab, requestsTab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        // Bind Views matching updated XML IDs
-        chatSearchInput = findViewById(R.id.chatSearchInput);
-        chatItem1 = findViewById(R.id.chatItem1);
-        chatItem2 = findViewById(R.id.chatItem2);
-        chatItem3 = findViewById(R.id.chatItem3);
+        // Bind Views matching XML IDs
+        chatSearchInput = findViewById(R.id.searchBar);
+        chatItem1 = findViewById(R.id.chatAvatar1);
+        chatItem2 = findViewById(R.id.chatAvatar2);
 
-        primaryTab = findViewById(R.id.primaryTab);
-        generalTab = findViewById(R.id.generalTab);
-        requestsTab = findViewById(R.id.requestsTab);
+        // Get tab references from container
+        LinearLayout tabContainer = findViewById(R.id.chatTabsContainer);
+        if (tabContainer != null && tabContainer.getChildCount() >= 3) {
+            primaryTab = (TextView) tabContainer.getChildAt(0);
+            generalTab = (TextView) tabContainer.getChildAt(1);
+            requestsTab = (TextView) tabContainer.getChildAt(2);
+        }
 
         // Top Pencil Button Click
         if (findViewById(R.id.newChatButton) != null) {
@@ -70,15 +75,12 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void filterChats(String query) {
-        // Simple search visibility logic
         if (query.isEmpty()) {
             if (chatItem1 != null) chatItem1.setVisibility(View.VISIBLE);
             if (chatItem2 != null) chatItem2.setVisibility(View.VISIBLE);
-            if (chatItem3 != null) chatItem3.setVisibility(View.VISIBLE);
         } else {
             if (chatItem1 != null) chatItem1.setVisibility(View.GONE);
             if (chatItem2 != null) chatItem2.setVisibility(View.GONE);
-            if (chatItem3 != null) chatItem3.setVisibility(View.GONE);
         }
     }
 }
