@@ -32,7 +32,8 @@ public class PostCommentsActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView emptyText;
 
-    private final List<PostComment> commentList = new ArrayList<>();
+    private final List<PostComment> commentList =
+            new ArrayList<>();
 
     private PostCommentAdapter adapter;
 
@@ -45,35 +46,60 @@ public class PostCommentsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_post_comments);
 
-        firestore = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
+        setContentView(
+                R.layout.activity_post_comments
+        );
+
+        firestore =
+                FirebaseFirestore.getInstance();
+
+        auth =
+                FirebaseAuth.getInstance();
 
         ImageButton backButton =
-                findViewById(R.id.commentsBackButton);
+                findViewById(
+                        R.id.commentsBackButton
+                );
 
         commentsRecyclerView =
-                findViewById(R.id.commentsRecyclerView);
+                findViewById(
+                        R.id.commentsRecyclerView
+                );
 
         commentInput =
-                findViewById(R.id.commentInput);
+                findViewById(
+                        R.id.commentInput
+                );
 
         ImageButton sendButton =
-                findViewById(R.id.commentSendButton);
+                findViewById(
+                        R.id.commentSendButton
+                );
 
         progressBar =
-                findViewById(R.id.commentProgress);
+                findViewById(
+                        R.id.commentProgress
+                );
 
         emptyText =
-                findViewById(R.id.commentsEmptyText);
+                findViewById(
+                        R.id.commentsEmptyText
+                );
 
-        postId = getIntent().getStringExtra("postId");
+        postId =
+                getIntent().getStringExtra(
+                        "postId"
+                );
 
         postOwnerUid =
-                getIntent().getStringExtra("postOwnerUid");
+                getIntent().getStringExtra(
+                        "postOwnerUid"
+                );
 
-        if (postId == null || postId.trim().isEmpty()) {
+        if (postId == null
+                || postId.trim().isEmpty()) {
+
             Toast.makeText(
                     this,
                     "Post not found.",
@@ -88,12 +114,15 @@ public class PostCommentsActivity extends AppCompatActivity {
                 new LinearLayoutManager(this)
         );
 
-        adapter = new PostCommentAdapter(
-                this,
-                commentList
-        );
+        adapter =
+                new PostCommentAdapter(
+                        this,
+                        commentList
+                );
 
-        commentsRecyclerView.setAdapter(adapter);
+        commentsRecyclerView.setAdapter(
+                adapter
+        );
 
         backButton.setOnClickListener(
                 v -> finish()
@@ -112,14 +141,25 @@ public class PostCommentsActivity extends AppCompatActivity {
         firestore.collection("posts")
                 .document(postId)
                 .get()
-                .addOnSuccessListener(document -> {
+                .addOnSuccessListener(
+                        document -> {
 
-                    if (document.exists()) {
+                            if (document.exists()) {
 
-                        postOwnerUid =
-                                document.getString("authorUid");
-                    }
-                });
+                                String owner =
+                                        document.getString(
+                                                "authorUid"
+                                        );
+
+                                if (owner != null
+                                        && !owner.trim().isEmpty()) {
+
+                                    postOwnerUid =
+                                            owner;
+                                }
+                            }
+                        }
+                );
     }
 
     private void loadComments() {
@@ -132,60 +172,78 @@ public class PostCommentsActivity extends AppCompatActivity {
                         Query.Direction.ASCENDING
                 )
                 .get()
-                .addOnSuccessListener(snapshot -> {
+                .addOnSuccessListener(
+                        snapshot -> {
 
-                    commentList.clear();
+                            commentList.clear();
 
-                    for (DocumentSnapshot document :
-                            snapshot.getDocuments()) {
+                            for (
+                                    DocumentSnapshot document
+                                    : snapshot.getDocuments()
+                            ) {
 
-                        String id =
-                                document.getId();
+                                String id =
+                                        document.getId();
 
-                        String authorUid =
-                                document.getString("authorUid");
+                                String authorUid =
+                                        document.getString(
+                                                "authorUid"
+                                        );
 
-                        String author =
-                                document.getString("author");
+                                String author =
+                                        document.getString(
+                                                "author"
+                                        );
 
-                        String text =
-                                document.getString("text");
+                                String text =
+                                        document.getString(
+                                                "text"
+                                        );
 
-                        Timestamp createdAt =
-                                document.getTimestamp("createdAt");
+                                Timestamp createdAt =
+                                        document.getTimestamp(
+                                                "createdAt"
+                                        );
 
-                        PostComment comment =
-                                new PostComment(
-                                        id,
-                                        authorUid,
-                                        author,
-                                        text,
-                                        createdAt
+                                PostComment comment =
+                                        new PostComment(
+                                                id,
+                                                authorUid,
+                                                author,
+                                                text,
+                                                createdAt
+                                        );
+
+                                commentList.add(
+                                        comment
                                 );
+                            }
 
-                        commentList.add(comment);
-                    }
+                            adapter.notifyDataSetChanged();
 
-                    adapter.notifyDataSetChanged();
+                            updateEmptyState();
 
-                    updateEmptyState();
+                            if (!commentList.isEmpty()) {
 
-                    if (!commentList.isEmpty()) {
-                        commentsRecyclerView.scrollToPosition(
-                                commentList.size() - 1
-                        );
-                    }
-                })
-                .addOnFailureListener(error -> {
+                                commentsRecyclerView
+                                        .scrollToPosition(
+                                                commentList.size() - 1
+                                        );
+                            }
+                        }
+                )
+                .addOnFailureListener(
+                        error -> {
 
-                    Toast.makeText(
-                            this,
-                            "Comments load failed.",
-                            Toast.LENGTH_SHORT
-                    ).show();
+                            Toast.makeText(
+                                    this,
+                                    "Comments load failed.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
 
-                    updateEmptyState();
-                });
+                            updateEmptyState();
+                        }
+                );
     }
 
     private void addComment() {
@@ -229,21 +287,42 @@ public class PostCommentsActivity extends AppCompatActivity {
         String uid =
                 auth.getCurrentUser().getUid();
 
-        String author =
-                auth.getCurrentUser().getDisplayName();
+        String displayName =
+                auth.getCurrentUser()
+                        .getDisplayName();
 
-        if (author == null
-                || author.trim().isEmpty()) {
+        final String commentAuthor;
 
-            author = "Sanskriti Sathi User";
+        if (displayName == null
+                || displayName.trim().isEmpty()) {
+
+            commentAuthor =
+                    "Sanskriti Sathi User";
+
+        } else {
+
+            commentAuthor =
+                    displayName.trim();
         }
 
         Map<String, Object> comment =
                 new HashMap<>();
 
-        comment.put("authorUid", uid);
-        comment.put("author", author);
-        comment.put("text", text);
+        comment.put(
+                "authorUid",
+                uid
+        );
+
+        comment.put(
+                "author",
+                commentAuthor
+        );
+
+        comment.put(
+                "text",
+                text
+        );
+
         comment.put(
                 "createdAt",
                 FieldValue.serverTimestamp()
@@ -253,48 +332,56 @@ public class PostCommentsActivity extends AppCompatActivity {
                 .document(postId)
                 .collection("comments")
                 .add(comment)
-                .addOnSuccessListener(documentReference -> {
+                .addOnSuccessListener(
+                        documentReference -> {
 
-                    firestore.collection("posts")
-                            .document(postId)
-                            .update(
-                                    "comments",
-                                    FieldValue.increment(1)
-                            );
+                            firestore.collection("posts")
+                                    .document(postId)
+                                    .update(
+                                            "comments",
+                                            FieldValue.increment(1)
+                                    );
 
-                    if (postOwnerUid != null
-                            && !postOwnerUid.isEmpty()
-                            && !postOwnerUid.equals(uid)) {
+                            if (postOwnerUid != null
+                                    && !postOwnerUid.isEmpty()
+                                    && !postOwnerUid.equals(uid)) {
 
-                        NotificationFirebaseHelper.createNotification(
-                                postOwnerUid,
-                                "New Comment",
-                                author + " commented on your post.",
-                                "comment",
-                                postId
-                        );
-                    }
+                                NotificationFirebaseHelper
+                                        .createNotification(
+                                                postOwnerUid,
+                                                "New Comment",
+                                                commentAuthor
+                                                        + " commented on your post.",
+                                                "comment",
+                                                postId
+                                        );
+                            }
 
-                    commentInput.setText("");
+                            commentInput.setText("");
 
-                    setSending(false);
+                            setSending(false);
 
-                    loadComments();
-                })
-                .addOnFailureListener(error -> {
+                            loadComments();
+                        }
+                )
+                .addOnFailureListener(
+                        error -> {
 
-                    setSending(false);
+                            setSending(false);
 
-                    Toast.makeText(
-                            this,
-                            "Comment failed: "
-                                    + error.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
+                            Toast.makeText(
+                                    this,
+                                    "Comment failed: "
+                                            + error.getMessage(),
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+                );
     }
 
-    private void setSending(boolean sending) {
+    private void setSending(
+            boolean sending
+    ) {
 
         progressBar.setVisibility(
                 sending
@@ -307,11 +394,15 @@ public class PostCommentsActivity extends AppCompatActivity {
 
         if (commentList.isEmpty()) {
 
-            emptyText.setVisibility(View.VISIBLE);
+            emptyText.setVisibility(
+                    View.VISIBLE
+            );
 
         } else {
 
-            emptyText.setVisibility(View.GONE);
+            emptyText.setVisibility(
+                    View.GONE
+            );
         }
     }
 
