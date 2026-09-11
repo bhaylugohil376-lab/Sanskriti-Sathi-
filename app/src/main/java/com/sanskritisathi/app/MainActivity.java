@@ -25,9 +25,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        // =========================
+        // FIREBASE CONNECTION TEST
+        // =========================
+
         FirebaseConnectionTest.run(this);
-       }
-        
+
+        // Storage test only when user is logged in.
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            FirebaseStorageConnectionTest.run(this);
+        }
+
         // =========================
         // HOME FEED
         // =========================
@@ -49,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
         homeFeedRecyclerView.setAdapter(feedAdapter);
 
-
         // =========================
         // TEMPLE
         // =========================
@@ -63,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
                                 )
                         )
                 );
-
 
         // =========================
         // RAJA
@@ -79,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
                         )
                 );
 
-
         // =========================
         // DEVI DEVTA
         // =========================
@@ -93,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
                                 )
                         )
                 );
-
 
         // =========================
         // GITA
@@ -109,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
                         )
                 );
 
-
         // =========================
         // FESTIVAL / RSS
         // =========================
@@ -123,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
                                 )
                         )
                 );
-
 
         // =========================
         // YOUR STORY
@@ -139,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
                         )
                 );
 
-
         // =========================
         // TOP CREATE
         // =========================
@@ -148,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
                 .setOnClickListener(v ->
                         showCreateMenu()
                 );
-
 
         // =========================
         // NOTIFICATIONS
@@ -162,7 +163,6 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT
                         ).show()
                 );
-
 
         // =========================
         // DAY / NIGHT MODE
@@ -208,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
             ).show();
         });
 
-
         // =========================
         // HOME
         // =========================
@@ -218,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
                         homeFeedRecyclerView
                                 .smoothScrollToPosition(0)
                 );
-
 
         // =========================
         // REELS
@@ -234,7 +232,6 @@ public class MainActivity extends AppCompatActivity {
                         )
                 );
 
-
         // =========================
         // CHAT
         // =========================
@@ -249,7 +246,6 @@ public class MainActivity extends AppCompatActivity {
                         )
                 );
 
-
         // =========================
         // SEARCH
         // =========================
@@ -262,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT
                         ).show()
                 );
-
 
         // =========================
         // PROFILE / LOGIN
@@ -295,7 +290,6 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-
     // =========================
     // THEME ICON
     // =========================
@@ -320,7 +314,6 @@ public class MainActivity extends AppCompatActivity {
             button.setText("🌙");
         }
     }
-
 
     // =========================
     // CREATE MENU
@@ -354,7 +347,6 @@ public class MainActivity extends AppCompatActivity {
                             } else if (which == 1) {
 
                                 // CREATE POST
-                                // Open real post upload screen
 
                                 startActivity(
                                         new Intent(
