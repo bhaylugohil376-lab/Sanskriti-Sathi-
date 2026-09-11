@@ -1,35 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/mainRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFF8F0">
+    android:background="#0F111A">
 
-    <!-- TOP HEADER -->
+    <!-- TOP HEADER BAR -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="60dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:paddingStart="10dp"
-        android:paddingEnd="10dp"
-        android:background="#FFFFFF"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="#1A1D2B"
         android:elevation="4dp">
 
-        <TextView
-            android:id="@+id/createTopButton"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:gravity="center"
-            android:text="+"
-            android:textSize="29sp"
-            android:textStyle="bold"
-            android:textColor="#F57C00"
+        <ImageView
+            android:id="@+id/drawerMenuButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_sort_by_size"
+            app:tint="#E5A93C"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Create"/>
+            android:contentDescription="Menu"/>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -42,49 +39,37 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="ॐ  Sanskriti Sathi"
-                android:textColor="#311B5E"
+                android:textColor="#E5A93C"
                 android:textStyle="bold"
-                android:textSize="21sp"
-                android:maxLines="1"/>
+                android:textSize="18sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="संस्कृति • ज्ञान • परंपरा"
-                android:textColor="#F57C00"
-                android:textSize="11sp"/>
-
+                android:textColor="#A0A5B5"
+                android:textSize="10sp"/>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/themeToggleButton"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:gravity="center"
-            android:text="🌙"
-            android:textSize="20sp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Theme"/>
-
-        <TextView
+        <ImageView
             android:id="@+id/notificationButton"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:gravity="center"
-            android:text="🔔"
-            android:textSize="20sp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@android:drawable/ic_popup_reminder"
+            app:tint="#E5A93C"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Notifications"/>
 
     </LinearLayout>
 
-    <!-- STORIES -->
+    <!-- STORIES HORIZONTAL SCROLL -->
     <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="118dp"
+        android:layout_height="100dp"
         android:scrollbars="none"
-        android:fillViewport="false"
-        android:background="#FFFFFF">
+        android:background="#1A1D2B"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -97,182 +82,155 @@
             <!-- YOUR STORY -->
             <LinearLayout
                 android:id="@+id/yourStoryButton"
-                android:layout_width="84dp"
+                android:layout_width="72dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginEnd="12dp">
 
                 <FrameLayout
-                    android:layout_width="68dp"
-                    android:layout_height="68dp">
+                    android:layout_width="54dp"
+                    android:layout_height="54dp">
 
-                    <ImageView
-                        android:layout_width="68dp"
-                        android:layout_height="68dp"
-                        android:src="@drawable/icon_foreground"
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:src="@drawable/ic_launcher_background"
                         android:scaleType="centerCrop"
-                        android:background="#FFE082"
-                        android:contentDescription="Your story"/>
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"/>
 
                     <TextView
-                        android:layout_width="25dp"
-                        android:layout_height="25dp"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
                         android:layout_gravity="bottom|end"
                         android:gravity="center"
                         android:text="+"
                         android:textColor="#FFFFFF"
-                        android:textSize="18sp"
+                        android:textSize="14sp"
                         android:textStyle="bold"
-                        android:background="#F57C00"/>
-
+                        android:background="#E5A93C"/>
                 </FrameLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Your Story"
-                    android:textSize="12sp"
-                    android:textColor="#333333"
-                    android:layout_marginTop="5dp"
-                    android:maxLines="1"/>
-
+                    android:text="Add Story"
+                    android:textSize="10sp"
+                    android:textColor="#A0A5B5"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
 
-            <!-- TEMPLE -->
+            <!-- TEMPLE CATEGORY -->
             <LinearLayout
                 android:id="@+id/templeStoryButton"
-                android:layout_width="84dp"
+                android:layout_width="72dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginEnd="12dp">
 
-                <ImageView
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:src="@drawable/somnath"
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:src="@drawable/ic_launcher_background"
                     android:scaleType="centerCrop"
-                    android:background="#FFB74D"
-                    android:contentDescription="Temple"/>
+                    app:strokeColor="#E5A93C"
+                    app:strokeWidth="2dp"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🛕 Temple"
-                    android:textSize="12sp"
-                    android:textColor="#333333"
-                    android:layout_marginTop="5dp"/>
-
+                    android:text="Temple"
+                    android:textSize="10sp"
+                    android:textColor="#FFFFFF"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
 
-            <!-- RAJA -->
+            <!-- RAJA CATEGORY -->
             <LinearLayout
                 android:id="@+id/rajaStoryButton"
-                android:layout_width="84dp"
+                android:layout_width="72dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginEnd="12dp">
 
-                <ImageView
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:src="@drawable/icon_foreground"
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:src="@drawable/ic_launcher_background"
                     android:scaleType="centerCrop"
-                    android:background="#FFCC80"
-                    android:contentDescription="Raja"/>
+                    app:strokeColor="#E5A93C"
+                    app:strokeWidth="2dp"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="👑 Raja"
-                    android:textSize="12sp"
-                    android:textColor="#333333"
-                    android:layout_marginTop="5dp"/>
-
+                    android:text="Raja"
+                    android:textSize="10sp"
+                    android:textColor="#FFFFFF"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
 
-            <!-- DEVI DEVTA -->
+            <!-- DEVI DEVTA CATEGORY -->
             <LinearLayout
                 android:id="@+id/deviStoryButton"
-                android:layout_width="84dp"
+                android:layout_width="72dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginEnd="12dp">
 
-                <ImageView
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:src="@drawable/shiva"
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:src="@drawable/ic_launcher_background"
                     android:scaleType="centerCrop"
-                    android:background="#F8BBD0"
-                    android:contentDescription="Devi Devta"/>
+                    app:strokeColor="#E5A93C"
+                    app:strokeWidth="2dp"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🕉️ Devi-Devta"
-                    android:textSize="12sp"
-                    android:textColor="#333333"
-                    android:layout_marginTop="5dp"/>
-
+                    android:text="Devi-Devta"
+                    android:textSize="10sp"
+                    android:textColor="#FFFFFF"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
 
-            <!-- GITA -->
+            <!-- GITA CATEGORY -->
             <LinearLayout
                 android:id="@+id/gitaStoryButton"
-                android:layout_width="84dp"
+                android:layout_width="72dp"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:src="@drawable/gita"
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:src="@drawable/ic_launcher_background"
                     android:scaleType="centerCrop"
-                    android:background="#D7CCC8"
-                    android:contentDescription="Bhagavad Gita"/>
+                    app:strokeColor="#E5A93C"
+                    app:strokeWidth="2dp"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="📖 Gita"
-                    android:textSize="12sp"
-                    android:textColor="#333333"
-                    android:layout_marginTop="5dp"/>
-
-            </LinearLayout>
-
-            <!-- FESTIVAL -->
-            <LinearLayout
-                android:id="@+id/festivalStoryButton"
-                android:layout_width="84dp"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    android:src="@drawable/rss"
-                    android:scaleType="centerCrop"
-                    android:background="#FFE0B2"
-                    android:contentDescription="Festival"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🎉 Festival"
-                    android:textSize="12sp"
-                    android:textColor="#333333"
-                    android:layout_marginTop="5dp"/>
-
+                    android:text="Gita"
+                    android:textSize="10sp"
+                    android:textColor="#FFFFFF"
+                    android:layout_marginTop="4dp"/>
             </LinearLayout>
 
         </LinearLayout>
-
     </HorizontalScrollView>
 
-    <!-- SOCIAL FEED -->
+    <!-- MAIN HOME RECYCLER VIEW FEED -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/homeFeedRecyclerView"
         android:layout_width="match_parent"
@@ -280,17 +238,16 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:overScrollMode="never"/>
+        android:paddingBottom="8dp"/>
 
-    <!-- BOTTOM NAV -->
+    <!-- BOTTOM NAVIGATION BAR -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="60dp"
         android:orientation="horizontal"
         android:gravity="center"
-        android:background="#FFFFFF"
-        android:elevation="10dp">
+        android:background="#1A1D2B"
+        android:elevation="8dp">
 
         <LinearLayout
             android:id="@+id/homeNavButton"
@@ -298,48 +255,61 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical"
-            android:background="?attr/selectableItemBackground">
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⌂"
-                android:textSize="27sp"
-                android:textColor="#F57C00"/>
+                android:text="🏠"
+                android:textSize="18sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Home"
-                android:textSize="11sp"
-                android:textColor="#F57C00"/>
-
+                android:textSize="10sp"
+                android:textColor="#E5A93C"/>
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/reelsNavButton"
+            android:id="@+id/exploreNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical"
-            android:background="?attr/selectableItemBackground">
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="▣"
-                android:textSize="25sp"
-                android:textColor="#333333"/>
+                android:text="🔍"
+                android:textSize="18sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reels"
-                android:textSize="11sp"
-                android:textColor="#333333"/>
+                android:text="Explore"
+                android:textSize="10sp"
+                android:textColor="#A0A5B5"/>
+        </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/createNavButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:gravity="center"
+                android:text="+"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:background="#E5A93C"/>
         </LinearLayout>
 
         <LinearLayout
@@ -348,47 +318,20 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical"
-            android:background="?attr/selectableItemBackground">
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="💬"
-                android:textSize="24sp"/>
+                android:textSize="18sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Chat"
-                android:textSize="11sp"
-                android:textColor="#333333"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/searchNavButton"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:background="?attr/selectableItemBackground">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="⌕"
-                android:textSize="30sp"
-                android:textColor="#333333"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Search"
-                android:textSize="11sp"
-                android:textColor="#333333"/>
-
+                android:textSize="10sp"
+                android:textColor="#A0A5B5"/>
         </LinearLayout>
 
         <LinearLayout
@@ -397,23 +340,20 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical"
-            android:background="?attr/selectableItemBackground">
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="◎"
-                android:textSize="30sp"
-                android:textColor="#333333"/>
+                android:text="👤"
+                android:textSize="18sp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Profile"
-                android:textSize="11sp"
-                android:textColor="#333333"/>
-
+                android:textSize="10sp"
+                android:textColor="#A0A5B5"/>
         </LinearLayout>
 
     </LinearLayout>
