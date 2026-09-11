@@ -6,7 +6,7 @@
     android:background="#0F111A"
     android:fitsSystemWindows="true">
 
-    <!-- CLEAN TOP HEADER (Status bar spacing fixed) -->
+    <!-- TOP HEADER -->
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -87,7 +87,7 @@
                     android:textSize="14sp" />
             </RelativeLayout>
 
-            <!-- STORIES HORIZONTAL BAR (Circular Avatars) -->
+            <!-- STORIES HORIZONTAL BAR -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -180,6 +180,7 @@
 
             <!-- CHAT CATEGORY TABS -->
             <LinearLayout
+                android:id="@+id/chatTabsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
@@ -214,7 +215,7 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- CHAT LIST (Circular Profile Images) -->
+            <!-- CHAT LIST -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
