@@ -4,13 +4,21 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,13 +31,12 @@ public class SearchActivity extends AppCompatActivity {
     private TextView emptyText;
     private RecyclerView searchRecyclerView;
 
-    private CulturePostAdapter adapter;
+    private SearchAdapter adapter;
 
-    private final List<CulturePost> allPosts =
-            new ArrayList<>();
+    private FirebaseAuth auth;
+    private FirebaseFirestore firestore;
 
-    private final List<CulturePost> filteredPosts =
-            new ArrayList<>();
+    private boolean searching = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,20 +44,28 @@ public class SearchActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_search);
 
-        searchInput =
-                findViewById(R.id.searchInput);
+        auth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
 
-        resultText =
-                findViewById(R.id.searchResultText);
+        searchInput = findViewById(
+                R.id.searchInput
+        );
 
-        emptyText =
-                findViewById(R.id.searchEmptyText);
+        resultText = findViewById(
+                R.id.searchResultText
+        );
 
-        searchRecyclerView =
-                findViewById(R.id.searchRecyclerView);
+        emptyText = findViewById(
+                R.id.searchEmptyText
+        );
 
-        ImageButton backButton =
-                findViewById(R.id.searchBackButton);
+        searchRecyclerView = findViewById(
+                R.id.searchRecyclerView
+        );
+
+        ImageButton backButton = findViewById(
+                R.id.searchBackButton
+        );
 
         searchRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
@@ -58,11 +73,7 @@ public class SearchActivity extends AppCompatActivity {
 
         searchRecyclerView.setHasFixedSize(false);
 
-        adapter =
-                new CulturePostAdapter(
-                        this,
-                        filteredPosts
-                );
+        adapter = new SearchAdapter(this);
 
         searchRecyclerView.setAdapter(adapter);
 
@@ -70,7 +81,19 @@ public class SearchActivity extends AppCompatActivity {
                 v -> finish()
         );
 
-        loadPosts();
+        if (auth.getCurrentUser() == null) {
+
+            Toast.makeText(
+                    this,
+                    "Pehle Login karein.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            finish();
+            return;
+        }
+
+        showInitialState();
 
         searchInput.addTextChangedListener(
                 new TextWatcher() {
@@ -80,7 +103,8 @@ public class SearchActivity extends AppCompatActivity {
                             CharSequence s,
                             int start,
                             int count,
-                            int after) {
+                            int after
+                    ) {
                     }
 
                     @Override
@@ -88,78 +112,46 @@ public class SearchActivity extends AppCompatActivity {
                             CharSequence s,
                             int start,
                             int before,
-                            int count) {
+                            int count
+                    ) {
 
-                        filterPosts(
+                        String query =
                                 s == null
                                         ? ""
-                                        : s.toString()
-                        );
+                                        : s.toString();
+
+                        searchUsers(query);
                     }
 
                     @Override
                     public void afterTextChanged(
-                            Editable s) {
+                            Editable s
+                    ) {
                     }
                 }
         );
     }
 
-    private void loadPosts() {
+    private void showInitialState() {
 
         resultText.setText(
-                "Loading posts..."
+                "Search users"
         );
 
-        CulturePostFirebaseHelper.getPublicPosts(
-                new CulturePostFirebaseHelper.PostsCallback() {
+        emptyText.setText(
+                "Name ya username search karein."
+        );
 
-                    @Override
-                    public void onSuccess(
-                            List<CulturePost> posts) {
+        emptyText.setVisibility(
+                View.VISIBLE
+        );
 
-                        allPosts.clear();
-
-                        if (posts != null) {
-                            allPosts.addAll(posts);
-                        }
-
-                        filterPosts(
-                                searchInput.getText().toString()
-                        );
-                    }
-
-                    @Override
-                    public void onError(
-                            String error) {
-
-                        allPosts.clear();
-
-                        filterPosts(
-                                searchInput.getText().toString()
-                        );
-
-                        resultText.setText(
-                                "Unable to load posts"
-                        );
-
-                        emptyText.setText(
-                                "Please check your internet connection and try again."
-                        );
-
-                        emptyText.setVisibility(
-                                View.VISIBLE
-                        );
-                    }
-                }
+        searchRecyclerView.setVisibility(
+                View.GONE
         );
     }
 
-    private void filterPosts(
-            String query
-    ) {
-
-        filteredPosts.clear();
+    private void searchUsers(String query) {
 
         String search =
                 query == null
@@ -169,46 +161,201 @@ public class SearchActivity extends AppCompatActivity {
 
         if (search.isEmpty()) {
 
-            filteredPosts.addAll(
-                    allPosts
+            adapter.setUsers(
+                    new ArrayList<>()
             );
 
-        } else {
+            showInitialState();
 
-            for (CulturePost post : allPosts) {
-
-                if (post == null) {
-                    continue;
-                }
-
-                String author =
-                        safe(post.getAuthor());
-
-                String category =
-                        safe(post.getCategory());
-
-                String caption =
-                        safe(post.getCaption());
-
-                if (author.contains(search)
-                        || category.contains(search)
-                        || caption.contains(search)) {
-
-                    filteredPosts.add(post);
-                }
-            }
+            return;
         }
 
-        adapter.notifyDataSetChanged();
+        if (search.length() < 2) {
 
-        updateSearchState(search);
+            resultText.setText(
+                    "Search users"
+            );
+
+            emptyText.setText(
+                    "Kam se kam 2 characters type karein."
+            );
+
+            emptyText.setVisibility(
+                    View.VISIBLE
+            );
+
+            searchRecyclerView.setVisibility(
+                    View.GONE
+            );
+
+            return;
+        }
+
+        if (searching) {
+            // Previous query may still be running.
+            // Firestore result will simply update the latest UI.
+        }
+
+        searching = true;
+
+        resultText.setText(
+                "Searching..."
+        );
+
+        emptyText.setVisibility(
+                View.GONE
+        );
+
+        searchRecyclerView.setVisibility(
+                View.VISIBLE
+        );
+
+        String end =
+                search + "\uf8ff";
+
+        firestore.collection("users")
+                .whereGreaterThanOrEqualTo(
+                        "usernameLower",
+                        search
+                )
+                .whereLessThanOrEqualTo(
+                        "usernameLower",
+                        end
+                )
+                .limit(20)
+                .get()
+                .addOnSuccessListener(
+                        usernameDocuments -> {
+
+                            searching = false;
+
+                            List<SearchAdapter.UserSearchItem>
+                                    results =
+                                    new ArrayList<>();
+
+                            for (
+                                    DocumentSnapshot document
+                                    : usernameDocuments
+                            ) {
+
+                                addUserIfValid(
+                                        results,
+                                        document
+                                );
+                            }
+
+                            showResults(
+                                    results,
+                                    search
+                            );
+                        }
+                )
+                .addOnFailureListener(
+                        e -> {
+
+                            searching = false;
+
+                            Toast.makeText(
+                                    SearchActivity.this,
+                                    "Search failed. Firestore check karein.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            resultText.setText(
+                                    "Search unavailable"
+                            );
+
+                            searchRecyclerView.setVisibility(
+                                    View.GONE
+                            );
+
+                            emptyText.setVisibility(
+                                    View.VISIBLE
+                            );
+
+                            emptyText.setText(
+                                    "Users search nahi ho paaye.\n"
+                                            + "Internet connection check karein."
+                            );
+                        }
+                );
     }
 
-    private void updateSearchState(
+    private void addUserIfValid(
+            List<SearchAdapter.UserSearchItem> results,
+            DocumentSnapshot document
+    ) {
+
+        String uid =
+                document.getId();
+
+        if (uid.isEmpty()) {
+            return;
+        }
+
+        FirebaseAuth currentAuth =
+                FirebaseAuth.getInstance();
+
+        if (
+                currentAuth.getCurrentUser() != null
+                        && uid.equals(
+                        currentAuth
+                                .getCurrentUser()
+                                .getUid()
+                )
+        ) {
+            return;
+        }
+
+        String name =
+                getStringValue(
+                        document,
+                        "name"
+                );
+
+        String username =
+                getStringValue(
+                        document,
+                        "username"
+                );
+
+        String bio =
+                getStringValue(
+                        document,
+                        "bio"
+                );
+
+        results.add(
+                new SearchAdapter.UserSearchItem(
+                        uid,
+                        name,
+                        username,
+                        bio
+                )
+        );
+    }
+
+    private String getStringValue(
+            DocumentSnapshot document,
+            String field
+    ) {
+
+        String value =
+                document.getString(field);
+
+        return value == null
+                ? ""
+                : value.trim();
+    }
+
+    private void showResults(
+            List<SearchAdapter.UserSearchItem> results,
             String query
     ) {
 
-        if (filteredPosts.isEmpty()) {
+        adapter.setUsers(results);
+
+        if (results.isEmpty()) {
 
             searchRecyclerView.setVisibility(
                     View.GONE
@@ -218,29 +365,15 @@ public class SearchActivity extends AppCompatActivity {
                     View.VISIBLE
             );
 
-            if (query.isEmpty()) {
+            emptyText.setText(
+                    "No users found for \""
+                            + query
+                            + "\""
+            );
 
-                emptyText.setText(
-                        "No posts available yet.\n"
-                                + "Create the first Sanskriti post!"
-                );
-
-                resultText.setText(
-                        "0 posts"
-                );
-
-            } else {
-
-                emptyText.setText(
-                        "No results found for \""
-                                + query
-                                + "\""
-                );
-
-                resultText.setText(
-                        "0 results"
-                );
-            }
+            resultText.setText(
+                    "0 users"
+            );
 
         } else {
 
@@ -252,40 +385,43 @@ public class SearchActivity extends AppCompatActivity {
                     View.GONE
             );
 
-            int count =
-                    filteredPosts.size();
-
-            if (query.isEmpty()) {
-
-                resultText.setText(
-                        count
-                                + (count == 1
-                                ? " post"
-                                : " posts")
-                );
-
-            } else {
-
-                resultText.setText(
-                        count
-                                + (count == 1
-                                ? " result"
-                                : " results")
-                );
-            }
+            resultText.setText(
+                    results.size()
+                            + (
+                            results.size() == 1
+                                    ? " user found"
+                                    : " users found"
+                    )
+            );
         }
     }
 
-    private String safe(
-            String value
-    ) {
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-        if (value == null) {
-            return "";
+        if (searchInput != null) {
+            searchInput.postDelayed(
+                    () -> {
+                        if (!isFinishing()) {
+                            searchInput.requestFocus();
+
+                            InputMethodManager imm =
+                                    (InputMethodManager)
+                                            getSystemService(
+                                                    Context.INPUT_METHOD_SERVICE
+                                            );
+
+                            if (imm != null) {
+                                imm.showSoftInput(
+                                        searchInput,
+                                        InputMethodManager.SHOW_IMPLICIT
+                                );
+                            }
+                        }
+                    },
+                    250
+            );
         }
-
-        return value.toLowerCase(
-                Locale.ROOT
-        );
     }
 }
