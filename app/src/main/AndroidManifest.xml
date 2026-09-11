@@ -1,141 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- Internet -->
-    <uses-permission
-        android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
         android:label="Sanskriti Sathi"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
-        <!-- Welcome Screen - App Start -->
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
-
             <intent-filter>
-                <action
-                    android:name="android.intent.action.MAIN" />
-
-                <category
-                    android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
-        <!-- Main / Home -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
+        <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".LoginActivity" android:exported="false" />
+        <activity android:name=".ProfileActivity" android:exported="false" />
+        <activity android:name=".MyProfileActivity" android:exported="false" />
+        <activity android:name=".SettingsActivity" android:exported="false" />
+        <activity android:name=".UserProfileActivity" android:exported="false" />
 
-        <!-- Authentication -->
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
+        <activity android:name=".RajaActivity" android:exported="false" />
+        <activity android:name=".TempleActivity" android:exported="false" />
+        <activity android:name=".GitaActivity" android:exported="false" />
+        <activity android:name=".GitaDetailActivity" android:exported="false" />
+        <activity android:name=".DeviDevtaActivity" android:exported="false" />
+        <activity android:name=".RssActivity" android:exported="false" />
+        <activity android:name=".AboutActivity" android:exported="false" />
 
-        <!-- Profile Setup / Edit -->
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false" />
+        <activity android:name=".CultureActivity" android:exported="false" />
+        <activity android:name=".PostUploadActivity" android:exported="false" />
+        <activity android:name=".PostCommentsActivity" android:exported="false" />
+        <activity android:name=".SearchActivity" android:exported="false" />
+        <activity android:name=".NotificationsActivity" android:exported="false" />
 
-        <!-- My Profile -->
-        <activity
-            android:name=".MyProfileActivity"
-            android:exported="false" />
+        <activity android:name=".StoryActivity" android:exported="false" />
+        <activity android:name=".StoryUploadActivity" android:exported="false" />
 
-        <!-- Settings -->
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false" />
+        <activity android:name=".ReelActivity" android:exported="false" />
+        <activity android:name=".ReelUploadActivity" android:exported="false" />
+        <activity android:name=".ReelCommentsActivity" android:exported="false" />
 
-        <!-- Other User Profile -->
-        <activity
-            android:name=".UserProfileActivity"
-            android:exported="false" />
-
-        <!-- Raja -->
-        <activity
-            android:name=".RajaActivity"
-            android:exported="false" />
-
-        <!-- Temple -->
-        <activity
-            android:name=".TempleActivity"
-            android:exported="false" />
-
-        <!-- Bhagavad Gita -->
-        <activity
-            android:name=".GitaActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".GitaDetailActivity"
-            android:exported="false" />
-
-        <!-- Devi Devta -->
-        <activity
-            android:name=".DeviDevtaActivity"
-            android:exported="false" />
-
-        <!-- RSS News -->
-        <activity
-            android:name=".RssActivity"
-            android:exported="false" />
-
-        <!-- About -->
-        <activity
-            android:name=".AboutActivity"
-            android:exported="false" />
-
-        <!-- Culture / Instagram Feed -->
-        <activity
-            android:name=".CultureActivity"
-            android:exported="false" />
-
-        <!-- Create Culture Post -->
-        <activity
-            android:name=".PostUploadActivity"
-            android:exported="false" />
-
-        <!-- Stories -->
-        <activity
-            android:name=".StoryActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".StoryUploadActivity"
-            android:exported="false" />
-
-        <!-- Reels -->
-        <activity
-            android:name=".ReelActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ReelUploadActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ReelCommentsActivity"
-            android:exported="false" />
-
-        <!-- Chat -->
-        <activity
-            android:name=".ChatActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".OneToOneChatActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".GroupChatActivity"
-            android:exported="false" />
+        <activity android:name=".ChatActivity" android:exported="false" />
+        <activity android:name=".OneToOneChatActivity" android:exported="false" />
+        <activity android:name=".GroupChatActivity" android:exported="false" />
 
     </application>
 
