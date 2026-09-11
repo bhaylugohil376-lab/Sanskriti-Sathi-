@@ -14,10 +14,6 @@ public class CulturePost {
     private int likeCount;
     private int commentCount;
 
-    /*
-     * Local drawable fallback.
-     * Firebase post ke liye imageUrl ko priority milegi.
-     */
     private int profileImageResId;
     private int postImageResId;
 
@@ -25,11 +21,11 @@ public class CulturePost {
     private boolean saved;
 
     public CulturePost() {
-        // Required empty constructor
+        // Required empty constructor for Firebase
     }
 
     /*
-     * Local/static post constructor
+     * Existing local/static post constructor
      */
     public CulturePost(
             String author,
@@ -43,8 +39,37 @@ public class CulturePost {
         this.caption = caption;
         this.profileImageResId = profileImageResId;
         this.postImageResId = postImageResId;
+
         this.likeCount = 0;
         this.commentCount = 0;
+        this.liked = false;
+        this.saved = false;
+    }
+
+    /*
+     * Compatibility constructor
+     *
+     * Used by CulturePostData:
+     * author, category, caption,
+     * likeCount, profileImageResId, postImageResId
+     */
+    public CulturePost(
+            String author,
+            String category,
+            String caption,
+            int likeCount,
+            int profileImageResId,
+            int postImageResId
+    ) {
+        this.author = author;
+        this.category = category;
+        this.caption = caption;
+        this.likeCount = likeCount;
+        this.commentCount = 0;
+
+        this.profileImageResId = profileImageResId;
+        this.postImageResId = postImageResId;
+
         this.liked = false;
         this.saved = false;
     }
@@ -70,10 +95,16 @@ public class CulturePost {
         this.imageUrl = imageUrl;
         this.visibility = visibility;
         this.createdAt = createdAt;
+
         this.likeCount = 0;
         this.commentCount = 0;
-        this.profileImageResId = R.drawable.icon_foreground;
-        this.postImageResId = R.drawable.icon_foreground;
+
+        this.profileImageResId =
+                R.drawable.icon_foreground;
+
+        this.postImageResId =
+                R.drawable.icon_foreground;
+
         this.liked = false;
         this.saved = false;
     }
@@ -210,7 +241,7 @@ public class CulturePost {
     }
 
     /*
-     * Compatibility method for existing adapter/code.
+     * Compatibility method for older adapter/code.
      */
     public int getImageResId() {
         return postImageResId;
