@@ -24,90 +24,171 @@ public class SearchActivity extends AppCompatActivity {
     private RecyclerView searchRecyclerView;
 
     private CulturePostAdapter adapter;
-    private final List<CulturePost> allPosts = new ArrayList<>();
-    private final List<CulturePost> filteredPosts = new ArrayList<>();
+
+    private final List<CulturePost> allPosts =
+            new ArrayList<>();
+
+    private final List<CulturePost> filteredPosts =
+            new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_search);
 
-        searchInput = findViewById(R.id.searchInput);
-        resultText = findViewById(R.id.searchResultText);
-        emptyText = findViewById(R.id.searchEmptyText);
-        searchRecyclerView = findViewById(R.id.searchRecyclerView);
+        searchInput =
+                findViewById(R.id.searchInput);
 
-        ImageButton backButton = findViewById(R.id.searchBackButton);
+        resultText =
+                findViewById(R.id.searchResultText);
 
-        searchRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        emptyText =
+                findViewById(R.id.searchEmptyText);
+
+        searchRecyclerView =
+                findViewById(R.id.searchRecyclerView);
+
+        ImageButton backButton =
+                findViewById(R.id.searchBackButton);
+
+        searchRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+
         searchRecyclerView.setHasFixedSize(false);
 
-        adapter = new CulturePostAdapter(this, filteredPosts);
+        adapter =
+                new CulturePostAdapter(
+                        this,
+                        filteredPosts
+                );
+
         searchRecyclerView.setAdapter(adapter);
 
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(
+                v -> finish()
+        );
 
         loadPosts();
 
-        searchInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+        searchInput.addTextChangedListener(
+                new TextWatcher() {
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterPosts(s.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-    }
-
-    private void loadPosts() {
-        resultText.setText("Loading posts...");
-
-        CulturePostFirebaseHelper.getPublicPosts(
-                posts -> {
-                    allPosts.clear();
-
-                    if (posts != null) {
-                        allPosts.addAll(posts);
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s,
+                            int start,
+                            int count,
+                            int after) {
                     }
 
-                    filterPosts(searchInput.getText().toString());
-                },
-                error -> {
-                    allPosts.clear();
-                    filterPosts(searchInput.getText().toString());
+                    @Override
+                    public void onTextChanged(
+                            CharSequence s,
+                            int start,
+                            int before,
+                            int count) {
 
-                    resultText.setText("Unable to load posts");
-                    emptyText.setText("Please check your internet connection and try again.");
-                    emptyText.setVisibility(View.VISIBLE);
+                        filterPosts(
+                                s == null
+                                        ? ""
+                                        : s.toString()
+                        );
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            Editable s) {
+                    }
                 }
         );
     }
 
-    private void filterPosts(String query) {
+    private void loadPosts() {
+
+        resultText.setText(
+                "Loading posts..."
+        );
+
+        CulturePostFirebaseHelper.getPublicPosts(
+                new CulturePostFirebaseHelper.PostsCallback() {
+
+                    @Override
+                    public void onSuccess(
+                            List<CulturePost> posts) {
+
+                        allPosts.clear();
+
+                        if (posts != null) {
+                            allPosts.addAll(posts);
+                        }
+
+                        filterPosts(
+                                searchInput.getText().toString()
+                        );
+                    }
+
+                    @Override
+                    public void onError(
+                            String error) {
+
+                        allPosts.clear();
+
+                        filterPosts(
+                                searchInput.getText().toString()
+                        );
+
+                        resultText.setText(
+                                "Unable to load posts"
+                        );
+
+                        emptyText.setText(
+                                "Please check your internet connection and try again."
+                        );
+
+                        emptyText.setVisibility(
+                                View.VISIBLE
+                        );
+                    }
+                }
+        );
+    }
+
+    private void filterPosts(
+            String query
+    ) {
+
         filteredPosts.clear();
 
-        String search = query == null
-                ? ""
-                : query.trim().toLowerCase(Locale.ROOT);
+        String search =
+                query == null
+                        ? ""
+                        : query.trim()
+                        .toLowerCase(Locale.ROOT);
 
         if (search.isEmpty()) {
-            filteredPosts.addAll(allPosts);
+
+            filteredPosts.addAll(
+                    allPosts
+            );
+
         } else {
+
             for (CulturePost post : allPosts) {
 
                 if (post == null) {
                     continue;
                 }
 
-                String author = safe(post.getAuthor());
-                String category = safe(post.getCategory());
-                String caption = safe(post.getCaption());
+                String author =
+                        safe(post.getAuthor());
+
+                String category =
+                        safe(post.getCategory());
+
+                String caption =
+                        safe(post.getCaption());
 
                 if (author.contains(search)
                         || category.contains(search)
@@ -119,42 +200,92 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         adapter.notifyDataSetChanged();
+
         updateSearchState(search);
     }
 
-    private void updateSearchState(String query) {
+    private void updateSearchState(
+            String query
+    ) {
 
         if (filteredPosts.isEmpty()) {
-            searchRecyclerView.setVisibility(View.GONE);
-            emptyText.setVisibility(View.VISIBLE);
+
+            searchRecyclerView.setVisibility(
+                    View.GONE
+            );
+
+            emptyText.setVisibility(
+                    View.VISIBLE
+            );
 
             if (query.isEmpty()) {
-                emptyText.setText("No posts available yet.\nCreate the first Sanskriti post!");
-                resultText.setText("0 posts");
+
+                emptyText.setText(
+                        "No posts available yet.\n"
+                                + "Create the first Sanskriti post!"
+                );
+
+                resultText.setText(
+                        "0 posts"
+                );
+
             } else {
-                emptyText.setText("No results found for \"" + query + "\"");
-                resultText.setText("0 results");
+
+                emptyText.setText(
+                        "No results found for \""
+                                + query
+                                + "\""
+                );
+
+                resultText.setText(
+                        "0 results"
+                );
             }
 
         } else {
-            searchRecyclerView.setVisibility(View.VISIBLE);
-            emptyText.setVisibility(View.GONE);
 
-            int count = filteredPosts.size();
+            searchRecyclerView.setVisibility(
+                    View.VISIBLE
+            );
+
+            emptyText.setVisibility(
+                    View.GONE
+            );
+
+            int count =
+                    filteredPosts.size();
 
             if (query.isEmpty()) {
-                resultText.setText(count + (count == 1 ? " post" : " posts"));
+
+                resultText.setText(
+                        count
+                                + (count == 1
+                                ? " post"
+                                : " posts")
+                );
+
             } else {
-                resultText.setText(count + (count == 1 ? " result" : " results"));
+
+                resultText.setText(
+                        count
+                                + (count == 1
+                                ? " result"
+                                : " results")
+                );
             }
         }
     }
 
-    private String safe(String value) {
+    private String safe(
+            String value
+    ) {
+
         if (value == null) {
             return "";
         }
 
-        return value.toLowerCase(Locale.ROOT);
+        return value.toLowerCase(
+                Locale.ROOT
+        );
     }
 }
