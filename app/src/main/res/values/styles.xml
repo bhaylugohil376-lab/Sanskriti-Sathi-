@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <resources>
 
-    <style
-        name="Theme.SanskritiSathi"
-        parent="Theme.AppCompat.Light.NoActionBar">
+    <!-- MAIN APP THEME (Material Components + Dark Design) -->
+    <style name="Theme.SanskritiSathi" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
-        <item name="android:fontFamily">sans</item>
+        <item name="android:fontFamily">sans-serif</item>
 
-        <item name="android:statusBarColor">#FF9800</item>
+        <!-- Status Bar & Navigation Bar Integration -->
+        <item name="android:statusBarColor">#0F111A</item>
         <item name="android:windowLightStatusBar">false</item>
 
-        <item name="android:navigationBarColor">#FFF8E1</item>
-        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:navigationBarColor">#1A1D2B</item>
+        <item name="android:windowLightNavigationBar">false</item>
 
         <item name="android:windowActionModeOverlay">true</item>
         <item name="android:windowNoTitle">true</item>
 
-        <item name="android:windowBackground">#FFFDF7</item>
+        <item name="android:windowBackground">#0F111A</item>
 
-        <item name="android:textColorPrimary">#212121</item>
-        <item name="android:textColorSecondary">#616161</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#A0A5B5</item>
 
+    </style>
+
+    <!-- CIRCULAR AVATAR STYLE FOR CHAT & STORIES -->
+    <style name="ShapeAppearance.App.CircleImageView" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
     </style>
 
 </resources>
