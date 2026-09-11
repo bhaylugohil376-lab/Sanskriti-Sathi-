@@ -6,9 +6,10 @@ public class CulturePostData {
 
     public static ArrayList<CulturePost> getAllPosts() {
 
-        ArrayList<CulturePost> posts = new ArrayList<>();
+        ArrayList<CulturePost> posts =
+                new ArrayList<>();
 
-        // 1️⃣ Bhagavad Gita
+        // 1. Bhagavad Gita
         posts.add(new CulturePost(
                 "Sanskriti Sathi",
                 "📖 Bhagavad Gita",
@@ -20,7 +21,7 @@ public class CulturePostData {
                 R.drawable.gita
         ));
 
-        // 2️⃣ Somnath Temple
+        // 2. Somnath Temple
         posts.add(new CulturePost(
                 "Sanskriti Sathi",
                 "🛕 Temple • Somnath",
@@ -32,7 +33,7 @@ public class CulturePostData {
                 R.drawable.somnath
         ));
 
-        // 3️⃣ Lord Shiva
+        // 3. Bhagavan Shiva
         posts.add(new CulturePost(
                 "Sanskriti Sathi",
                 "🕉️ Devi-Devta • Shiva",
@@ -44,7 +45,7 @@ public class CulturePostData {
                 R.drawable.shiva
         ));
 
-        // 4️⃣ Indian Heritage
+        // 4. Indian Heritage
         posts.add(new CulturePost(
                 "Bharat Heritage",
                 "🇮🇳 Indian Culture",
@@ -57,7 +58,7 @@ public class CulturePostData {
                 R.drawable.icon_foreground
         ));
 
-        // 5️⃣ Sanskriti News
+        // 5. Sanskriti News
         posts.add(new CulturePost(
                 "Sanskriti News",
                 "📰 Culture News",
@@ -68,7 +69,7 @@ public class CulturePostData {
                 R.drawable.rss
         ));
 
-        // 6️⃣ Temple Heritage
+        // 6. Temple Heritage
         posts.add(new CulturePost(
                 "Bharat Darshan",
                 "🛕 Heritage • Temples",
@@ -80,7 +81,7 @@ public class CulturePostData {
                 R.drawable.somnath
         ));
 
-        // 7️⃣ Sanskriti Sathi Community
+        // 7. Sanskriti Sathi Community
         posts.add(new CulturePost(
                 "Sanskriti Sathi",
                 "✨ Community",
