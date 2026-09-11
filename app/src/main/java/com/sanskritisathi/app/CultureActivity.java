@@ -1,8 +1,6 @@
 package com.sanskritisathi.app;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +14,6 @@ public class CultureActivity extends AppCompatActivity {
 
     private RecyclerView cultureRecyclerView;
     private CulturePostAdapter culturePostAdapter;
-    private TextView emptyCultureText;
 
     private final ArrayList<CulturePost> culturePostList =
             new ArrayList<>();
@@ -29,13 +26,6 @@ public class CultureActivity extends AppCompatActivity {
 
         cultureRecyclerView =
                 findViewById(R.id.cultureRecyclerView);
-
-        /*
-         * Optional empty-state TextView.
-         * XML mein na ho to bhi app crash nahi karega.
-         */
-        emptyCultureText =
-                findViewById(R.id.emptyCultureText);
 
         cultureRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
@@ -73,8 +63,6 @@ public class CultureActivity extends AppCompatActivity {
 
                         culturePostAdapter.notifyDataSetChanged();
 
-                        updateEmptyState();
-
                         if (culturePostList.isEmpty()) {
 
                             Toast.makeText(
@@ -89,8 +77,6 @@ public class CultureActivity extends AppCompatActivity {
                     public void onError(
                             String message) {
 
-                        updateEmptyState();
-
                         Toast.makeText(
                                 CultureActivity.this,
                                 message,
@@ -99,26 +85,6 @@ public class CultureActivity extends AppCompatActivity {
                     }
                 }
         );
-    }
-
-    private void updateEmptyState() {
-
-        if (emptyCultureText == null) {
-            return;
-        }
-
-        if (culturePostList.isEmpty()) {
-
-            emptyCultureText.setVisibility(
-                    View.VISIBLE
-            );
-
-        } else {
-
-            emptyCultureText.setVisibility(
-                    View.GONE
-            );
-        }
     }
 
     @Override
