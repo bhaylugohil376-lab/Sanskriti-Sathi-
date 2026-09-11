@@ -20,88 +20,166 @@ public class NotificationsActivity extends AppCompatActivity {
     private TextView emptyText;
     private TextView loadingText;
 
-    private final List<NotificationModel> notificationList = new ArrayList<>();
+    private final List<NotificationModel> notificationList =
+            new ArrayList<>();
+
     private NotificationAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_notifications);
 
-        ImageButton backButton = findViewById(R.id.notificationsBackButton);
-        notificationsRecyclerView = findViewById(R.id.notificationsRecyclerView);
-        emptyText = findViewById(R.id.notificationsEmptyText);
-        loadingText = findViewById(R.id.notificationsLoadingText);
+        setContentView(
+                R.layout.activity_notifications
+        );
 
-        backButton.setOnClickListener(v -> finish());
+        ImageButton backButton =
+                findViewById(
+                        R.id.notificationsBackButton
+                );
+
+        notificationsRecyclerView =
+                findViewById(
+                        R.id.notificationsRecyclerView
+                );
+
+        emptyText =
+                findViewById(
+                        R.id.notificationsEmptyText
+                );
+
+        loadingText =
+                findViewById(
+                        R.id.notificationsLoadingText
+                );
+
+        backButton.setOnClickListener(
+                v -> finish()
+        );
 
         notificationsRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
         );
 
-        adapter = new NotificationAdapter(
-                this,
-                notificationList
-        );
+        adapter =
+                new NotificationAdapter(
+                        this,
+                        notificationList
+                );
 
-        notificationsRecyclerView.setAdapter(adapter);
+        notificationsRecyclerView.setAdapter(
+                adapter
+        );
 
         loadNotifications();
     }
 
     private void loadNotifications() {
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseAuth auth =
+                FirebaseAuth.getInstance();
 
         if (auth.getCurrentUser() == null) {
-            showEmpty("Login to see your notifications.");
+
+            showEmpty(
+                    "Login to see your notifications."
+            );
+
             return;
         }
 
-        loadingText.setVisibility(View.VISIBLE);
-        emptyText.setVisibility(View.GONE);
-        notificationsRecyclerView.setVisibility(View.GONE);
+        loadingText.setVisibility(
+                View.VISIBLE
+        );
 
-        String uid = auth.getCurrentUser().getUid();
+        emptyText.setVisibility(
+                View.GONE
+        );
+
+        notificationsRecyclerView.setVisibility(
+                View.GONE
+        );
+
+        String uid =
+                auth.getCurrentUser().getUid();
 
         NotificationFirebaseHelper.getNotifications(
                 uid,
-                notifications -> {
+                new NotificationFirebaseHelper.NotificationCallback() {
 
-                    loadingText.setVisibility(View.GONE);
+                    @Override
+                    public void onSuccess(
+                            List<NotificationModel> notifications
+                    ) {
 
-                    notificationList.clear();
+                        loadingText.setVisibility(
+                                View.GONE
+                        );
 
-                    if (notifications != null) {
-                        notificationList.addAll(notifications);
+                        notificationList.clear();
+
+                        if (notifications != null) {
+                            notificationList.addAll(
+                                    notifications
+                            );
+                        }
+
+                        adapter.notifyDataSetChanged();
+
+                        if (notificationList.isEmpty()) {
+
+                            showEmpty(
+                                    "You don't have any notifications yet."
+                            );
+
+                        } else {
+
+                            emptyText.setVisibility(
+                                    View.GONE
+                            );
+
+                            notificationsRecyclerView.setVisibility(
+                                    View.VISIBLE
+                            );
+                        }
                     }
 
-                    adapter.notifyDataSetChanged();
+                    @Override
+                    public void onError(
+                            String error
+                    ) {
 
-                    if (notificationList.isEmpty()) {
-                        showEmpty("You don't have any notifications yet.");
-                    } else {
-                        emptyText.setVisibility(View.GONE);
-                        notificationsRecyclerView.setVisibility(View.VISIBLE);
+                        loadingText.setVisibility(
+                                View.GONE
+                        );
+
+                        notificationList.clear();
+
+                        adapter.notifyDataSetChanged();
+
+                        showEmpty(
+                                "Unable to load notifications.\n"
+                                        + "Please check your internet connection."
+                        );
                     }
-                },
-                error -> {
-
-                    loadingText.setVisibility(View.GONE);
-
-                    notificationList.clear();
-                    adapter.notifyDataSetChanged();
-
-                    showEmpty(
-                            "Unable to load notifications.\nPlease check your internet connection."
-                    );
                 }
         );
     }
 
-    private void showEmpty(String message) {
-        emptyText.setText(message);
-        emptyText.setVisibility(View.VISIBLE);
-        notificationsRecyclerView.setVisibility(View.GONE);
+    private void showEmpty(
+            String message
+    ) {
+
+        emptyText.setText(
+                message
+        );
+
+        emptyText.setVisibility(
+                View.VISIBLE
+        );
+
+        notificationsRecyclerView.setVisibility(
+                View.GONE
+        );
     }
 }
