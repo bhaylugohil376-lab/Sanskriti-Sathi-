@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -64,15 +63,7 @@ public class MainActivity extends AppCompatActivity {
         setOnClick(R.id.rajaStoryButton, RajaActivity.class);
         setOnClick(R.id.deviStoryButton, DeviDevtaActivity.class);
         setOnClick(R.id.gitaStoryButton, GitaActivity.class);
-        setOnClick(R.id.festivalStoryButton, RssActivity.class);
         setOnClick(R.id.yourStoryButton, StoryUploadActivity.class);
-
-        // =========================
-        // TOP CREATE BUTTON
-        // =========================
-        if (findViewById(R.id.createTopButton) != null) {
-            findViewById(R.id.createTopButton).setOnClickListener(v -> showCreateMenu());
-        }
 
         // =========================
         // NOTIFICATIONS
@@ -81,32 +72,6 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.notificationButton).setOnClickListener(v ->
                     Toast.makeText(MainActivity.this, "Notifications feature coming soon!", Toast.LENGTH_SHORT).show()
             );
-        }
-
-        // =========================
-        // DAY / NIGHT MODE TOGGLE
-        // =========================
-        TextView themeToggleButton = findViewById(R.id.themeToggleButton);
-        if (themeToggleButton != null) {
-            updateThemeIcon(themeToggleButton);
-
-            themeToggleButton.setOnClickListener(v -> {
-                SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                boolean currentDarkMode = preferences.getBoolean(THEME_KEY, false);
-                boolean newDarkMode = !currentDarkMode;
-
-                preferences.edit().putBoolean(THEME_KEY, newDarkMode).apply();
-
-                // Apply Actual App Theme Switch
-                if (newDarkMode) {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                } else {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                }
-
-                updateThemeIcon(themeToggleButton);
-                Toast.makeText(MainActivity.this, newDarkMode ? "🌙 Night Mode" : "☀️ Day Mode", Toast.LENGTH_SHORT).show();
-            });
         }
 
         // =========================
@@ -120,14 +85,11 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        setOnClick(R.id.reelsNavButton, ReelActivity.class);
-        setOnClick(R.id.chatNavButton, ChatActivity.class);
-
-        if (findViewById(R.id.searchNavButton) != null) {
-            findViewById(R.id.searchNavButton).setOnClickListener(v ->
-                    Toast.makeText(MainActivity.this, "Search feature coming soon!", Toast.LENGTH_SHORT).show()
-            );
+        if (findViewById(R.id.createNavButton) != null) {
+            findViewById(R.id.createNavButton).setOnClickListener(v -> showCreateMenu());
         }
+
+        setOnClick(R.id.chatNavButton, ChatActivity.class);
 
         if (findViewById(R.id.profileNavButton) != null) {
             findViewById(R.id.profileNavButton).setOnClickListener(v -> {
@@ -161,19 +123,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Update Theme Icon
-    private void updateThemeIcon(TextView button) {
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        boolean darkMode = preferences.getBoolean(THEME_KEY, false);
-        button.setText(darkMode ? "☀️" : "🌙");
-    }
-
     // Create Options Dialog
     private void showCreateMenu() {
         String[] options = {
-                "🎬 Create Reel",
-                "📸 Create Post",
-                "⭕ Create Story"
+                "Create Reel",
+                "Create Post",
+                "Create Story"
         };
 
         new AlertDialog.Builder(this)
