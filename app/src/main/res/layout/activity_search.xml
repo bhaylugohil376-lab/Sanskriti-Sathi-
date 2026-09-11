@@ -5,9 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFF8F0">
+    android:background="#FFF8F0"
+    android:fitsSystemWindows="true">
 
-    <!-- Top Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
@@ -39,7 +39,6 @@
 
     </LinearLayout>
 
-    <!-- Search Box -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="54dp"
@@ -66,8 +65,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@null"
-            android:hint="Search Raja, Temple, Devi, posts..."
+            android:hint="Search users..."
             android:singleLine="true"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
             android:textColor="#3B2117"
             android:textColorHint="#9B8175"
             android:textSize="15sp"
@@ -76,7 +77,6 @@
 
     </LinearLayout>
 
-    <!-- Search Result Count -->
     <TextView
         android:id="@+id/searchResultText"
         android:layout_width="match_parent"
@@ -84,12 +84,11 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="18dp"
         android:layout_marginEnd="20dp"
-        android:text="Loading posts..."
+        android:text="Search users"
         android:textColor="#8A4B2A"
         android:textSize="14sp"
         android:textStyle="bold"/>
 
-    <!-- Results -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -113,10 +112,10 @@
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:gravity="center"
-            android:text="No posts available yet."
+            android:text="Name ya username search karein."
             android:textColor="#8A6A5A"
             android:textSize="16sp"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
 
     </FrameLayout>
 
