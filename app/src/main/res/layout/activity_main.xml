@@ -33,8 +33,9 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
-            android:text="🔔"
-            android:textSize="20sp" />
+            android:text="Alerts"
+            android:textColor="#E5A93C"
+            android:textSize="14sp" />
     </LinearLayout>
 
     <!-- CONTENT SCROLLVIEW -->
@@ -78,7 +79,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:text="➕"
+                                android:text="+"
+                                android:textColor="#FFFFFF"
                                 android:textSize="20sp" />
                         </FrameLayout>
 
@@ -108,8 +110,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:text="🛕"
-                                android:textSize="20sp" />
+                                android:text="T"
+                                android:textColor="#E5A93C"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
                         </FrameLayout>
 
                         <TextView
@@ -138,8 +142,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:text="👑"
-                                android:textSize="20sp" />
+                                android:text="R"
+                                android:textColor="#E5A93C"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
                         </FrameLayout>
 
                         <TextView
@@ -168,8 +174,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:text="🚩"
-                                android:textSize="20sp" />
+                                android:text="D"
+                                android:textColor="#E5A93C"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
                         </FrameLayout>
 
                         <TextView
@@ -198,8 +206,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
-                                android:text="📖"
-                                android:textSize="20sp" />
+                                android:text="G"
+                                android:textColor="#E5A93C"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
                         </FrameLayout>
 
                         <TextView
@@ -240,8 +250,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="🏠"
-            android:textSize="22sp" />
+            android:text="Home"
+            android:textColor="#E5A93C"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/chatNavButton"
@@ -249,8 +261,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="💬"
-            android:textSize="22sp" />
+            android:text="Chat"
+            android:textColor="#A0A5B5"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/createNavButton"
@@ -258,8 +271,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="➕"
-            android:textSize="22sp" />
+            android:text="Create"
+            android:textColor="#A0A5B5"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/profileNavButton"
@@ -267,8 +281,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="👤"
-            android:textSize="22sp" />
+            android:text="Profile"
+            android:textColor="#A0A5B5"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
