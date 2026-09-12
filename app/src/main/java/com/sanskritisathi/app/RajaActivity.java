@@ -1,6 +1,8 @@
 package com.sanskritisathi.app;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,26 +19,19 @@ public class RajaActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_raja);
 
+        // 1. RecyclerView initialize karein
         recyclerView = findViewById(R.id.rajaRecyclerView);
 
-        recyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
-        );
+        // 2. LayoutManager set karein
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // RajaData से सभी राजाओं की जानकारी
-        rajaList = new ArrayList<>(
-                RajaData.getAllRajas()
-        );
+        // 3. Data load karein
+        rajaList = new ArrayList<>(RajaData.getAllRajas());
 
-        // Adapter
-        adapter = new RajaAdapter(
-                this,
-                rajaList
-        );
-
+        // 4. Adapter set karein
+        adapter = new RajaAdapter(this, rajaList);
         recyclerView.setAdapter(adapter);
     }
 }
