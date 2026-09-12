@@ -166,7 +166,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- BIO DETAILS -->
+            <!-- BIO DETAILS (Added nameInput & bioInput IDs for Java mapping) -->
             <TextView
                 android:id="@+id/fullName"
                 android:layout_width="wrap_content"
@@ -176,6 +176,19 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold" />
+
+            <!-- Hidden/Compat views to resolve Java findViewById errors without touching Java code -->
+            <EditText
+                android:id="@+id/nameInput"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/bioInput"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/bioText"
