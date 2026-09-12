@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -24,10 +23,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Saved theme ko layout load hone se pehle apply karein
+        // Saved theme
         applySavedTheme();
 
-        // Existing Main Screen layout
+        // Main Screen
         setContentView(R.layout.activity_main);
 
         initializeFirebase();
@@ -62,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupHomeFeed() {
 
-        homeFeedRecyclerView = findViewById(R.id.homeFeedRecyclerView);
+        homeFeedRecyclerView =
+                findViewById(R.id.homeFeedRecyclerView);
 
         if (homeFeedRecyclerView == null) {
             return;
@@ -89,15 +89,30 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupStoryButtons() {
 
-        setOnClick(R.id.templeStoryButton, TempleActivity.class);
+        setOnClick(
+                R.id.templeStoryButton,
+                TempleActivity.class
+        );
 
-        setOnClick(R.id.rajaStoryButton, RajaActivity.class);
+        setOnClick(
+                R.id.rajaStoryButton,
+                RajaActivity.class
+        );
 
-        setOnClick(R.id.deviStoryButton, DeviDevtaActivity.class);
+        setOnClick(
+                R.id.deviStoryButton,
+                DeviDevtaActivity.class
+        );
 
-        setOnClick(R.id.gitaStoryButton, GitaActivity.class);
+        setOnClick(
+                R.id.gitaStoryButton,
+                GitaActivity.class
+        );
 
-        setOnClick(R.id.yourStoryButton, StoryUploadActivity.class);
+        setOnClick(
+                R.id.yourStoryButton,
+                StoryUploadActivity.class
+        );
     }
 
     // =========================================================
@@ -110,15 +125,17 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        findViewById(R.id.notificationButton).setOnClickListener(v -> {
+        findViewById(R.id.notificationButton)
+                .setOnClickListener(v -> {
 
-            Toast.makeText(
-                    MainActivity.this,
-                    "Notifications",
-                    Toast.LENGTH_SHORT
-            ).show();
+                    Intent intent =
+                            new Intent(
+                                    MainActivity.this,
+                                    NotificationsActivity.class
+                            );
 
-        });
+                    startActivity(intent);
+                });
     }
 
     // =========================================================
@@ -130,54 +147,76 @@ public class MainActivity extends AppCompatActivity {
         // HOME
         if (findViewById(R.id.homeNavButton) != null) {
 
-            findViewById(R.id.homeNavButton).setOnClickListener(v -> {
+            findViewById(R.id.homeNavButton)
+                    .setOnClickListener(v -> {
 
-                if (homeFeedRecyclerView != null) {
+                        if (homeFeedRecyclerView != null) {
 
-                    homeFeedRecyclerView.smoothScrollToPosition(0);
+                            homeFeedRecyclerView
+                                    .smoothScrollToPosition(0);
+                        }
+                    });
+        }
 
-                }
-            });
+        // EXPLORE / SEARCH
+        if (findViewById(R.id.exploreNavButton) != null) {
+
+            findViewById(R.id.exploreNavButton)
+                    .setOnClickListener(v -> {
+
+                        Intent intent =
+                                new Intent(
+                                        MainActivity.this,
+                                        SearchActivity.class
+                                );
+
+                        startActivity(intent);
+                    });
         }
 
         // CREATE
         if (findViewById(R.id.createNavButton) != null) {
 
-            findViewById(R.id.createNavButton).setOnClickListener(
-                    v -> showCreateMenu()
-            );
+            findViewById(R.id.createNavButton)
+                    .setOnClickListener(
+                            v -> showCreateMenu()
+                    );
         }
 
         // CHAT
-        setOnClick(R.id.chatNavButton, ChatActivity.class);
+        setOnClick(
+                R.id.chatNavButton,
+                ChatActivity.class
+        );
 
         // PROFILE
         if (findViewById(R.id.profileNavButton) != null) {
 
-            findViewById(R.id.profileNavButton).setOnClickListener(v -> {
+            findViewById(R.id.profileNavButton)
+                    .setOnClickListener(v -> {
 
-                FirebaseAuth auth =
-                        FirebaseAuth.getInstance();
+                        FirebaseAuth auth =
+                                FirebaseAuth.getInstance();
 
-                if (auth.getCurrentUser() == null) {
+                        if (auth.getCurrentUser() == null) {
 
-                    startActivity(
-                            new Intent(
-                                    MainActivity.this,
-                                    LoginActivity.class
-                            )
-                    );
+                            startActivity(
+                                    new Intent(
+                                            MainActivity.this,
+                                            LoginActivity.class
+                                    )
+                            );
 
-                } else {
+                        } else {
 
-                    startActivity(
-                            new Intent(
-                                    MainActivity.this,
-                                    MyProfileActivity.class
-                            )
-                    );
-                }
-            });
+                            startActivity(
+                                    new Intent(
+                                            MainActivity.this,
+                                            MyProfileActivity.class
+                                    )
+                            );
+                        }
+                    });
         }
     }
 
@@ -194,16 +233,17 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        findViewById(viewId).setOnClickListener(v -> {
+        findViewById(viewId)
+                .setOnClickListener(v -> {
 
-            Intent intent =
-                    new Intent(
-                            MainActivity.this,
-                            targetActivity
-                    );
+                    Intent intent =
+                            new Intent(
+                                    MainActivity.this,
+                                    targetActivity
+                            );
 
-            startActivity(intent);
-        });
+                    startActivity(intent);
+                });
     }
 
     // =========================================================
