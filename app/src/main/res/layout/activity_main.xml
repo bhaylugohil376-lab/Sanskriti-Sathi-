@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0F111A"
@@ -38,14 +40,19 @@
             android:textColor="#E5A93C"
             android:textSize="14sp"
             android:textStyle="bold" />
+
     </LinearLayout>
 
-    <!-- CONTENT SCROLLVIEW -->
+
+    <!-- CONTENT -->
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottomNavigation"
-        android:layout_below="@id/topBar">
+        android:layout_below="@id/topBar"
+        android:fillViewport="true"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -53,22 +60,29 @@
             android:orientation="vertical"
             android:padding="12dp">
 
+
             <!-- STORIES BAR -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none">
+                android:scrollbars="none"
+                android:overScrollMode="never">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- STORY ITEM 1 -->
+
+                    <!-- YOUR STORY -->
                     <LinearLayout
                         android:id="@+id/yourStoryButton"
                         android:layout_width="70dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
@@ -83,7 +97,9 @@
                                 android:layout_gravity="center"
                                 android:text="+"
                                 android:textColor="#FFFFFF"
-                                android:textSize="20sp" />
+                                android:textSize="20sp"
+                                android:textStyle="bold" />
+
                         </FrameLayout>
 
                         <TextView
@@ -93,13 +109,19 @@
                             android:text="Your Story"
                             android:textColor="#A0A5B5"
                             android:textSize="11sp" />
+
                     </LinearLayout>
 
-                    <!-- STORY ITEM 2 -->
+
+                    <!-- TEMPLE -->
                     <LinearLayout
                         android:id="@+id/templeStoryButton"
                         android:layout_width="70dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
@@ -116,6 +138,7 @@
                                 android:textColor="#E5A93C"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
+
                         </FrameLayout>
 
                         <TextView
@@ -125,13 +148,19 @@
                             android:text="Temples"
                             android:textColor="#A0A5B5"
                             android:textSize="11sp" />
+
                     </LinearLayout>
 
-                    <!-- STORY ITEM 3 -->
+
+                    <!-- RAJA -->
                     <LinearLayout
                         android:id="@+id/rajaStoryButton"
                         android:layout_width="70dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
@@ -148,6 +177,7 @@
                                 android:textColor="#E5A93C"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
+
                         </FrameLayout>
 
                         <TextView
@@ -157,13 +187,19 @@
                             android:text="Raja"
                             android:textColor="#A0A5B5"
                             android:textSize="11sp" />
+
                     </LinearLayout>
 
-                    <!-- STORY ITEM 4 -->
+
+                    <!-- DEVI DEVTA -->
                     <LinearLayout
                         android:id="@+id/deviStoryButton"
                         android:layout_width="70dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
@@ -180,6 +216,7 @@
                                 android:textColor="#E5A93C"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
+
                         </FrameLayout>
 
                         <TextView
@@ -189,13 +226,18 @@
                             android:text="Devi Devta"
                             android:textColor="#A0A5B5"
                             android:textSize="11sp" />
+
                     </LinearLayout>
 
-                    <!-- STORY ITEM 5 -->
+
+                    <!-- GITA -->
                     <LinearLayout
                         android:id="@+id/gitaStoryButton"
                         android:layout_width="70dp"
                         android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
@@ -212,6 +254,7 @@
                                 android:textColor="#E5A93C"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
+
                         </FrameLayout>
 
                         <TextView
@@ -221,64 +264,106 @@
                             android:text="Gita"
                             android:textColor="#A0A5B5"
                             android:textSize="11sp" />
+
                     </LinearLayout>
 
                 </LinearLayout>
+
             </HorizontalScrollView>
 
-            <!-- MAIN FEED RECYCLERVIEW -->
+
+            <!-- HOME FEED -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/homeFeedRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp" />
+                android:layout_marginTop="16dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
 
         </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
-    <!-- BOTTOM NAVIGATION BAR (Vibrant Vector Icons) -->
+
+    <!-- BOTTOM NAVIGATION -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_alignParentBottom="true"
         android:background="#1A1D2B"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:orientation="horizontal">
 
+
+        <!-- HOME -->
         <ImageView
             android:id="@+id/homeNavButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Home"
+            android:focusable="true"
+            android:padding="14dp"
             android:src="@drawable/ic_home" />
 
+
+        <!-- EXPLORE -->
         <ImageView
             android:id="@+id/exploreNavButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Explore"
+            android:focusable="true"
+            android:padding="14dp"
             android:src="@drawable/ic_explore" />
 
+
+        <!-- CREATE -->
         <ImageView
             android:id="@+id/createNavButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Create"
+            android:focusable="true"
+            android:padding="12dp"
             android:src="@drawable/ic_add_circle" />
 
+
+        <!-- CHAT -->
         <ImageView
             android:id="@+id/chatNavButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Chat"
+            android:focusable="true"
+            android:padding="14dp"
             android:src="@drawable/ic_chat" />
 
+
+        <!-- PROFILE -->
         <ImageView
             android:id="@+id/profileNavButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Profile"
+            android:focusable="true"
+            android:padding="14dp"
             android:src="@drawable/ic_profile" />
 
     </LinearLayout>
