@@ -11,6 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
+        <!-- Launcher -->
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
@@ -20,40 +21,125 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity" android:exported="false" />
-        <activity android:name=".LoginActivity" android:exported="false" />
-        <activity android:name=".ProfileActivity" android:exported="false" />
-        <activity android:name=".MyProfileActivity" android:exported="false" />
-        <activity android:name=".SettingsActivity" android:exported="false" />
-        <activity android:name=".UserProfileActivity" android:exported="false" />
+        <!-- Main -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
 
-        <activity android:name=".RajaActivity" android:exported="false" />
-        <activity android:name=".TempleActivity" android:exported="false" />
-        <activity android:name=".GitaActivity" android:exported="false" />
-        <activity android:name=".GitaDetailActivity" android:exported="false" />
-        <activity android:name=".DeviDevtaActivity" android:exported="false" />
-        <activity android:name=".RssActivity" android:exported="false" />
-        <activity android:name=".AboutActivity" android:exported="false" />
+        <!-- Authentication & Profile -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
 
-        <activity android:name=".CultureActivity" android:exported="false" />
-        <activity android:name=".PostUploadActivity" android:exported="false" />
-        <activity android:name=".PostCommentsActivity" android:exported="false" />
-        <activity android:name=".SearchActivity" android:exported="false" />
-        <activity android:name=".NotificationsActivity" android:exported="false" />
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
 
-        <activity android:name=".StoryActivity" android:exported="false" />
-        <activity android:name=".StoryUploadActivity" android:exported="false" />
+        <activity
+            android:name=".MyProfileActivity"
+            android:exported="false" />
 
-        <activity android:name=".ReelActivity" android:exported="false" />
-        <activity android:name=".ReelUploadActivity" android:exported="false" />
-        <activity android:name=".ReelCommentsActivity" android:exported="false" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
 
-        <activity android:name=".ChatActivity" android:exported="false" />
-        <activity android:name=".OneToOneChatActivity" android:exported="false" />
-        <activity android:name=".GroupChatActivity" android:exported="false" />
-         <activity
-    android:name=".RajaDetailActivity"
-    android:exported="false" />
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false" />
+
+        <!-- Raja -->
+        <activity
+            android:name=".RajaActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RajaDetailActivity"
+            android:exported="false" />
+
+        <!-- Temple -->
+        <activity
+            android:name=".TempleActivity"
+            android:exported="false" />
+
+        <!-- Bhagavad Gita -->
+        <activity
+            android:name=".GitaActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".GitaDetailActivity"
+            android:exported="false" />
+
+        <!-- Devi Devta -->
+        <activity
+            android:name=".DeviDevtaActivity"
+            android:exported="false" />
+
+        <!-- News & About -->
+        <activity
+            android:name=".RssActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
+
+        <!-- Culture -->
+        <activity
+            android:name=".CultureActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PostUploadActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PostCommentsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SearchActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".NotificationsActivity"
+            android:exported="false" />
+
+        <!-- Stories -->
+        <activity
+            android:name=".StoryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".StoryUploadActivity"
+            android:exported="false" />
+
+        <!-- Reels -->
+        <activity
+            android:name=".ReelActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ReelUploadActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ReelCommentsActivity"
+            android:exported="false" />
+
+        <!-- Chat -->
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".OneToOneChatActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".GroupChatActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
