@@ -24,107 +24,226 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Pre-apply theme mode before layout inflate
+        // Saved theme ko layout load hone se pehle apply karein
         applySavedTheme();
 
+        // Existing Main Screen layout
         setContentView(R.layout.activity_main);
 
-        // =========================
-        // FIREBASE CONNECTION TEST
-        // =========================
+        initializeFirebase();
+        setupHomeFeed();
+        setupStoryButtons();
+        setupNotificationButton();
+        setupBottomNavigation();
+    }
+
+    // =========================================================
+    // FIREBASE
+    // =========================================================
+
+    private void initializeFirebase() {
         try {
             FirebaseConnectionTest.run(this);
-            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+
+            FirebaseAuth auth = FirebaseAuth.getInstance();
+
+            if (auth.getCurrentUser() != null) {
                 FirebaseStorageConnectionTest.run(this);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-        // =========================
-        // HOME FEED
-        // =========================
+    // =========================================================
+    // HOME FEED
+    // =========================================================
+
+    private void setupHomeFeed() {
+
         homeFeedRecyclerView = findViewById(R.id.homeFeedRecyclerView);
-        if (homeFeedRecyclerView != null) {
-            homeFeedRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-            homeFeedRecyclerView.setHasFixedSize(false);
 
-            CulturePostAdapter feedAdapter = new CulturePostAdapter(
-                    this,
-                    CulturePostData.getAllPosts()
-            );
-            homeFeedRecyclerView.setAdapter(feedAdapter);
+        if (homeFeedRecyclerView == null) {
+            return;
         }
 
-        // =========================
-        // STORIES BUTTON LISTENERS
-        // =========================
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(this);
+
+        homeFeedRecyclerView.setLayoutManager(layoutManager);
+        homeFeedRecyclerView.setHasFixedSize(false);
+
+        CulturePostAdapter feedAdapter =
+                new CulturePostAdapter(
+                        this,
+                        CulturePostData.getAllPosts()
+                );
+
+        homeFeedRecyclerView.setAdapter(feedAdapter);
+    }
+
+    // =========================================================
+    // STORIES
+    // =========================================================
+
+    private void setupStoryButtons() {
+
         setOnClick(R.id.templeStoryButton, TempleActivity.class);
-        setOnClick(R.id.rajaStoryButton, RajaActivity.class);
-        setOnClick(R.id.deviStoryButton, DeviDevtaActivity.class);
-        setOnClick(R.id.gitaStoryButton, GitaActivity.class);
-        setOnClick(R.id.yourStoryButton, StoryUploadActivity.class);
 
-        // =========================
-        // NOTIFICATIONS
-        // =========================
-        if (findViewById(R.id.notificationButton) != null) {
-            findViewById(R.id.notificationButton).setOnClickListener(v ->
-                    Toast.makeText(MainActivity.this, "Notifications feature coming soon!", Toast.LENGTH_SHORT).show()
-            );
+        setOnClick(R.id.rajaStoryButton, RajaActivity.class);
+
+        setOnClick(R.id.deviStoryButton, DeviDevtaActivity.class);
+
+        setOnClick(R.id.gitaStoryButton, GitaActivity.class);
+
+        setOnClick(R.id.yourStoryButton, StoryUploadActivity.class);
+    }
+
+    // =========================================================
+    // NOTIFICATIONS
+    // =========================================================
+
+    private void setupNotificationButton() {
+
+        if (findViewById(R.id.notificationButton) == null) {
+            return;
         }
 
-        // =========================
-        // BOTTOM NAVIGATION LISTENERS
-        // =========================
+        findViewById(R.id.notificationButton).setOnClickListener(v -> {
+
+            Toast.makeText(
+                    MainActivity.this,
+                    "Notifications",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+        });
+    }
+
+    // =========================================================
+    // BOTTOM NAVIGATION
+    // =========================================================
+
+    private void setupBottomNavigation() {
+
+        // HOME
         if (findViewById(R.id.homeNavButton) != null) {
+
             findViewById(R.id.homeNavButton).setOnClickListener(v -> {
+
                 if (homeFeedRecyclerView != null) {
+
                     homeFeedRecyclerView.smoothScrollToPosition(0);
+
                 }
             });
         }
 
+        // CREATE
         if (findViewById(R.id.createNavButton) != null) {
-            findViewById(R.id.createNavButton).setOnClickListener(v -> showCreateMenu());
+
+            findViewById(R.id.createNavButton).setOnClickListener(
+                    v -> showCreateMenu()
+            );
         }
 
+        // CHAT
         setOnClick(R.id.chatNavButton, ChatActivity.class);
 
+        // PROFILE
         if (findViewById(R.id.profileNavButton) != null) {
+
             findViewById(R.id.profileNavButton).setOnClickListener(v -> {
-                FirebaseAuth auth = FirebaseAuth.getInstance();
+
+                FirebaseAuth auth =
+                        FirebaseAuth.getInstance();
+
                 if (auth.getCurrentUser() == null) {
-                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+
+                    startActivity(
+                            new Intent(
+                                    MainActivity.this,
+                                    LoginActivity.class
+                            )
+                    );
+
                 } else {
-                    startActivity(new Intent(MainActivity.this, MyProfileActivity.class));
+
+                    startActivity(
+                            new Intent(
+                                    MainActivity.this,
+                                    MyProfileActivity.class
+                            )
+                    );
                 }
             });
         }
     }
 
-    // Helper Method to Safely Bind Click Intent
-    private void setOnClick(int viewId, Class<?> targetActivity) {
-        if (findViewById(viewId) != null) {
-            findViewById(viewId).setOnClickListener(v ->
-                    startActivity(new Intent(MainActivity.this, targetActivity))
+    // =========================================================
+    // SAFE ACTIVITY CLICK
+    // =========================================================
+
+    private void setOnClick(
+            int viewId,
+            Class<?> targetActivity
+    ) {
+
+        if (findViewById(viewId) == null) {
+            return;
+        }
+
+        findViewById(viewId).setOnClickListener(v -> {
+
+            Intent intent =
+                    new Intent(
+                            MainActivity.this,
+                            targetActivity
+                    );
+
+            startActivity(intent);
+        });
+    }
+
+    // =========================================================
+    // THEME
+    // =========================================================
+
+    private void applySavedTheme() {
+
+        SharedPreferences preferences =
+                getSharedPreferences(
+                        PREFS_NAME,
+                        MODE_PRIVATE
+                );
+
+        boolean darkMode =
+                preferences.getBoolean(
+                        THEME_KEY,
+                        false
+                );
+
+        if (darkMode) {
+
+            AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_YES
+            );
+
+        } else {
+
+            AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_NO
             );
         }
     }
 
-    // Apply Saved Theme
-    private void applySavedTheme() {
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        boolean darkMode = preferences.getBoolean(THEME_KEY, false);
-        if (darkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
-    }
+    // =========================================================
+    // CREATE MENU
+    // =========================================================
 
-    // Create Options Dialog
     private void showCreateMenu() {
+
         String[] options = {
                 "Create Reel",
                 "Create Post",
@@ -134,12 +253,35 @@ public class MainActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Create")
                 .setItems(options, (dialog, which) -> {
-                    if (which == 0) {
-                        startActivity(new Intent(MainActivity.this, ReelUploadActivity.class));
-                    } else if (which == 1) {
-                        startActivity(new Intent(MainActivity.this, PostUploadActivity.class));
-                    } else {
-                        startActivity(new Intent(MainActivity.this, StoryUploadActivity.class));
+
+                    switch (which) {
+
+                        case 0:
+                            startActivity(
+                                    new Intent(
+                                            MainActivity.this,
+                                            ReelUploadActivity.class
+                                    )
+                            );
+                            break;
+
+                        case 1:
+                            startActivity(
+                                    new Intent(
+                                            MainActivity.this,
+                                            PostUploadActivity.class
+                                    )
+                            );
+                            break;
+
+                        case 2:
+                            startActivity(
+                                    new Intent(
+                                            MainActivity.this,
+                                            StoryUploadActivity.class
+                                    )
+                            );
+                            break;
                     }
                 })
                 .show();
