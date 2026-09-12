@@ -6,7 +6,7 @@
     android:background="#0B0E14"
     android:fitsSystemWindows="true">
 
-    <!-- HIDDEN COMPATIBILITY VIEWS (For Java Binding) -->
+    <!-- HIDDEN COMPATIBILITY VIEWS (Java Binding Support) -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -33,33 +33,42 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <!-- CLEAN TOP TOOLBAR (WITH STATUS BAR MARGIN) -->
+    <!-- TOP TOOLBAR -->
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="8dp"
+        android:layout_height="52dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
+
+        <ImageView
+            android:id="@+id/btnAddPost"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_add_circle"
+            app:tint="#FFFFFF" />
 
         <TextView
             android:id="@+id/usernameHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
+            android:layout_marginStart="24dp"
+            android:layout_toEndOf="@id/btnAddPost"
             android:text="_nuclear_bombs_"
             android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
         <ImageView
-            android:id="@+id/btnNotification"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:id="@+id/btnThreads"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="18dp"
             android:layout_toStartOf="@id/btnSettings"
-            android:src="@drawable/ic_add_circle"
+            android:src="@drawable/ic_explore"
             app:tint="#FFFFFF" />
 
         <ImageView
@@ -72,9 +81,11 @@
             app:tint="#FFFFFF" />
     </RelativeLayout>
 
+    <!-- MAIN SCROLL CONTENT -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@id/bottomNavigation"
         android:layout_below="@id/topBar">
 
         <LinearLayout
@@ -83,7 +94,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- FIXED PROFILE STATS HEADER -->
+            <!-- PROFILE STATS ROW -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -100,22 +111,21 @@
                         android:layout_height="80dp"
                         android:layout_centerInParent="true"
                         android:padding="3dp"
-                        android:scaleType="centerCrop"
                         android:src="@drawable/ic_profile"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
                         app:strokeColor="#E5A93C"
                         app:strokeWidth="2.5dp" />
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentBottom="true"
                         android:src="@drawable/ic_add_circle"
-                        app:tint="#E5A93C" />
+                        app:tint="#FFFFFF" />
                 </RelativeLayout>
 
-                <!-- STATS (POSTS, FOLLOWERS, FOLLOWING) -->
+                <!-- COUNTERS -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -140,9 +150,9 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Posts"
-                            android:textColor="#A0A5B5"
-                            android:textSize="12sp" />
+                            android:text="posts"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -164,9 +174,9 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Followers"
-                            android:textColor="#A0A5B5"
-                            android:textSize="12sp" />
+                            android:text="followers"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -188,23 +198,30 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Following"
-                            android:textColor="#A0A5B5"
-                            android:textSize="12sp" />
+                            android:text="following"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- BIO DETAILS -->
+            <!-- BIO SECTION -->
             <TextView
                 android:id="@+id/fullName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="bhaylu"
+                android:layout_marginTop="10dp"
+                android:text="nuclear_bombs"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Artist"
+                android:textColor="#A0A5B5"
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/bioText"
@@ -212,145 +229,216 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:text="har har mahadev"
-                android:textColor="#D0D5E5"
+                android:textColor="#FFFFFF"
                 android:textSize="13sp" />
 
-            <!-- ACTION BUTTONS -->
+            <!-- ADD BANNERS CHIP -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="#1A1D2B"
+                android:paddingStart="10dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="4dp"
+                android:text="+ Add banners"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- PROFESSIONAL DASHBOARD CARD -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="14dp"
+                android:background="#1A1D2B"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Professional dashboard"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Tools and resources just for creators."
+                    android:textColor="#A0A5B5"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- EDIT & SHARE PROFILE BUTTONS -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btnEditProfile"
                     style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                     android:layout_width="0dp"
-                    android:layout_height="38dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
                     android:backgroundTint="#1A1D2B"
                     android:padding="0dp"
-                    android:text="Edit Profile"
+                    android:text="Edit profile"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
+                    android:textStyle="bold"
                     app:cornerRadius="8dp" />
 
                 <Button
                     android:id="@+id/btnShareProfile"
                     style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
                     android:layout_width="0dp"
-                    android:layout_height="38dp"
-                    android:layout_marginStart="6dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="4dp"
                     android:layout_weight="1"
                     android:backgroundTint="#1A1D2B"
                     android:padding="0dp"
-                    android:text="Share Profile"
+                    android:text="Share profile"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
                     android:textSize="13sp"
+                    android:textStyle="bold"
                     app:cornerRadius="8dp" />
             </LinearLayout>
 
-            <!-- HIGHLIGHTS SECTION -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Highlights"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:background="#1A1D2B"
-                        android:padding="16dp"
-                        android:src="@drawable/ic_add_circle"
-                        app:tint="#FFFFFF" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="New"
-                        android:textColor="#A0A5B5"
-                        android:textSize="11sp" />
-                </LinearLayout>
-
-            </LinearLayout>
-
-            <!-- CONTENT TABS -->
+            <!-- TABS BAR -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="16dp"
                 android:orientation="horizontal">
 
                 <ImageView
                     android:layout_width="0dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:src="@drawable/ic_explore"
-                    app:tint="#E5A93C" />
-
-                <ImageView
-                    android:layout_width="0dp"
-                    android:layout_height="24dp"
+                    android:layout_height="22dp"
                     android:layout_gravity="center"
                     android:layout_weight="1"
                     android:src="@drawable/ic_home"
+                    app:tint="#FFFFFF" />
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_explore"
                     app:tint="#A0A5B5" />
 
                 <ImageView
                     android:layout_width="0dp"
-                    android:layout_height="24dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_edit"
+                    app:tint="#A0A5B5" />
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="22dp"
                     android:layout_gravity="center"
                     android:layout_weight="1"
                     android:src="@drawable/ic_profile"
                     app:tint="#A0A5B5" />
             </LinearLayout>
 
-            <!-- EMPTY STATE PLACEHOLDER -->
+            <!-- EMPTY POSTS STATE -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="240dp"
                 android:gravity="center"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Your content will appear here"
+                    android:text="Create your first post"
                     android:textColor="#FFFFFF"
-                    android:textSize="16sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Posts aur Reels publish karne ke baad yahan dikhenge."
+                    android:layout_marginTop="6dp"
+                    android:text="Give this space some love."
                     android:textColor="#A0A5B5"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:layout_marginTop="20dp"
+                    android:backgroundTint="#4267B2"
+                    android:paddingStart="28dp"
+                    android:paddingEnd="28dp"
+                    android:text="Create"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    app:cornerRadius="10dp" />
             </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <LinearLayout
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:background="#0B0E14"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="24dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_home"
+            app:tint="#FFFFFF" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="24dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_explore"
+            app:tint="#FFFFFF" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="24dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_add_circle"
+            app:tint="#FFFFFF" />
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="24dp"
+            android:layout_weight="1"
+            android:src="@drawable/ic_edit"
+            app:tint="#FFFFFF" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:layout_weight="1"
+            android:padding="1dp"
+            android:src="@drawable/ic_profile"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
+            app:strokeColor="#E5A93C"
+            app:strokeWidth="1.5dp" />
+    </LinearLayout>
 
 </RelativeLayout>
