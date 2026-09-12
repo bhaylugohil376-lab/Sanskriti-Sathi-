@@ -1,223 +1,286 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="#FFF8F0">
+    android:background="#0B0E14"
+    android:fitsSystemWindows="true">
 
-    <LinearLayout
+    <!-- TOP TOOLBAR -->
+    <RelativeLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="22dp">
+        android:layout_height="56dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
-        <!-- HEADER -->
+        <TextView
+            android:id="@+id/usernameHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="_nuclear_bombs_"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btnNotification"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="16dp"
+            android:layout_toStartOf="@id/btnSettings"
+            android:src="@drawable/ic_add_circle"
+            app:tint="#FFFFFF" />
+
+        <ImageView
+            android:id="@+id/btnSettings"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_edit"
+            app:tint="#FFFFFF" />
+    </RelativeLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/topBar">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:gravity="center_vertical"
-            android:background="#FFFFFF"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:elevation="4dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <TextView
-                android:layout_width="0dp"
+            <!-- PROFILE STATS HEADER -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="ॐ  Sanskriti Sathi"
-                android:textSize="21sp"
-                android:textStyle="bold"
-                android:textColor="#311B5E"/>
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
+                <RelativeLayout
+                    android:layout_width="86dp"
+                    android:layout_height="86dp">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/profileImage"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_centerInParent="true"
+                        android:background="#E5A93C"
+                        android:padding="2dp"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
+                        app:strokeColor="#E5A93C"
+                        app:strokeWidth="2dp" />
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:src="@drawable/ic_add_circle"
+                        app:tint="#FFFFFF" />
+                </RelativeLayout>
+
+                <!-- STATS (POSTS, FOLLOWERS, FOLLOWING) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/postsCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="#FFFFFF"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Posts"
+                            android:textColor="#A0A5B5"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/followersCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="4"
+                            android:textColor="#FFFFFF"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Followers"
+                            android:textColor="#A0A5B5"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/followingCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="6"
+                            android:textColor="#FFFFFF"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Following"
+                            android:textColor="#A0A5B5"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- BIO DETAILS -->
             <TextView
+                android:id="@+id/fullName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Profile"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:textColor="#F57C00"/>
-
-        </LinearLayout>
-
-        <!-- TITLE -->
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:gravity="center"
-            android:text="Create Your Profile"
-            android:textSize="27sp"
-            android:textStyle="bold"
-            android:textColor="#311B5E"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
-            android:gravity="center"
-            android:text="Apni Sanskriti Sathi profile ko complete karein"
-            android:textSize="14sp"
-            android:textColor="#756B80"/>
-
-        <!-- PROFILE ICON -->
-
-        <TextView
-            android:layout_width="112dp"
-            android:layout_height="112dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="26dp"
-            android:gravity="center"
-            android:text="ॐ"
-            android:textSize="54sp"
-            android:textStyle="bold"
-            android:textColor="#F57C00"
-            android:background="#FFE0B2"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:gravity="center"
-            android:text="Profile photo baad mein bhi add kar sakte hain"
-            android:textSize="12sp"
-            android:textColor="#8A7F91"/>
-
-        <!-- NAME -->
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="Name"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textColor="#3E3545"/>
-
-        <EditText
-            android:id="@+id/nameInput"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="7dp"
-            android:hint="Aapka naam"
-            android:inputType="textPersonName"
-            android:singleLine="true"
-            android:paddingStart="15dp"
-            android:paddingEnd="15dp"
-            android:textSize="16sp"
-            android:textColor="#222222"
-            android:textColorHint="#999999"
-            android:background="#FFFFFF"/>
-
-        <!-- USERNAME -->
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="17dp"
-            android:text="Username"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textColor="#3E3545"/>
-
-        <EditText
-            android:id="@+id/usernameInput"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="7dp"
-            android:hint="@username"
-            android:inputType="text"
-            android:singleLine="true"
-            android:paddingStart="15dp"
-            android:paddingEnd="15dp"
-            android:textSize="16sp"
-            android:textColor="#222222"
-            android:textColorHint="#999999"
-            android:background="#FFFFFF"/>
-
-        <!-- BIO -->
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="17dp"
-            android:text="Bio"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textColor="#3E3545"/>
-
-        <EditText
-            android:id="@+id/bioInput"
-            android:layout_width="match_parent"
-            android:layout_height="110dp"
-            android:layout_marginTop="7dp"
-            android:gravity="top"
-            android:hint="Apne baare mein likhein..."
-            android:inputType="textMultiLine|textCapSentences"
-            android:maxLength="150"
-            android:padding="15dp"
-            android:textSize="15sp"
-            android:textColor="#222222"
-            android:textColorHint="#999999"
-            android:background="#FFFFFF"/>
-
-        <!-- PROFILE INFO -->
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:padding="15dp"
-            android:orientation="vertical"
-            android:background="#FFF3E0">
+                android:layout_marginTop="12dp"
+                android:text="bhaylu"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/bioText"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="✨ Profile tip"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="#E65100"/>
+                android:layout_marginTop="2dp"
+                android:text="har har mahadev"
+                android:textColor="#D0D5E5"
+                android:textSize="13sp" />
 
-            <TextView
+            <!-- ACTION BUTTONS -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="Bio jis bhasha mein likhenge, profile par wahi bhasha dikhegi."
-                android:textSize="13sp"
-                android:textColor="#6D625C"/>
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnEditProfile"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#1A1D2B"
+                    android:padding="0dp"
+                    android:text="Edit Profile"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    app:cornerRadius="8dp" />
+
+                <Button
+                    android:id="@+id/btnShareProfile"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="#1A1D2B"
+                    android:padding="0dp"
+                    android:text="Share Profile"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    app:cornerRadius="8dp" />
+            </LinearLayout>
+
+            <!-- CONTENT TABS (POSTS, REELS, TAGS) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_explore"
+                    app:tint="#E5A93C" />
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_home"
+                    app:tint="#A0A5B5" />
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:src="@drawable/ic_profile"
+                    app:tint="#A0A5B5" />
+            </LinearLayout>
+
+            <!-- EMPTY STATE PLACEHOLDER -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create your first post"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Give this space some love."
+                    android:textColor="#A0A5B5"
+                    android:textSize="13sp" />
+            </LinearLayout>
 
         </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-        <!-- SAVE -->
-
-        <Button
-            android:id="@+id/saveProfileButton"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="22dp"
-            android:text="SAVE &amp; CONTINUE"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#F57C00"/>
-
-        <!-- FOOTER -->
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:layout_marginBottom="12dp"
-            android:gravity="center"
-            android:text="संस्कृति • ज्ञान • परंपरा"
-            android:textSize="12sp"
-            android:textColor="#8A7F91"/>
-
-    </LinearLayout>
-
-</ScrollView>
+</RelativeLayout>
