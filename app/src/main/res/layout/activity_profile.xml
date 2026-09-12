@@ -6,6 +6,33 @@
     android:background="#0B0E14"
     android:fitsSystemWindows="true">
 
+    <!-- HIDDEN COMPATIBILITY VIEWS (Java Code Ko Without Any Touch Work Karwane Ke Liye) -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/nameInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/usernameInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/bioInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/saveProfileButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
     <!-- TOP TOOLBAR -->
     <RelativeLayout
         android:id="@+id/topBar"
@@ -166,7 +193,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- BIO DETAILS (Added nameInput & bioInput IDs for Java mapping) -->
+            <!-- BIO DETAILS -->
             <TextView
                 android:id="@+id/fullName"
                 android:layout_width="wrap_content"
@@ -176,19 +203,6 @@
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold" />
-
-            <!-- Hidden/Compat views to resolve Java findViewById errors without touching Java code -->
-            <EditText
-                android:id="@+id/nameInput"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:visibility="gone" />
-
-            <EditText
-                android:id="@+id/bioInput"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/bioText"
@@ -237,7 +251,7 @@
                     app:cornerRadius="8dp" />
             </LinearLayout>
 
-            <!-- CONTENT TABS (POSTS, REELS, TAGS) -->
+            <!-- CONTENT TABS -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
@@ -269,7 +283,7 @@
                     app:tint="#A0A5B5" />
             </LinearLayout>
 
-            <!-- EMPTY STATE PLACEHOLDER -->
+            <!-- EMPTY STATE -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="220dp"
