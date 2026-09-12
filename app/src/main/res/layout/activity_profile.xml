@@ -6,7 +6,7 @@
     android:background="#0B0E14"
     android:fitsSystemWindows="true">
 
-    <!-- HIDDEN COMPATIBILITY VIEWS (Java Code Ko Without Any Touch Work Karwane Ke Liye) -->
+    <!-- HIDDEN COMPATIBILITY VIEWS (For Java Binding) -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -33,11 +33,12 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <!-- TOP TOOLBAR -->
+    <!-- CLEAN TOP TOOLBAR (WITH STATUS BAR MARGIN) -->
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
+        android:layout_marginTop="8dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
 
@@ -48,7 +49,7 @@
             android:layout_centerVertical="true"
             android:text="_nuclear_bombs_"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <ImageView
@@ -82,7 +83,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- PROFILE STATS HEADER -->
+            <!-- FIXED PROFILE STATS HEADER -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -90,27 +91,28 @@
                 android:orientation="horizontal">
 
                 <RelativeLayout
-                    android:layout_width="86dp"
-                    android:layout_height="86dp">
+                    android:layout_width="88dp"
+                    android:layout_height="88dp">
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/profileImage"
                         android:layout_width="80dp"
                         android:layout_height="80dp"
                         android:layout_centerInParent="true"
-                        android:background="#E5A93C"
-                        android:padding="2dp"
+                        android:padding="3dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_profile"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
                         app:strokeColor="#E5A93C"
-                        app:strokeWidth="2dp" />
+                        app:strokeWidth="2.5dp" />
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_alignParentEnd="true"
                         android:layout_alignParentBottom="true"
                         android:src="@drawable/ic_add_circle"
-                        app:tint="#FFFFFF" />
+                        app:tint="#E5A93C" />
                 </RelativeLayout>
 
                 <!-- STATS (POSTS, FOLLOWERS, FOLLOWING) -->
@@ -251,6 +253,47 @@
                     app:cornerRadius="8dp" />
             </LinearLayout>
 
+            <!-- HIGHLIGHTS SECTION -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Highlights"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="#1A1D2B"
+                        android:padding="16dp"
+                        android:src="@drawable/ic_add_circle"
+                        app:tint="#FFFFFF" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="New"
+                        android:textColor="#A0A5B5"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
             <!-- CONTENT TABS -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -283,28 +326,28 @@
                     app:tint="#A0A5B5" />
             </LinearLayout>
 
-            <!-- EMPTY STATE -->
+            <!-- EMPTY STATE PLACEHOLDER -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="200dp"
                 android:gravity="center"
                 android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Create your first post"
+                    android:text="Your content will appear here"
                     android:textColor="#FFFFFF"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="Give this space some love."
+                    android:layout_marginTop="4dp"
+                    android:text="Posts aur Reels publish karne ke baad yahan dikhenge."
                     android:textColor="#A0A5B5"
-                    android:textSize="13sp" />
+                    android:textSize="12sp" />
             </LinearLayout>
 
         </LinearLayout>
