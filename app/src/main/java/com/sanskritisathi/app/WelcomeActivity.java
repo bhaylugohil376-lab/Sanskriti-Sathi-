@@ -22,9 +22,9 @@ public class WelcomeActivity extends AppCompatActivity {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        // Agar user already login hai
+        // User already logged in hai
         if (user != null) {
-            openProfileOrHome(user);
+            checkUserProfile(user);
             return;
         }
 
@@ -34,12 +34,13 @@ public class WelcomeActivity extends AppCompatActivity {
         String savedLanguage =
                 prefs.getString(LANGUAGE_KEY, "");
 
-        // Language pehle select ho chuki hai
+        // Language already selected hai
         if (!savedLanguage.isEmpty()) {
             openLogin();
             return;
         }
 
+        // First time user
         setContentView(R.layout.activity_welcome);
 
         Button hindiButton = findViewById(R.id.hindiButton);
@@ -51,6 +52,10 @@ public class WelcomeActivity extends AppCompatActivity {
         gujaratiButton.setOnClickListener(v -> selectLanguage("gu"));
     }
 
+    // =========================================================
+    // LANGUAGE
+    // =========================================================
+
     private void selectLanguage(String language) {
 
         getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
@@ -61,17 +66,27 @@ public class WelcomeActivity extends AppCompatActivity {
         openLogin();
     }
 
+    // =========================================================
+    // LOGIN
+    // =========================================================
+
     private void openLogin() {
+
         startActivity(
                 new Intent(
                         WelcomeActivity.this,
                         LoginActivity.class
                 )
         );
+
         finish();
     }
 
-    private void openProfileOrHome(FirebaseUser user) {
+    // =========================================================
+    // USER PROFILE CHECK
+    // =========================================================
+
+    private void checkUserProfile(FirebaseUser user) {
 
         FirebaseFirestore.getInstance()
                 .collection("users")
@@ -82,41 +97,56 @@ public class WelcomeActivity extends AppCompatActivity {
                     String name = snapshot.getString("name");
                     String username = snapshot.getString("username");
 
-                    if (snapshot.exists()
-                            && name != null
-                            && !name.trim().isEmpty()
-                            && username != null
-                            && !username.trim().isEmpty()) {
+                    boolean profileComplete =
+                            snapshot.exists()
+                                    && name != null
+                                    && !name.trim().isEmpty()
+                                    && username != null
+                                    && !username.trim().isEmpty();
 
-                        startActivity(
-                                new Intent(
-                                        WelcomeActivity.this,
-                                        MainActivity.class
-                                )
-                        );
-
+                    if (profileComplete) {
+                        openMain();
                     } else {
-
-                        startActivity(
-                                new Intent(
-                                        WelcomeActivity.this,
-                                        ProfileActivity.class
-                                )
-                        );
+                        openProfile();
                     }
-
-                    finish();
                 })
                 .addOnFailureListener(e -> {
 
-                    startActivity(
-                            new Intent(
-                                    WelcomeActivity.this,
-                                    ProfileActivity.class
-                            )
-                    );
-
-                    finish();
+                    // Network/Firestore error ke case me
+                    // user ko unnecessarily Profile par nahi bhejna.
+                    openMain();
                 });
+    }
+
+    // =========================================================
+    // MAIN SCREEN
+    // =========================================================
+
+    private void openMain() {
+
+        startActivity(
+                new Intent(
+                        WelcomeActivity.this,
+                        MainActivity.class
+                )
+        );
+
+        finish();
+    }
+
+    // =========================================================
+    // PROFILE SETUP
+    // =========================================================
+
+    private void openProfile() {
+
+        startActivity(
+                new Intent(
+                        WelcomeActivity.this,
+                        ProfileActivity.class
+                )
+        );
+
+        finish();
     }
 }
