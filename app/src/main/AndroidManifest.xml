@@ -51,7 +51,9 @@
         <activity android:name=".ChatActivity" android:exported="false" />
         <activity android:name=".OneToOneChatActivity" android:exported="false" />
         <activity android:name=".GroupChatActivity" android:exported="false" />
-
+         <activity
+    android:name=".RajaDetailActivity"
+    android:exported="false" />
     </application>
 
 </manifest>
