@@ -2,8 +2,9 @@ package com.sanskritisathi.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -18,27 +19,25 @@ import java.util.concurrent.Executors;
 
 public final class SupabaseAuthManager {
 
-    private static final String AUTH_URL =
-            SupabaseConfig.PROJECT_URL + "/auth/v1";
+    private static final String PREFS_NAME = "SupabaseAuthSession";
 
-    private static final String PREFS_NAME =
-            "SupabaseAuthPrefs";
-
-    private static final String ACCESS_TOKEN =
-            "access_token";
-
-    private static final String REFRESH_TOKEN =
-            "refresh_token";
+    private static final String ACCESS_TOKEN = "access_token";
+    private static final String REFRESH_TOKEN = "refresh_token";
+    private static final String USER_ID = "user_id";
+    private static final String USER_EMAIL = "user_email";
 
     private static final ExecutorService EXECUTOR =
             Executors.newSingleThreadExecutor();
 
+    private static final Handler MAIN_HANDLER =
+            new Handler(Looper.getMainLooper());
+
     private SupabaseAuthManager() {
+        // Prevent object creation
     }
 
     public interface AuthCallback {
         void onSuccess(String message, JSONObject data);
-
         void onError(String message);
     }
 
@@ -47,27 +46,29 @@ public final class SupabaseAuthManager {
     // =========================
 
     public static void register(
+            Context context,
             String email,
             String password,
-            AuthCallback callback
-    ) {
-        JSONObject body = new JSONObject();
+            AuthCallback callback) {
 
         try {
+            JSONObject body = new JSONObject();
             body.put("email", email);
             body.put("password", password);
-        } catch (JSONException e) {
-            callback.onError("Request create nahi ho saka.");
-            return;
-        }
 
-        executeRequest(
-                AUTH_URL + "/signup",
-                "POST",
-                body.toString(),
-                callback,
-                true
-        );
+            request(
+                    context,
+                    "/signup",
+                    "POST",
+                    body,
+                    null,
+                    true,
+                    callback
+            );
+
+        } catch (Exception e) {
+            postError(callback, "Account create nahi ho saka.");
+        }
     }
 
     // =========================
@@ -75,107 +76,150 @@ public final class SupabaseAuthManager {
     // =========================
 
     public static void login(
+            Context context,
             String email,
             String password,
-            AuthCallback callback
-    ) {
-        JSONObject body = new JSONObject();
+            AuthCallback callback) {
 
         try {
+            JSONObject body = new JSONObject();
             body.put("email", email);
             body.put("password", password);
-        } catch (JSONException e) {
-            callback.onError("Request create nahi ho saka.");
-            return;
-        }
 
-        executeRequest(
-                AUTH_URL + "/token?grant_type=password",
-                "POST",
-                body.toString(),
-                callback,
-                true
-        );
+            request(
+                    context,
+                    "/token?grant_type=password",
+                    "POST",
+                    body,
+                    null,
+                    true,
+                    callback
+            );
+
+        } catch (Exception e) {
+            postError(callback, "Login request failed.");
+        }
     }
 
     // =========================
     // FORGOT PASSWORD
     // =========================
 
-    public static void forgotPassword(
+    public static void resetPassword(
+            Context context,
             String email,
-            AuthCallback callback
-    ) {
-        JSONObject body = new JSONObject();
+            AuthCallback callback) {
 
         try {
+            JSONObject body = new JSONObject();
             body.put("email", email);
-        } catch (JSONException e) {
-            callback.onError("Request create nahi ho saka.");
+
+            request(
+                    context,
+                    "/recover",
+                    "POST",
+                    body,
+                    null,
+                    false,
+                    callback
+            );
+
+        } catch (Exception e) {
+            postError(callback, "Password reset request failed.");
+        }
+    }
+
+    // =========================
+    // REFRESH SESSION
+    // =========================
+
+    public static void refreshSession(
+            Context context,
+            AuthCallback callback) {
+
+        String refreshToken = getRefreshToken(context);
+
+        if (refreshToken.isEmpty()) {
+            postError(callback, "Session available nahi hai.");
             return;
         }
 
-        executeRequest(
-                AUTH_URL + "/recover",
-                "POST",
-                body.toString(),
-                callback,
-                false
-        );
+        try {
+            JSONObject body = new JSONObject();
+            body.put("refresh_token", refreshToken);
+
+            request(
+                    context,
+                    "/token?grant_type=refresh_token",
+                    "POST",
+                    body,
+                    null,
+                    true,
+                    callback
+            );
+
+        } catch (Exception e) {
+            postError(callback, "Session refresh failed.");
+        }
     }
 
     // =========================
     // LOGOUT
     // =========================
 
-    public static void logout(Context context) {
+    public static void logout(
+            Context context,
+            AuthCallback callback) {
 
         String token = getAccessToken(context);
 
-        if (token != null && !token.isEmpty()) {
+        if (token.isEmpty()) {
+            clearSession(context);
+            postSuccess(
+                    callback,
+                    "Logout successful.",
+                    new JSONObject()
+            );
+            return;
+        }
 
-            EXECUTOR.execute(() -> {
+        request(
+                context,
+                "/logout",
+                "POST",
+                null,
+                token,
+                false,
+                new AuthCallback() {
 
-                HttpURLConnection connection = null;
+                    @Override
+                    public void onSuccess(
+                            String message,
+                            JSONObject data) {
 
-                try {
-                    URL url =
-                            new URL(AUTH_URL + "/logout");
+                        clearSession(context);
 
-                    connection =
-                            (HttpURLConnection) url.openConnection();
-
-                    connection.setRequestMethod("POST");
-                    connection.setRequestProperty(
-                            "apikey",
-                            SupabaseConfig.PUBLISHABLE_KEY
-                    );
-
-                    connection.setRequestProperty(
-                            "Authorization",
-                            "Bearer " + token
-                    );
-
-                    connection.setConnectTimeout(15000);
-                    connection.setReadTimeout(15000);
-
-                    connection.getResponseCode();
-
-                } catch (Exception ignored) {
-
-                } finally {
-
-                    if (connection != null) {
-                        connection.disconnect();
+                        postSuccess(
+                                callback,
+                                "Logout successful.",
+                                data
+                        );
                     }
 
-                    clearSession(context);
-                }
-            });
+                    @Override
+                    public void onError(String message) {
 
-        } else {
-            clearSession(context);
-        }
+                        // Local session clear even if server logout fails.
+                        clearSession(context);
+
+                        postSuccess(
+                                callback,
+                                "Logout successful.",
+                                new JSONObject()
+                        );
+                    }
+                }
+        );
     }
 
     // =========================
@@ -184,10 +228,7 @@ public final class SupabaseAuthManager {
 
     public static boolean isLoggedIn(Context context) {
 
-        String token = getAccessToken(context);
-
-        return token != null
-                && !token.trim().isEmpty();
+        return !getAccessToken(context).isEmpty();
     }
 
     // =========================
@@ -209,18 +250,71 @@ public final class SupabaseAuthManager {
     }
 
     // =========================
+    // GET REFRESH TOKEN
+    // =========================
+
+    public static String getRefreshToken(Context context) {
+
+        SharedPreferences preferences =
+                context.getSharedPreferences(
+                        PREFS_NAME,
+                        Context.MODE_PRIVATE
+                );
+
+        return preferences.getString(
+                REFRESH_TOKEN,
+                ""
+        );
+    }
+
+    // =========================
+    // GET USER ID
+    // =========================
+
+    public static String getUserId(Context context) {
+
+        SharedPreferences preferences =
+                context.getSharedPreferences(
+                        PREFS_NAME,
+                        Context.MODE_PRIVATE
+                );
+
+        return preferences.getString(
+                USER_ID,
+                ""
+        );
+    }
+
+    // =========================
+    // GET USER EMAIL
+    // =========================
+
+    public static String getUserEmail(Context context) {
+
+        SharedPreferences preferences =
+                context.getSharedPreferences(
+                        PREFS_NAME,
+                        Context.MODE_PRIVATE
+                );
+
+        return preferences.getString(
+                USER_EMAIL,
+                ""
+        );
+    }
+
+    // =========================
     // CLEAR SESSION
     // =========================
 
     public static void clearSession(Context context) {
 
         context.getSharedPreferences(
-                        PREFS_NAME,
-                        Context.MODE_PRIVATE
-                )
+                PREFS_NAME,
+                Context.MODE_PRIVATE
+        )
                 .edit()
-                .remove(ACCESS_TOKEN)
-                .remove(REFRESH_TOKEN)
+                .clear()
                 .apply();
     }
 
@@ -228,13 +322,14 @@ public final class SupabaseAuthManager {
     // HTTP REQUEST
     // =========================
 
-    private static void executeRequest(
-            String urlString,
+    private static void request(
+            Context context,
+            String endpoint,
             String method,
-            String requestBody,
-            AuthCallback callback,
-            boolean saveSession
-    ) {
+            JSONObject body,
+            String bearerToken,
+            boolean saveSession,
+            AuthCallback callback) {
 
         EXECUTOR.execute(() -> {
 
@@ -242,12 +337,20 @@ public final class SupabaseAuthManager {
 
             try {
 
-                URL url = new URL(urlString);
+                String baseUrl =
+                        SupabaseConfig.PROJECT_URL
+                                + "/auth/v1";
+
+                URL url =
+                        new URL(baseUrl + endpoint);
 
                 connection =
                         (HttpURLConnection) url.openConnection();
 
                 connection.setRequestMethod(method);
+
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(15000);
 
                 connection.setRequestProperty(
                         "apikey",
@@ -264,27 +367,27 @@ public final class SupabaseAuthManager {
                         "application/json"
                 );
 
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(15000);
+                if (bearerToken != null
+                        && !bearerToken.isEmpty()) {
 
-                if (requestBody != null) {
+                    connection.setRequestProperty(
+                            "Authorization",
+                            "Bearer " + bearerToken
+                    );
+                }
+
+                if (body != null) {
 
                     connection.setDoOutput(true);
 
-                    byte[] bodyBytes =
-                            requestBody.getBytes(
-                                    StandardCharsets.UTF_8
-                            );
-
-                    connection.setRequestProperty(
-                            "Content-Length",
-                            String.valueOf(bodyBytes.length)
-                    );
+                    byte[] data =
+                            body.toString()
+                                    .getBytes(StandardCharsets.UTF_8);
 
                     try (OutputStream outputStream =
                                  connection.getOutputStream()) {
 
-                        outputStream.write(bodyBytes);
+                        outputStream.write(data);
                         outputStream.flush();
                     }
                 }
@@ -292,80 +395,56 @@ public final class SupabaseAuthManager {
                 int responseCode =
                         connection.getResponseCode();
 
-                InputStream inputStream;
-
-                if (responseCode >= 200
-                        && responseCode < 300) {
-
-                    inputStream =
-                            connection.getInputStream();
-
-                } else {
-
-                    inputStream =
-                            connection.getErrorStream();
-
-                    if (inputStream == null) {
-                        inputStream =
-                                connection.getInputStream();
-                    }
-                }
-
                 String response =
-                        readResponse(inputStream);
+                        readResponse(
+                                connection,
+                                responseCode
+                        );
 
-                JSONObject json = null;
-
-                if (response != null
-                        && !response.trim().isEmpty()) {
-
-                    try {
-                        json = new JSONObject(response);
-                    } catch (JSONException ignored) {
-                    }
-                }
+                JSONObject json =
+                        parseJson(response);
 
                 if (responseCode >= 200
                         && responseCode < 300) {
 
-                    if (saveSession
-                            && json != null) {
-
-                        saveSessionTokens(
-                                null,
+                    if (saveSession) {
+                        saveSession(
+                                context,
                                 json
                         );
                     }
 
-                    final JSONObject result = json;
+                    String successMessage =
+                            getSuccessMessage(
+                                    endpoint,
+                                    json
+                            );
 
-                    runOnMainThread(() ->
-                            callback.onSuccess(
-                                    getSuccessMessage(result),
-                                    result
-                            )
+                    postSuccess(
+                            callback,
+                            successMessage,
+                            json
                     );
 
                 } else {
 
-                    final String errorMessage =
+                    String errorMessage =
                             getErrorMessage(
                                     json,
                                     responseCode
                             );
 
-                    runOnMainThread(() ->
-                            callback.onError(errorMessage)
+                    postError(
+                            callback,
+                            errorMessage
                     );
                 }
 
             } catch (Exception e) {
 
-                final String message =
-                        getNetworkErrorMessage(e);
-
-                runOnMainThread(() ->
-                        callback.onError(message)
+                postError(
+                        callback,
+                        getNetworkError(e)
                 );
 
             } finally {
@@ -378,95 +457,168 @@ public final class SupabaseAuthManager {
     }
 
     // =========================
-    // SAVE SESSION TOKENS
+    // SAVE SESSION
     // =========================
 
-    private static void saveSessionTokens(
+    private static void saveSession(
             Context context,
-            JSONObject json
-    ) {
+            JSONObject json) {
 
-        /*
-         * Context callback se available nahi hota,
-         * isliye token saving LoginActivity ke callback
-         * me save karne ke liye public helper use hoga.
-         */
-    }
+        try {
 
-    public static void saveSession(
-            Context context,
-            JSONObject json
-    ) {
+            String accessToken =
+                    json.optString(
+                            "access_token",
+                            ""
+                    );
 
-        if (context == null || json == null) {
-            return;
-        }
+            String refreshToken =
+                    json.optString(
+                            "refresh_token",
+                            ""
+                    );
 
-        String accessToken =
-                json.optString(
-                        "access_token",
-                        ""
-                );
+            JSONObject user =
+                    json.optJSONObject("user");
 
-        String refreshToken =
-                json.optString(
-                        "refresh_token",
-                        ""
-                );
+            String userId = "";
+            String email = "";
 
-        if (accessToken.isEmpty()) {
-            return;
-        }
+            if (user != null) {
 
-        SharedPreferences preferences =
-                context.getSharedPreferences(
-                        PREFS_NAME,
-                        Context.MODE_PRIVATE
-                );
+                userId =
+                        user.optString(
+                                "id",
+                                ""
+                        );
 
-        preferences.edit()
-                .putString(
+                email =
+                        user.optString(
+                                "email",
+                                ""
+                        );
+            }
+
+            SharedPreferences.Editor editor =
+                    context.getSharedPreferences(
+                            PREFS_NAME,
+                            Context.MODE_PRIVATE
+                    )
+                            .edit();
+
+            if (!accessToken.isEmpty()) {
+
+                editor.putString(
                         ACCESS_TOKEN,
                         accessToken
-                )
-                .putString(
+                );
+            }
+
+            if (!refreshToken.isEmpty()) {
+
+                editor.putString(
                         REFRESH_TOKEN,
                         refreshToken
-                )
-                .apply();
+                );
+            }
+
+            if (!userId.isEmpty()) {
+
+                editor.putString(
+                        USER_ID,
+                        userId
+                );
+            }
+
+            if (!email.isEmpty()) {
+
+                editor.putString(
+                        USER_EMAIL,
+                        email
+                );
+            }
+
+            editor.apply();
+
+        } catch (Exception ignored) {
+            // Session saving failure should not crash the app.
+        }
     }
 
     // =========================
-    // RESPONSE READER
+    // READ RESPONSE
     // =========================
 
     private static String readResponse(
-            InputStream inputStream
-    ) throws Exception {
+            HttpURLConnection connection,
+            int responseCode) {
 
-        if (inputStream == null) {
+        try {
+
+            InputStream inputStream;
+
+            if (responseCode >= 200
+                    && responseCode < 400) {
+
+                inputStream =
+                        connection.getInputStream();
+
+            } else {
+
+                inputStream =
+                        connection.getErrorStream();
+
+                if (inputStream == null) {
+                    return "";
+                }
+            }
+
+            StringBuilder result =
+                    new StringBuilder();
+
+            try (BufferedReader reader =
+                         new BufferedReader(
+                                 new InputStreamReader(
+                                         inputStream,
+                                         StandardCharsets.UTF_8
+                                 )
+                         )) {
+
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    result.append(line);
+                }
+            }
+
+            return result.toString();
+
+        } catch (Exception e) {
             return "";
         }
+    }
 
-        StringBuilder result =
-                new StringBuilder();
+    // =========================
+    // PARSE JSON
+    // =========================
 
-        try (BufferedReader reader =
-                     new BufferedReader(
-                             new InputStreamReader(
-                                     inputStream,
-                                     StandardCharsets.UTF_8
-                             )
-                     )) {
+    private static JSONObject parseJson(
+            String response) {
 
-            String line;
+        try {
 
-            while ((line = reader.readLine()) != null) {
-                result.append(line);
+            if (response == null
+                    || response.trim().isEmpty()) {
+
+                return new JSONObject();
             }
-        }
 
-        return result.toString();
+            return new JSONObject(response);
+
+        } catch (Exception e) {
+
+            return new JSONObject();
+        }
     }
 
     // =========================
@@ -475,66 +627,89 @@ public final class SupabaseAuthManager {
 
     private static String getErrorMessage(
             JSONObject json,
-            int responseCode
-    ) {
+            int responseCode) {
 
-        if (json != null) {
+        String message =
+                json.optString(
+                        "msg",
+                        ""
+                );
 
-            String message =
+        if (message.isEmpty()) {
+
+            message =
                     json.optString(
-                            "msg",
+                            "message",
                             ""
                     );
+        }
 
-            if (message.isEmpty()) {
-                message =
-                        json.optString(
-                                "message",
-                                ""
-                        );
+        if (message.isEmpty()) {
+
+            message =
+                    json.optString(
+                            "error_description",
+                            ""
+                    );
+        }
+
+        if (message.isEmpty()) {
+
+            message =
+                    json.optString(
+                            "error",
+                            ""
+                    );
+        }
+
+        String lower =
+                message.toLowerCase();
+
+        if (lower.contains("invalid login credentials")
+                || lower.contains("invalid credentials")) {
+
+            return "Email ya password galat hai.";
+        }
+
+        if (lower.contains("email not confirmed")) {
+
+            return "Pehle email confirm karein.";
+        }
+
+        if (lower.contains("already registered")
+                || lower.contains("already exists")) {
+
+            return "Is email se account pehle se bana hua hai.";
+        }
+
+        if (lower.contains("invalid email")) {
+
+            return "Email address valid nahi hai.";
+        }
+
+        if (lower.contains("password")) {
+
+            if (lower.contains("6")
+                    || lower.contains("weak")) {
+
+                return "Password kam se kam 6 characters ka hona chahiye.";
             }
+        }
 
-            if (message.isEmpty()) {
-                message =
-                        json.optString(
-                                "error_description",
-                                ""
-                        );
-            }
+        if (lower.contains("rate limit")
+                || lower.contains("too many")) {
 
-            if (!message.isEmpty()) {
+            return "Bahut zyada attempts ho gaye. Thodi der baad try karein.";
+        }
 
-                String lower =
-                        message.toLowerCase();
+        if (lower.contains("network")
+                || lower.contains("timeout")) {
 
-                if (lower.contains(
-                        "invalid login credentials")) {
+            return "Internet connection check karein.";
+        }
 
-                    return "Email ya password galat hai.";
-                }
-
-                if (lower.contains(
-                        "email not confirmed")) {
-
-                    return "Email confirm karna zaroori hai.";
-                }
-
-                if (lower.contains(
-                        "already registered")
-                        || lower.contains(
-                        "already exists")) {
-
-                    return "Is email se account pehle se bana hua hai.";
-                }
-
-                if (lower.contains(
-                        "password should be")) {
-
-                    return "Password Supabase ki required policy ke according nahi hai.";
-                }
-
-                return message;
-            }
+        if (!message.isEmpty()) {
+            return message;
         }
 
         return "Request failed. Error code: "
@@ -546,31 +721,44 @@ public final class SupabaseAuthManager {
     // =========================
 
     private static String getSuccessMessage(
-            JSONObject json
-    ) {
+            String endpoint,
+            JSONObject json) {
 
-        if (json == null) {
-            return "Operation successful.";
-        }
+        if (endpoint.startsWith("/signup")) {
 
-        if (json.has("access_token")) {
-            return "Login successful.";
-        }
+            String accessToken =
+                    json.optString(
+                            "access_token",
+                            ""
+                    );
 
-        if (json.has("user")) {
+            if (accessToken.isEmpty()) {
+
+                return "Account create ho gaya. Email confirmation check karein.";
+            }
+
             return "Account created successfully.";
         }
 
-        return "Password reset request sent.";
+        if (endpoint.startsWith("/token")) {
+
+            return "Login successful.";
+        }
+
+        if (endpoint.startsWith("/recover")) {
+
+            return "Password reset email request bhej di gayi.";
+        }
+
+        return "Request successful.";
     }
 
     // =========================
     // NETWORK ERROR
     // =========================
 
-    private static String getNetworkErrorMessage(
-            Exception exception
-    ) {
+    private static String getNetworkError(
+            Exception exception) {
 
         String message =
                 exception.getMessage();
@@ -585,15 +773,40 @@ public final class SupabaseAuthManager {
     }
 
     // =========================
-    // MAIN THREAD HELPER
+    // MAIN THREAD SUCCESS
     // =========================
 
-    private static void runOnMainThread(
-            Runnable runnable
-    ) {
+    private static void postSuccess(
+            AuthCallback callback,
+            String message,
+            JSONObject data) {
 
-        new android.os.Handler(
-                android.os.Looper.getMainLooper()
-        ).post(runnable);
+        if (callback == null) {
+            return;
+        }
+
+        MAIN_HANDLER.post(() ->
+                callback.onSuccess(
+                        message,
+                        data
+                )
+        );
+    }
+
+    // =========================
+    // MAIN THREAD ERROR
+    // =========================
+
+    private static void postError(
+            AuthCallback callback,
+            String message) {
+
+        if (callback == null) {
+            return;
+        }
+
+        MAIN_HANDLER.post(() ->
+                callback.onError(message)
+        );
     }
 }
