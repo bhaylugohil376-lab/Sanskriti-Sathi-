@@ -3,7 +3,7 @@ package com.sanskritisathi.app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Patterns;
+import android.text.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -11,30 +11,21 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
 public class LoginActivity extends AppCompatActivity {
 
     private EditText emailInput;
     private EditText passwordInput;
 
     private Button loginButton;
-    private Button registerButton;
     private Button googleSignInButton;
 
     private TextView registerTabText;
     private TextView forgotPasswordText;
 
-    private FirebaseAuth firebaseAuth;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_login);
-
-        firebaseAuth = FirebaseAuth.getInstance();
 
         bindViews();
         setupListeners();
@@ -46,7 +37,6 @@ public class LoginActivity extends AppCompatActivity {
         passwordInput = findViewById(R.id.passwordInput);
 
         loginButton = findViewById(R.id.loginButton);
-        registerButton = findViewById(R.id.registerButton);
         googleSignInButton = findViewById(R.id.googleSignInButton);
 
         registerTabText = findViewById(R.id.registerTabText);
@@ -59,30 +49,30 @@ public class LoginActivity extends AppCompatActivity {
             loginButton.setOnClickListener(v -> loginUser());
         }
 
-        if (registerButton != null) {
-            registerButton.setOnClickListener(v -> registerUser());
+        if (forgotPasswordText != null) {
+            forgotPasswordText.setOnClickListener(v -> {
+                startActivity(
+                        new Intent(
+                                LoginActivity.this,
+                                ForgotPasswordActivity.class
+                        )
+                );
+            });
         }
 
         if (registerTabText != null) {
-            registerTabText.setOnClickListener(v -> registerUser());
+            registerTabText.setOnClickListener(v -> {
+                startActivity(
+                        new Intent(
+                                LoginActivity.this,
+                                RegisterActivity.class
+                        )
+                );
+            });
         }
 
-        if (forgotPasswordText != null) {
-            forgotPasswordText.setOnClickListener(v -> resetPassword());
-        }
-
-        /*
-         * Google Sign-In abhi actual OAuth integration nahi hai.
-         * Isliye fake "integration ready" message nahi dikhayenge.
-         */
         if (googleSignInButton != null) {
-            googleSignInButton.setOnClickListener(v ->
-                    Toast.makeText(
-                            LoginActivity.this,
-                            "Google Sign-In abhi configure nahi hai.",
-                            Toast.LENGTH_SHORT
-                    ).show()
-            );
+            googleSignInButton.setOnClickListener(v -> startGoogleLogin());
         }
     }
 
@@ -97,81 +87,33 @@ public class LoginActivity extends AppCompatActivity {
 
         setLoginEnabled(false);
 
-        firebaseAuth
-                .signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
+        SupabaseAuthManager.login(
+                this,
+                email,
+                password,
+                new SupabaseAuthManager.AuthCallback() {
 
-                    setLoginEnabled(true);
-
-                    if (task.isSuccessful()) {
-
-                        FirebaseUser user =
-                                firebaseAuth.getCurrentUser();
-
-                        if (user != null) {
-
-                            Toast.makeText(
-                                    LoginActivity.this,
-                                    "Login successful ✅",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-
-                            openMainActivity();
-
-                        } else {
-
-                            Toast.makeText(
-                                    LoginActivity.this,
-                                    "Login successful, user data unavailable.",
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
-
-                    } else {
-
-                        String message =
-                                getFirebaseErrorMessage(task.getException());
+                    @Override
+                    public void onSuccess(
+                            String accessToken,
+                            String refreshToken,
+                            String userId,
+                            String userEmail
+                    ) {
+                        setLoginEnabled(true);
 
                         Toast.makeText(
                                 LoginActivity.this,
-                                message,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
-    }
-
-    private void registerUser() {
-
-        String email = getEmail();
-        String password = getPassword();
-
-        if (!validateInput(email, password)) {
-            return;
-        }
-
-        setRegisterEnabled(false);
-
-        firebaseAuth
-                .createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-
-                    setRegisterEnabled(true);
-
-                    if (task.isSuccessful()) {
-
-                        Toast.makeText(
-                                LoginActivity.this,
-                                "Account created successfully ✅",
+                                "Login successful ✅",
                                 Toast.LENGTH_SHORT
                         ).show();
 
-                        openProfileActivity();
+                        openMainActivity();
+                    }
 
-                    } else {
-
-                        String message =
-                                getFirebaseErrorMessage(task.getException());
+                    @Override
+                    public void onError(String message) {
+                        setLoginEnabled(true);
 
                         Toast.makeText(
                                 LoginActivity.this,
@@ -179,76 +121,50 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG
                         ).show();
                     }
-                });
+                }
+        );
     }
 
-    private void resetPassword() {
+    private void startGoogleLogin() {
 
-        String email = getEmail();
+        try {
+            Intent intent = new Intent(
+                    LoginActivity.this,
+                    GoogleAuthActivity.class
+            );
 
-        if (TextUtils.isEmpty(email)) {
+            startActivity(intent);
 
-            emailInput.setError("Email डालें");
-            emailInput.requestFocus();
-            return;
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Google Sign-In start nahi ho saka.",
+                    Toast.LENGTH_LONG
+            ).show();
         }
-
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-
-            emailInput.setError("Valid email डालें");
-            emailInput.requestFocus();
-            return;
-        }
-
-        if (forgotPasswordText != null) {
-            forgotPasswordText.setEnabled(false);
-        }
-
-        firebaseAuth
-                .sendPasswordResetEmail(email)
-                .addOnCompleteListener(this, task -> {
-
-                    if (forgotPasswordText != null) {
-                        forgotPasswordText.setEnabled(true);
-                    }
-
-                    if (task.isSuccessful()) {
-
-                        Toast.makeText(
-                                LoginActivity.this,
-                                "Password reset email भेज दिया गया 📧",
-                                Toast.LENGTH_LONG
-                        ).show();
-
-                    } else {
-
-                        String message =
-                                getFirebaseErrorMessage(task.getException());
-
-                        Toast.makeText(
-                                LoginActivity.this,
-                                message,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
     }
 
     private boolean validateInput(
             String email,
-            String password) {
+            String password
+    ) {
 
         if (TextUtils.isEmpty(email)) {
 
             emailInput.setError("Email डालें");
             emailInput.requestFocus();
+
             return false;
         }
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (!Patterns.EMAIL_ADDRESS
+                .matcher(email)
+                .matches()) {
 
             emailInput.setError("Valid email डालें");
             emailInput.requestFocus();
+
             return false;
         }
 
@@ -256,6 +172,7 @@ public class LoginActivity extends AppCompatActivity {
 
             passwordInput.setError("Password डालें");
             passwordInput.requestFocus();
+
             return false;
         }
 
@@ -266,6 +183,7 @@ public class LoginActivity extends AppCompatActivity {
             );
 
             passwordInput.requestFocus();
+
             return false;
         }
 
@@ -301,96 +219,24 @@ public class LoginActivity extends AppCompatActivity {
         if (loginButton != null) {
             loginButton.setEnabled(enabled);
         }
-    }
 
-    private void setRegisterEnabled(boolean enabled) {
-
-        if (registerButton != null) {
-            registerButton.setEnabled(enabled);
+        if (googleSignInButton != null) {
+            googleSignInButton.setEnabled(enabled);
         }
-    }
-
-    private String getFirebaseErrorMessage(Exception exception) {
-
-        if (exception == null) {
-            return "Operation failed. Please try again.";
-        }
-
-        String error =
-                exception.getMessage();
-
-        if (error == null) {
-            return "Operation failed. Please try again.";
-        }
-
-        String lowerError =
-                error.toLowerCase();
-
-        if (lowerError.contains("invalid credential")
-                || lowerError.contains("invalid-credential")) {
-
-            return "Email ya password galat hai.";
-        }
-
-        if (lowerError.contains("password is invalid")
-                || lowerError.contains("wrong-password")) {
-
-            return "Password galat hai.";
-        }
-
-        if (lowerError.contains("user-not-found")
-                || lowerError.contains("no user record")) {
-
-            return "Is email se account nahi mila.";
-        }
-
-        if (lowerError.contains("email-already-in-use")) {
-
-            return "Is email se account pehle se bana hua hai.";
-        }
-
-        if (lowerError.contains("weak-password")) {
-
-            return "Password kam se kam 6 characters ka hona chahiye.";
-        }
-
-        if (lowerError.contains("invalid-email")) {
-
-            return "Email address valid nahi hai.";
-        }
-
-        if (lowerError.contains("network")) {
-
-            return "Internet connection check karein.";
-        }
-
-        if (lowerError.contains("too-many-requests")) {
-
-            return "Bahut zyada attempts ho gaye. Thodi der baad try karein.";
-        }
-
-        return "Login/Register failed. Please try again.";
     }
 
     private void openMainActivity() {
 
-        Intent intent =
-                new Intent(
-                        LoginActivity.this,
-                        MainActivity.class
-                );
+        Intent intent = new Intent(
+                LoginActivity.this,
+                MainActivity.class
+        );
 
-        startActivity(intent);
-        finish();
-    }
-
-    private void openProfileActivity() {
-
-        Intent intent =
-                new Intent(
-                        LoginActivity.this,
-                        ProfileActivity.class
-                );
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
 
         startActivity(intent);
         finish();
