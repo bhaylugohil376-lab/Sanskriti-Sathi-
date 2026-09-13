@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -11,14 +13,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
-        <!-- Launcher -->
+        <!-- Welcome -->
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
+
             <intent-filter>
+
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+
+                <category
+                    android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
+
         </activity>
 
         <!-- Main -->
@@ -26,11 +34,50 @@
             android:name=".MainActivity"
             android:exported="false" />
 
-        <!-- Authentication & Profile -->
+        <!-- Authentication -->
+
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ForgotPasswordActivity"
+            android:exported="false" />
+
+        <!-- Google OAuth -->
+        <activity
+            android:name=".GoogleAuthActivity"
+            android:exported="false" />
+
+        <!-- Google OAuth callback -->
+        <activity
+            android:name=".AuthCallbackActivity"
+            android:exported="true">
+
+            <intent-filter>
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+
+                <category
+                    android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="sanskritisathi"
+                    android:host="auth"
+                    android:path="/callback" />
+
+            </intent-filter>
+
+        </activity>
+
+        <!-- Profile -->
         <activity
             android:name=".ProfileActivity"
             android:exported="false" />
@@ -40,11 +87,11 @@
             android:exported="false" />
 
         <activity
-            android:name=".SettingsActivity"
+            android:name=".UserProfileActivity"
             android:exported="false" />
 
         <activity
-            android:name=".UserProfileActivity"
+            android:name=".SettingsActivity"
             android:exported="false" />
 
         <!-- Raja -->
@@ -75,11 +122,12 @@
             android:name=".DeviDevtaActivity"
             android:exported="false" />
 
-        <!-- News & About -->
+        <!-- RSS -->
         <activity
             android:name=".RssActivity"
             android:exported="false" />
 
+        <!-- About -->
         <activity
             android:name=".AboutActivity"
             android:exported="false" />
@@ -89,6 +137,7 @@
             android:name=".CultureActivity"
             android:exported="false" />
 
+        <!-- Post -->
         <activity
             android:name=".PostUploadActivity"
             android:exported="false" />
@@ -97,10 +146,12 @@
             android:name=".PostCommentsActivity"
             android:exported="false" />
 
+        <!-- Search -->
         <activity
             android:name=".SearchActivity"
             android:exported="false" />
 
+        <!-- Notifications -->
         <activity
             android:name=".NotificationsActivity"
             android:exported="false" />
