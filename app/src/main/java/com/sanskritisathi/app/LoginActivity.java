@@ -3,7 +3,7 @@ package com.sanskritisathi.app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.text.Patterns;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -32,7 +32,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
 
@@ -51,23 +50,19 @@ public class LoginActivity extends AppCompatActivity {
 
         if (forgotPasswordText != null) {
             forgotPasswordText.setOnClickListener(v -> {
-                startActivity(
-                        new Intent(
-                                LoginActivity.this,
-                                ForgotPasswordActivity.class
-                        )
-                );
+                startActivity(new Intent(
+                        LoginActivity.this,
+                        ForgotPasswordActivity.class
+                ));
             });
         }
 
         if (registerTabText != null) {
             registerTabText.setOnClickListener(v -> {
-                startActivity(
-                        new Intent(
-                                LoginActivity.this,
-                                RegisterActivity.class
-                        )
-                );
+                startActivity(new Intent(
+                        LoginActivity.this,
+                        RegisterActivity.class
+                ));
             });
         }
 
