@@ -24,22 +24,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Saved theme
         applySavedTheme();
 
-        // Main Screen
         setContentView(R.layout.activity_main);
 
-        // Home Feed
         setupHomeFeed();
-
-        // Stories
         setupStoryButtons();
-
-        // Notifications
         setupNotificationButton();
-
-        // Bottom Navigation
         setupBottomNavigation();
     }
 
@@ -204,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.profileNavButton)
                     .setOnClickListener(v -> {
 
-                        // Check Supabase session
+                        // User logged in nahi hai
                         if (!SupabaseAuthManager
                                 .isLoggedIn(this)) {
 
@@ -218,11 +209,12 @@ public class MainActivity extends AppCompatActivity {
                             return;
                         }
 
-                        // Supabase logged in
+                        // User logged in hai
+                        // Ab professional profile open hoga
                         Intent intent =
                                 new Intent(
                                         MainActivity.this,
-                                        ProfileActivity.class
+                                        MyProfileActivity.class
                                 );
 
                         startActivity(intent);
