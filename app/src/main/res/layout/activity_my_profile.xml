@@ -14,9 +14,11 @@
         android:orientation="vertical">
 
         <!-- TOP BAR -->
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
             android:paddingStart="8dp"
             android:paddingEnd="8dp">
 
@@ -25,37 +27,40 @@
                 android:id="@+id/backButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Back"
                 android:padding="12dp"
                 android:src="@drawable/ic_back" />
 
-            <!-- TITLE -->
-            <TextView
-                android:id="@+id/profileTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="Profile"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+            <!-- TITLE AREA -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/profileTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Profile"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+            </FrameLayout>
 
             <!-- SETTINGS -->
             <ImageButton
                 android:id="@+id/settingsButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Settings"
                 android:padding="12dp"
                 android:src="@drawable/ic_settings" />
 
-        </RelativeLayout>
+        </LinearLayout>
 
         <!-- PROFILE HEADER -->
         <LinearLayout
@@ -305,7 +310,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:columnCount="3"
-            android:padding="2dp" />
+            android:padding="2dp"
+            android:useDefaultMargins="false" />
 
         <!-- EMPTY STATE -->
         <TextView
