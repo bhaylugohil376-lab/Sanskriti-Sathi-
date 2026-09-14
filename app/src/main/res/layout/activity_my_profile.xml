@@ -20,7 +20,7 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp">
 
-            <!-- BACK ARROW -->
+            <!-- BACK -->
             <ImageButton
                 android:id="@+id/backButton"
                 android:layout_width="48dp"
@@ -30,10 +30,9 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Back"
                 android:padding="12dp"
-                android:src="@android:drawable/ic_media_previous"
-                app:tint="#FFFFFF" />
+                android:src="@drawable/ic_back" />
 
-            <!-- PROFILE TITLE -->
+            <!-- TITLE -->
             <TextView
                 android:id="@+id/profileTitle"
                 android:layout_width="wrap_content"
@@ -53,9 +52,8 @@
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Settings"
-                android:padding="11dp"
-                android:src="@android:drawable/ic_menu_preferences"
-                app:tint="#FFFFFF" />
+                android:padding="12dp"
+                android:src="@drawable/ic_settings" />
 
         </RelativeLayout>
 
@@ -81,6 +79,7 @@
                 android:scaleType="centerCrop"
                 android:src="@android:drawable/ic_menu_myplaces" />
 
+            <!-- NAME -->
             <TextView
                 android:id="@+id/profileName"
                 android:layout_width="match_parent"
@@ -92,6 +91,7 @@
                 android:textSize="21sp"
                 android:textStyle="bold" />
 
+            <!-- USERNAME -->
             <TextView
                 android:id="@+id/profileUsername"
                 android:layout_width="match_parent"
@@ -102,6 +102,7 @@
                 android:textColor="#D6A84F"
                 android:textSize="14sp" />
 
+            <!-- BIO -->
             <TextView
                 android:id="@+id/profileBio"
                 android:layout_width="match_parent"
@@ -251,7 +252,7 @@
 
         </LinearLayout>
 
-        <!-- TAB BAR -->
+        <!-- TABS -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="58dp"
@@ -292,6 +293,7 @@
 
         </LinearLayout>
 
+        <!-- TAB DIVIDER -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -305,6 +307,7 @@
             android:columnCount="3"
             android:padding="2dp" />
 
+        <!-- EMPTY STATE -->
         <TextView
             android:id="@+id/emptyProfileText"
             android:layout_width="match_parent"
