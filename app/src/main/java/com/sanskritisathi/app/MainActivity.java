@@ -10,14 +10,15 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView homeFeedRecyclerView;
 
-    private static final String PREFS_NAME = "SanskritiSathiPrefs";
-    private static final String THEME_KEY = "dark_mode";
+    private static final String PREFS_NAME =
+            "SanskritiSathiPrefs";
+
+    private static final String THEME_KEY =
+            "dark_mode";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,30 +30,17 @@ public class MainActivity extends AppCompatActivity {
         // Main Screen
         setContentView(R.layout.activity_main);
 
-        initializeFirebase();
+        // Home Feed
         setupHomeFeed();
+
+        // Stories
         setupStoryButtons();
+
+        // Notifications
         setupNotificationButton();
+
+        // Bottom Navigation
         setupBottomNavigation();
-    }
-
-    // =========================================================
-    // FIREBASE
-    // =========================================================
-
-    private void initializeFirebase() {
-        try {
-            FirebaseConnectionTest.run(this);
-
-            FirebaseAuth auth = FirebaseAuth.getInstance();
-
-            if (auth.getCurrentUser() != null) {
-                FirebaseStorageConnectionTest.run(this);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     // =========================================================
@@ -71,7 +59,10 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager =
                 new LinearLayoutManager(this);
 
-        homeFeedRecyclerView.setLayoutManager(layoutManager);
+        homeFeedRecyclerView.setLayoutManager(
+                layoutManager
+        );
+
         homeFeedRecyclerView.setHasFixedSize(false);
 
         CulturePostAdapter feedAdapter =
@@ -80,7 +71,9 @@ public class MainActivity extends AppCompatActivity {
                         CulturePostData.getAllPosts()
                 );
 
-        homeFeedRecyclerView.setAdapter(feedAdapter);
+        homeFeedRecyclerView.setAdapter(
+                feedAdapter
+        );
     }
 
     // =========================================================
@@ -144,7 +137,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupBottomNavigation() {
 
+        // -----------------------------------------------------
         // HOME
+        // -----------------------------------------------------
+
         if (findViewById(R.id.homeNavButton) != null) {
 
             findViewById(R.id.homeNavButton)
@@ -158,7 +154,10 @@ public class MainActivity extends AppCompatActivity {
                     });
         }
 
+        // -----------------------------------------------------
         // EXPLORE / SEARCH
+        // -----------------------------------------------------
+
         if (findViewById(R.id.exploreNavButton) != null) {
 
             findViewById(R.id.exploreNavButton)
@@ -174,7 +173,10 @@ public class MainActivity extends AppCompatActivity {
                     });
         }
 
+        // -----------------------------------------------------
         // CREATE
+        // -----------------------------------------------------
+
         if (findViewById(R.id.createNavButton) != null) {
 
             findViewById(R.id.createNavButton)
@@ -183,39 +185,47 @@ public class MainActivity extends AppCompatActivity {
                     );
         }
 
+        // -----------------------------------------------------
         // CHAT
+        // -----------------------------------------------------
+
         setOnClick(
                 R.id.chatNavButton,
                 ChatActivity.class
         );
 
+        // -----------------------------------------------------
         // PROFILE
+        // SUPABASE AUTH
+        // -----------------------------------------------------
+
         if (findViewById(R.id.profileNavButton) != null) {
 
             findViewById(R.id.profileNavButton)
                     .setOnClickListener(v -> {
 
-                        FirebaseAuth auth =
-                                FirebaseAuth.getInstance();
+                        // Check Supabase session
+                        if (!SupabaseAuthManager
+                                .isLoggedIn(this)) {
 
-                        if (auth.getCurrentUser() == null) {
-
-                            startActivity(
+                            Intent intent =
                                     new Intent(
                                             MainActivity.this,
                                             LoginActivity.class
-                                    )
-                            );
+                                    );
 
-                        } else {
-
-                            startActivity(
-                                    new Intent(
-                                            MainActivity.this,
-                                            MyProfileActivity.class
-                                    )
-                            );
+                            startActivity(intent);
+                            return;
                         }
+
+                        // Supabase logged in
+                        Intent intent =
+                                new Intent(
+                                        MainActivity.this,
+                                        ProfileActivity.class
+                                );
+
+                        startActivity(intent);
                     });
         }
     }
@@ -266,15 +276,19 @@ public class MainActivity extends AppCompatActivity {
 
         if (darkMode) {
 
-            AppCompatDelegate.setDefaultNightMode(
-                    AppCompatDelegate.MODE_NIGHT_YES
-            );
+            AppCompatDelegate
+                    .setDefaultNightMode(
+                            AppCompatDelegate
+                                    .MODE_NIGHT_YES
+                    );
 
         } else {
 
-            AppCompatDelegate.setDefaultNightMode(
-                    AppCompatDelegate.MODE_NIGHT_NO
-            );
+            AppCompatDelegate
+                    .setDefaultNightMode(
+                            AppCompatDelegate
+                                    .MODE_NIGHT_NO
+                    );
         }
     }
 
@@ -292,38 +306,47 @@ public class MainActivity extends AppCompatActivity {
 
         new AlertDialog.Builder(this)
                 .setTitle("Create")
-                .setItems(options, (dialog, which) -> {
+                .setItems(
+                        options,
+                        (dialog, which) -> {
 
-                    switch (which) {
+                            switch (which) {
 
-                        case 0:
-                            startActivity(
-                                    new Intent(
-                                            MainActivity.this,
-                                            ReelUploadActivity.class
-                                    )
-                            );
-                            break;
+                                case 0:
 
-                        case 1:
-                            startActivity(
-                                    new Intent(
-                                            MainActivity.this,
-                                            PostUploadActivity.class
-                                    )
-                            );
-                            break;
+                                    startActivity(
+                                            new Intent(
+                                                    MainActivity.this,
+                                                    ReelUploadActivity.class
+                                            )
+                                    );
 
-                        case 2:
-                            startActivity(
-                                    new Intent(
-                                            MainActivity.this,
-                                            StoryUploadActivity.class
-                                    )
-                            );
-                            break;
-                    }
-                })
+                                    break;
+
+                                case 1:
+
+                                    startActivity(
+                                            new Intent(
+                                                    MainActivity.this,
+                                                    PostUploadActivity.class
+                                            )
+                                    );
+
+                                    break;
+
+                                case 2:
+
+                                    startActivity(
+                                            new Intent(
+                                                    MainActivity.this,
+                                                    StoryUploadActivity.class
+                                            )
+                                    );
+
+                                    break;
+                            }
+                        }
+                )
                 .show();
     }
 }
