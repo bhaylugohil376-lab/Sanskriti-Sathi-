@@ -2,462 +2,313 @@
 
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B0F19"
+    android:background="#10151D"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="24dp">
+        android:orientation="vertical">
 
-        <!-- HEADER -->
-        <LinearLayout
+        <!-- TOP BAR -->
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:gravity="center_vertical"
-            android:paddingStart="18dp"
-            android:paddingEnd="12dp"
-            android:background="#111827">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Back"
+                android:src="@android:drawable/ic_media_previous"
+                app:tint="#FFFFFF" />
 
             <TextView
-                android:layout_width="0dp"
+                android:id="@+id/profileTitle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Sanskriti Sathi"
+                android:layout_centerInParent="true"
+                android:text="Profile"
                 android:textColor="#FFFFFF"
                 android:textSize="20sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
-            <ImageView
+            <ImageButton
                 android:id="@+id/settingsButton"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:padding="10dp"
-                android:src="@drawable/ic_settings"
-                android:tint="#FFFFFF"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Settings"
-                android:clickable="true"
-                android:focusable="true"/>
+                android:src="@android:drawable/ic_menu_preferences"
+                app:tint="#FFFFFF" />
 
-        </LinearLayout>
+        </RelativeLayout>
 
-
-        <!-- PROFILE TOP -->
+        <!-- PROFILE HEADER -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="18dp">
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="20dp">
 
-            <LinearLayout
+            <!-- PROFILE PHOTO -->
+            <ImageView
+                android:id="@+id/profileImage"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/profile_circle_background"
+                android:contentDescription="Profile photo"
+                android:padding="3dp"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_myplaces" />
+
+            <TextView
+                android:id="@+id/profileName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="Your Name"
+                android:textColor="#FFFFFF"
+                android:textSize="21sp"
+                android:textStyle="bold" />
 
-                <!-- PROFILE IMAGE -->
-                <FrameLayout
-                    android:layout_width="108dp"
-                    android:layout_height="108dp"
-                    android:padding="4dp"
-                    android:background="@drawable/story_ring">
+            <TextView
+                android:id="@+id/profileUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:gravity="center"
+                android:text="@username"
+                android:textColor="#D6A84F"
+                android:textSize="14sp" />
 
-                    <ImageView
-                        android:id="@+id/profileImage"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_gravity="center"
-                        android:background="@drawable/profile_circle_bg"
-                        android:src="@drawable/icon_foreground"
-                        android:scaleType="centerCrop"
-                        android:clipToOutline="true"
-                        android:contentDescription="Profile photo"
-                        android:clickable="true"
-                        android:focusable="true"/>
+            <TextView
+                android:id="@+id/profileBio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:lineSpacingExtra="2dp"
+                android:text="Apni Sanskriti • Apna Gaurav"
+                android:textColor="#AAB2BF"
+                android:textSize="14sp" />
 
-                </FrameLayout>
+        </LinearLayout>
 
+        <!-- STATS -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="74dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="#181F29"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
-                <!-- STATS -->
-                <LinearLayout
-                    android:layout_width="0dp"
+            <!-- POSTS -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/postsCount"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:paddingStart="10dp">
+                    android:text="0"
+                    android:textColor="#FFFFFF"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/postsCountText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="#FFFFFF"
-                            android:textSize="19sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Posts"
-                            android:textColor="#AAB2C0"
-                            android:textSize="12sp"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/followersCountText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="#FFFFFF"
-                            android:textSize="19sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Followers"
-                            android:textColor="#AAB2C0"
-                            android:textSize="12sp"/>
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/followingCountText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="#FFFFFF"
-                            android:textSize="19sp"
-                            android:textStyle="bold"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Following"
-                            android:textColor="#AAB2C0"
-                            android:textSize="12sp"/>
-
-                    </LinearLayout>
-
-                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="Posts"
+                    android:textColor="#8D96A3"
+                    android:textSize="12sp" />
 
             </LinearLayout>
 
-
-            <!-- NAME -->
-            <TextView
-                android:id="@+id/nameText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Sanskriti Sathi User"
-                android:textColor="#FFFFFF"
-                android:textSize="20sp"
-                android:textStyle="bold"/>
-
-
-            <!-- USERNAME -->
-            <TextView
-                android:id="@+id/usernameText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@user"
-                android:textColor="#FFB300"
-                android:textSize="14sp"/>
-
-
-            <!-- BIO -->
-            <TextView
-                android:id="@+id/bioText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Apni Sanskriti se judein."
-                android:textColor="#D4D8E0"
-                android:textSize="14sp"
-                android:lineSpacingExtra="3dp"/>
-
-
-            <!-- BUTTONS -->
+            <!-- FOLLOWERS -->
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="46dp"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal">
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/editProfileButton"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="Edit Profile"
+                <TextView
+                    android:id="@+id/followersCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
                     android:textColor="#FFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:backgroundTint="#252D3D"/>
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
 
-                <Space
-                    android:layout_width="8dp"
-                    android:layout_height="1dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="Followers"
+                    android:textColor="#8D96A3"
+                    android:textSize="12sp" />
 
-                <Button
-                    android:id="@+id/shareProfileButton"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="Share Profile"
+            </LinearLayout>
+
+            <!-- FOLLOWING -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/followingCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
                     android:textColor="#FFFFFF"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:backgroundTint="#252D3D"/>
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="Following"
+                    android:textColor="#8D96A3"
+                    android:textSize="12sp" />
 
             </LinearLayout>
 
         </LinearLayout>
 
-
-        <!-- HIGHLIGHTS HEADER -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingStart="18dp"
-            android:paddingEnd="18dp"
-            android:text="Highlights"
-            android:textColor="#FFFFFF"
-            android:textSize="17sp"
-            android:textStyle="bold"/>
-
-
-        <!-- HIGHLIGHTS LIST -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="112dp"
-            android:layout_marginTop="8dp"
-            android:scrollbars="none"
-            android:overScrollMode="never">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp">
-
-
-                <!-- NEW HIGHLIGHT -->
-                <LinearLayout
-                    android:id="@+id/newHighlightButton"
-                    android:layout_width="82dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground">
-
-                    <FrameLayout
-                        android:layout_width="68dp"
-                        android:layout_height="68dp"
-                        android:background="@drawable/profile_circle_bg"
-                        android:padding="2dp">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:text="+"
-                            android:textColor="#FFB300"
-                            android:textSize="28sp"
-                            android:textStyle="bold"
-                            android:background="#1D2636"/>
-
-                    </FrameLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:text="New"
-                        android:textColor="#AAB2C0"
-                        android:textSize="11sp"/>
-
-                </LinearLayout>
-
-
-                <!-- TEMPLES -->
-                <LinearLayout
-                    android:id="@+id/templeHighlightButton"
-                    android:layout_width="82dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground">
-
-                    <ImageView
-                        android:layout_width="68dp"
-                        android:layout_height="68dp"
-                        android:background="@drawable/profile_circle_bg"
-                        android:padding="2dp"
-                        android:src="@drawable/somnath"
-                        android:scaleType="centerCrop"
-                        android:clipToOutline="true"
-                        android:contentDescription="Temples Highlight"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:text="Temples"
-                        android:textColor="#AAB2C0"
-                        android:textSize="11sp"/>
-
-                </LinearLayout>
-
-
-                <!-- DEVI DEVTA -->
-                <LinearLayout
-                    android:id="@+id/deviHighlightButton"
-                    android:layout_width="82dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground">
-
-                    <ImageView
-                        android:layout_width="68dp"
-                        android:layout_height="68dp"
-                        android:background="@drawable/profile_circle_bg"
-                        android:padding="2dp"
-                        android:src="@drawable/shiva"
-                        android:scaleType="centerCrop"
-                        android:clipToOutline="true"
-                        android:contentDescription="Devi Devta Highlight"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:text="Devi Devta"
-                        android:textColor="#AAB2C0"
-                        android:textSize="11sp"/>
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </HorizontalScrollView>
-
-
-        <!-- TABS -->
+        <!-- ACTION BUTTONS -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            android:background="#111827"
+            android:layout_height="52dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/editProfileButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Edit Profile"
+                android:textAllCaps="false"
+                android:textColor="#10151D"
+                android:textStyle="bold"
+                app:backgroundTint="#D6A84F"
+                app:cornerRadius="14dp" />
+
+            <Space
+                android:layout_width="10dp"
+                android:layout_height="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/shareProfileButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="Share Profile"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                app:backgroundTint="#252B35"
+                app:cornerRadius="14dp"
+                app:strokeColor="#3B4553"
+                app:strokeWidth="1dp" />
+
+        </LinearLayout>
+
+        <!-- TAB BAR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:layout_marginTop="18dp"
             android:gravity="center"
             android:orientation="horizontal">
 
-            <ImageView
+            <TextView
                 android:id="@+id/postsTab"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:padding="15dp"
-                android:src="@drawable/ic_grid"
-                android:tint="#FFB300"
-                android:contentDescription="Posts"/>
+                android:gravity="center"
+                android:text="Posts"
+                android:textColor="#D6A84F"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
-            <ImageView
+            <TextView
                 android:id="@+id/reelsTab"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:padding="15dp"
-                android:src="@drawable/ic_reels"
-                android:tint="#AAB2C0"
-                android:contentDescription="Reels"/>
-
-            <ImageView
-                android:id="@+id/repostsTab"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:padding="15dp"
-                android:src="@drawable/ic_repost"
-                android:tint="#AAB2C0"
-                android:contentDescription="Reposts"/>
-
-            <ImageView
-                android:id="@+id/taggedTab"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:padding="15dp"
-                android:src="@drawable/ic_tagged"
-                android:tint="#AAB2C0"
-                android:contentDescription="Tagged"/>
-
-        </LinearLayout>
-
-
-        <!-- CONTENT -->
-        <LinearLayout
-            android:id="@+id/contentEmpty"
-            android:layout_width="match_parent"
-            android:layout_height="190dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Your content will appear here"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
                 android:gravity="center"
-                android:text="Posts aur Reels publish karne ke baad yahan dikhenge."
-                android:textColor="#8F98A8"
-                android:textSize="12sp"/>
+                android:text="Reels"
+                android:textColor="#8D96A3"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/savedTab"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Saved"
+                android:textColor="#8D96A3"
+                android:textSize="14sp" />
 
         </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#29313C" />
+
+        <!-- POSTS GRID PLACEHOLDER CONTAINER -->
+        <GridLayout
+            android:id="@+id/profilePostsGrid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:padding="2dp" />
+
+        <TextView
+            android:id="@+id/emptyProfileText"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="Abhi koi post nahi hai"
+            android:textColor="#7F8793"
+            android:textSize="14sp"
+            android:visibility="gone" />
 
     </LinearLayout>
 
