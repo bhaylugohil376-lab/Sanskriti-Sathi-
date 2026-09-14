@@ -1,73 +1,39 @@
 package com.sanskritisathi.app;
 
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.bumptech.glide.Glide;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class MyProfileActivity extends AppCompatActivity {
 
-    private ImageView profileImage;
+    private TextView profileName;
+    private TextView profileUsername;
+    private TextView profileBio;
 
-    private android.widget.TextView nameText;
-    private android.widget.TextView usernameText;
-    private android.widget.TextView bioText;
+    private TextView postsCount;
+    private TextView followersCount;
+    private TextView followingCount;
 
-    private android.widget.TextView postsCountText;
-    private android.widget.TextView followersCountText;
-    private android.widget.TextView followingCountText;
+    private TextView emptyProfileText;
 
-    private Button editProfileButton;
-    private Button shareProfileButton;
-
-    private ImageView settingsButton;
-
-    private ImageView postsTab;
-    private ImageView reelsTab;
-    private ImageView repostsTab;
-    private ImageView taggedTab;
-
-    private LinearLayout newHighlightButton;
-    private LinearLayout templeHighlightButton;
-    private LinearLayout deviHighlightButton;
-
-    private FirebaseAuth auth;
-    private FirebaseFirestore firestore;
-    private FirebaseStorage storage;
-
-    private final int ACTIVE_COLOR =
-            Color.parseColor("#FFB300");
-
-    private final int INACTIVE_COLOR =
-            Color.parseColor("#AAB2C0");
-
-    private final ActivityResultLauncher<String> profileImagePicker =
-            registerForActivityResult(
-                    new ActivityResultContracts.GetContent(),
-                    uri -> {
-
-                        if (uri != null) {
-                            uploadProfilePhoto(uri);
-                        }
-                    }
-            );
+    private ImageButton backButton;
+    private ImageButton settingsButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,510 +41,309 @@ public class MyProfileActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_my_profile);
 
-        auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
+        bindViews();
+        setupListeners();
 
-        profileImage = findViewById(R.id.profileImage);
-
-        nameText = findViewById(R.id.nameText);
-        usernameText = findViewById(R.id.usernameText);
-        bioText = findViewById(R.id.bioText);
-
-        postsCountText = findViewById(R.id.postsCountText);
-        followersCountText = findViewById(R.id.followersCountText);
-        followingCountText = findViewById(R.id.followingCountText);
-
-        editProfileButton =
-                findViewById(R.id.editProfileButton);
-
-        shareProfileButton =
-                findViewById(R.id.shareProfileButton);
-
-        settingsButton =
-                findViewById(R.id.settingsButton);
-
-        postsTab =
-                findViewById(R.id.postsTab);
-
-        reelsTab =
-                findViewById(R.id.reelsTab);
-
-        repostsTab =
-                findViewById(R.id.repostsTab);
-
-        taggedTab =
-                findViewById(R.id.taggedTab);
-
-        newHighlightButton =
-                findViewById(R.id.newHighlightButton);
-
-        templeHighlightButton =
-                findViewById(R.id.templeHighlightButton);
-
-        deviHighlightButton =
-                findViewById(R.id.deviHighlightButton);
-
-        FirebaseUser currentUser =
-                auth.getCurrentUser();
-
-        if (currentUser == null) {
-
-            Toast.makeText(
-                    this,
-                    "Pehle Login karein",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            finish();
+        if (!SupabaseAuthManager.isLoggedIn(this)) {
+            openLogin();
             return;
         }
 
-        loadProfile(currentUser);
-
-        // PROFILE PHOTO
-        profileImage.setOnClickListener(v ->
-                profileImagePicker.launch("image/*")
-        );
-
-        // EDIT PROFILE
-        editProfileButton.setOnClickListener(v -> {
-
-            startActivity(
-                    new Intent(
-                            MyProfileActivity.this,
-                            ProfileActivity.class
-                    )
-            );
-        });
-
-        // SHARE PROFILE
-        shareProfileButton.setOnClickListener(v ->
-                shareProfile()
-        );
-
-        // SETTINGS
-        settingsButton.setOnClickListener(v -> {
-
-            startActivity(
-                    new Intent(
-                            MyProfileActivity.this,
-                            SettingsActivity.class
-                    )
-            );
-        });
-
-        // TABS
-        postsTab.setOnClickListener(v ->
-                selectTab(postsTab)
-        );
-
-        reelsTab.setOnClickListener(v ->
-                selectTab(reelsTab)
-        );
-
-        repostsTab.setOnClickListener(v ->
-                selectTab(repostsTab)
-        );
-
-        taggedTab.setOnClickListener(v ->
-                selectTab(taggedTab)
-        );
-
-        updateTabColors(postsTab);
-
-        // HIGHLIGHTS
-
-        newHighlightButton.setOnClickListener(v ->
-                createNewHighlight()
-        );
-
-        templeHighlightButton.setOnClickListener(v ->
-                openTempleHighlight()
-        );
-
-        deviHighlightButton.setOnClickListener(v ->
-                openDeviDevtaHighlight()
-        );
+        loadProfile();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        FirebaseUser currentUser =
-                auth.getCurrentUser();
-
-        if (currentUser != null) {
-            loadProfile(currentUser);
+        if (SupabaseAuthManager.isLoggedIn(this)) {
+            loadProfile();
         }
     }
 
-    // ==============================
-    // LOAD PROFILE
-    // ==============================
+    private void bindViews() {
 
-    private void loadProfile(FirebaseUser currentUser) {
+        profileName = findViewById(R.id.profileName);
+        profileUsername = findViewById(R.id.profileUsername);
+        profileBio = findViewById(R.id.profileBio);
 
-        String uid = currentUser.getUid();
+        postsCount = findViewById(R.id.postsCount);
+        followersCount = findViewById(R.id.followersCount);
+        followingCount = findViewById(R.id.followingCount);
 
-        firestore.collection("users")
-                .document(uid)
-                .get()
-                .addOnSuccessListener(document -> {
+        emptyProfileText =
+                findViewById(R.id.emptyProfileText);
 
-                    if (!document.exists()) {
+        backButton =
+                findViewById(R.id.backButton);
 
-                        showDefaultProfile();
-                        return;
-                    }
-
-                    String name =
-                            document.getString("name");
-
-                    String username =
-                            document.getString("username");
-
-                    String bio =
-                            document.getString("bio");
-
-                    nameText.setText(
-                            TextUtils.isEmpty(name)
-                                    ? "Sanskriti Sathi User"
-                                    : name
-                    );
-
-                    if (TextUtils.isEmpty(username)) {
-
-                        usernameText.setText("@user");
-
-                    } else if (username.startsWith("@")) {
-
-                        usernameText.setText(username);
-
-                    } else {
-
-                        usernameText.setText(
-                                "@" + username
-                        );
-                    }
-
-                    bioText.setText(
-                            TextUtils.isEmpty(bio)
-                                    ? "Apni Sanskriti se judein."
-                                    : bio
-                    );
-
-                    postsCountText.setText(
-                            String.valueOf(
-                                    getLongValue(
-                                            document.getLong("posts")
-                                    )
-                            )
-                    );
-
-                    followersCountText.setText(
-                            String.valueOf(
-                                    getLongValue(
-                                            document.getLong("followers")
-                                    )
-                            )
-                    );
-
-                    followingCountText.setText(
-                            String.valueOf(
-                                    getLongValue(
-                                            document.getLong("following")
-                                    )
-                            )
-                    );
-
-                    String imageUrl =
-                            document.getString(
-                                    "profileImageUrl"
-                            );
-
-                    if (!TextUtils.isEmpty(imageUrl)) {
-
-                        Glide.with(this)
-                                .load(imageUrl)
-                                .placeholder(
-                                        R.drawable.icon_foreground
-                                )
-                                .error(
-                                        R.drawable.icon_foreground
-                                )
-                                .circleCrop()
-                                .into(profileImage);
-
-                    } else {
-
-                        profileImage.setImageResource(
-                                R.drawable.icon_foreground
-                        );
-                    }
-
-                })
-                .addOnFailureListener(e -> {
-
-                    Toast.makeText(
-                            MyProfileActivity.this,
-                            "Profile load nahi hui.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                });
+        settingsButton =
+                findViewById(R.id.settingsButton);
     }
 
-    // ==============================
-    // DEFAULT PROFILE
-    // ==============================
+    private void setupListeners() {
 
-    private void showDefaultProfile() {
+        if (backButton != null) {
+            backButton.setOnClickListener(v ->
+                    finish()
+            );
+        }
 
-        nameText.setText(
-                "Sanskriti Sathi User"
-        );
+        if (settingsButton != null) {
+            settingsButton.setOnClickListener(v -> {
 
-        usernameText.setText("@user");
+                Intent intent =
+                        new Intent(
+                                MyProfileActivity.this,
+                                SettingsActivity.class
+                        );
 
-        bioText.setText(
-                "Apni Sanskriti se judein."
-        );
+                startActivity(intent);
+            });
+        }
 
-        postsCountText.setText("0");
-        followersCountText.setText("0");
-        followingCountText.setText("0");
+        View editButton =
+                findViewById(R.id.editProfileButton);
 
-        profileImage.setImageResource(
-                R.drawable.icon_foreground
-        );
+        if (editButton != null) {
+            editButton.setOnClickListener(v -> {
+
+                Intent intent =
+                        new Intent(
+                                MyProfileActivity.this,
+                                ProfileActivity.class
+                        );
+
+                startActivity(intent);
+            });
+        }
+
+        View shareButton =
+                findViewById(R.id.shareProfileButton);
+
+        if (shareButton != null) {
+            shareButton.setOnClickListener(v ->
+                    shareProfile()
+            );
+        }
     }
 
-    // ==============================
-    // PROFILE PHOTO UPLOAD
-    // ==============================
+    private void loadProfile() {
 
-    private void uploadProfilePhoto(Uri imageUri) {
+        String userId =
+                SupabaseAuthManager.getUserId(this);
 
-        FirebaseUser currentUser =
-                auth.getCurrentUser();
+        String accessToken =
+                SupabaseAuthManager.getAccessToken(this);
 
-        if (currentUser == null) {
+        if (TextUtils.isEmpty(userId)
+                || TextUtils.isEmpty(accessToken)) {
+
+            openLogin();
             return;
         }
 
-        String uid =
-                currentUser.getUid();
+        new Thread(() -> {
 
-        Toast.makeText(
-                this,
-                "Profile photo upload ho rahi hai...",
-                Toast.LENGTH_SHORT
-        ).show();
+            HttpURLConnection connection = null;
 
-        StorageReference imageReference =
-                storage.getReference()
-                        .child(
-                                "profile_images/"
-                                        + uid
-                                        + ".jpg"
+            try {
+
+                String endpoint =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/profiles"
+                                + "?id=eq."
+                                + userId
+                                + "&select=name,username,bio,profile_image_url";
+
+                URL url = new URL(endpoint);
+
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod("GET");
+
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
+
+                connection.setRequestProperty(
+                        "apikey",
+                        SupabaseConfig.PUBLISHABLE_KEY
+                );
+
+                connection.setRequestProperty(
+                        "Authorization",
+                        "Bearer " + accessToken
+                );
+
+                connection.setRequestProperty(
+                        "Accept",
+                        "application/json"
+                );
+
+                int responseCode =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(
+                                connection,
+                                responseCode
                         );
 
-        imageReference.putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> {
+                if (responseCode >= 200
+                        && responseCode < 300) {
 
-                    imageReference
-                            .getDownloadUrl()
-                            .addOnSuccessListener(downloadUri -> {
+                    runOnUiThread(() ->
+                            displayProfile(response)
+                    );
 
-                                String imageUrl =
-                                        downloadUri.toString();
+                } else {
 
-                                firestore.collection("users")
-                                        .document(uid)
-                                        .update(
-                                                "profileImageUrl",
-                                                imageUrl
-                                        )
-                                        .addOnSuccessListener(unused -> {
+                    runOnUiThread(() ->
+                            Toast.makeText(
+                                    MyProfileActivity.this,
+                                    "Profile load failed",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                    );
+                }
 
-                                            Glide.with(
-                                                    MyProfileActivity.this
-                                            )
-                                                    .load(imageUrl)
-                                                    .circleCrop()
-                                                    .into(profileImage);
+            } catch (Exception e) {
 
-                                            Toast.makeText(
-                                                    MyProfileActivity.this,
-                                                    "Profile photo update ho gayi ✅",
-                                                    Toast.LENGTH_SHORT
-                                            ).show();
-
-                                        })
-                                        .addOnFailureListener(e ->
-                                                Toast.makeText(
-                                                        MyProfileActivity.this,
-                                                        "Photo URL save nahi hua.",
-                                                        Toast.LENGTH_SHORT
-                                                ).show()
-                                        );
-
-                            });
-
-                })
-                .addOnFailureListener(e -> {
-
-                    Toast.makeText(
-                            MyProfileActivity.this,
-                            "Profile photo upload failed.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                });
-    }
-
-    // ==============================
-    // HIGHLIGHTS
-    // ==============================
-
-    private void createNewHighlight() {
-
-        Toast.makeText(
-                this,
-                "New Highlight feature ready hai ✨",
-                Toast.LENGTH_SHORT
-        ).show();
-
-        /*
-         * Next phase:
-         * User apni Story se Highlight create karega.
-         * Firebase me highlight data save hoga.
-         */
-    }
-
-    private void openTempleHighlight() {
-
-        Toast.makeText(
-                this,
-                "Temples Highlight",
-                Toast.LENGTH_SHORT
-        ).show();
-
-        Intent intent =
-                new Intent(
-                        MyProfileActivity.this,
-                        TempleActivity.class
+                runOnUiThread(() ->
+                        Toast.makeText(
+                                MyProfileActivity.this,
+                                "Network error",
+                                Toast.LENGTH_SHORT
+                        ).show()
                 );
 
-        startActivity(intent);
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
     }
 
-    private void openDeviDevtaHighlight() {
+    private void displayProfile(String response) {
 
-        Toast.makeText(
-                this,
-                "Devi Devta Highlight",
-                Toast.LENGTH_SHORT
-        ).show();
+        try {
 
-        Intent intent =
-                new Intent(
-                        MyProfileActivity.this,
-                        DeviDevtaActivity.class
+            JSONArray array =
+                    new JSONArray(response);
+
+            if (array.length() == 0) {
+
+                showEmptyProfile();
+                return;
+            }
+
+            JSONObject profile =
+                    array.getJSONObject(0);
+
+            String name =
+                    profile.optString(
+                            "name",
+                            ""
+                    );
+
+            String username =
+                    profile.optString(
+                            "username",
+                            ""
+                    );
+
+            String bio =
+                    profile.optString(
+                            "bio",
+                            ""
+                    );
+
+            if (TextUtils.isEmpty(name)) {
+                name = "Sanskriti Sathi User";
+            }
+
+            if (TextUtils.isEmpty(username)) {
+                username = "username";
+            }
+
+            if (TextUtils.isEmpty(bio)) {
+                bio = "Apni Sanskriti • Apna Gaurav";
+            }
+
+            profileName.setText(name);
+
+            profileUsername.setText(
+                    "@" + username.replace("@", "")
+            );
+
+            profileBio.setText(bio);
+
+            if (emptyProfileText != null) {
+                emptyProfileText.setVisibility(
+                        View.GONE
                 );
+            }
 
-        startActivity(intent);
+        } catch (Exception e) {
+
+            showEmptyProfile();
+        }
     }
 
-    // ==============================
-    // TABS
-    // ==============================
+    private void showEmptyProfile() {
 
-    private void selectTab(ImageView selected) {
-
-        updateTabColors(selected);
-
-        String message;
-
-        if (selected == postsTab) {
-
-            message = "Posts";
-
-        } else if (selected == reelsTab) {
-
-            message = "Reels";
-
-        } else if (selected == repostsTab) {
-
-            message = "Reposts";
-
-        } else {
-
-            message = "Tagged";
+        if (profileName != null) {
+            profileName.setText(
+                    "Complete Your Profile"
+            );
         }
 
-        Toast.makeText(
-                this,
-                message,
-                Toast.LENGTH_SHORT
-        ).show();
+        if (profileUsername != null) {
+            profileUsername.setText(
+                    "@username"
+            );
+        }
+
+        if (profileBio != null) {
+            profileBio.setText(
+                    "Apni Sanskriti • Apna Gaurav"
+            );
+        }
+
+        if (emptyProfileText != null) {
+            emptyProfileText.setText(
+                    "Profile data abhi available nahi hai"
+            );
+
+            emptyProfileText.setVisibility(
+                    View.VISIBLE
+            );
+        }
     }
-
-    private void updateTabColors(ImageView selected) {
-
-        postsTab.setImageTintList(
-                ColorStateList.valueOf(
-                        selected == postsTab
-                                ? ACTIVE_COLOR
-                                : INACTIVE_COLOR
-                )
-        );
-
-        reelsTab.setImageTintList(
-                ColorStateList.valueOf(
-                        selected == reelsTab
-                                ? ACTIVE_COLOR
-                                : INACTIVE_COLOR
-                )
-        );
-
-        repostsTab.setImageTintList(
-                ColorStateList.valueOf(
-                        selected == repostsTab
-                                ? ACTIVE_COLOR
-                                : INACTIVE_COLOR
-                )
-        );
-
-        taggedTab.setImageTintList(
-                ColorStateList.valueOf(
-                        selected == taggedTab
-                                ? ACTIVE_COLOR
-                                : INACTIVE_COLOR
-                )
-        );
-    }
-
-    // ==============================
-    // SHARE PROFILE
-    // ==============================
 
     private void shareProfile() {
 
-        FirebaseUser currentUser =
-                auth.getCurrentUser();
-
-        if (currentUser == null) {
-            return;
-        }
+        String name =
+                profileName != null
+                        ? profileName.getText().toString()
+                        : "Sanskriti Sathi User";
 
         String username =
-                usernameText.getText().toString();
+                profileUsername != null
+                        ? profileUsername.getText().toString()
+                        : "@username";
 
         String shareText =
-                "Sanskriti Sathi par "
+                name
+                        + "\n"
                         + username
-                        + " ki profile dekhein.";
+                        + "\n\n"
+                        + "Sanskriti Sathi par mera profile dekhiye.";
 
         Intent shareIntent =
                 new Intent(Intent.ACTION_SEND);
@@ -598,16 +363,72 @@ public class MyProfileActivity extends AppCompatActivity {
         );
     }
 
-    // ==============================
-    // SAFE LONG VALUE
-    // ==============================
+    private void openLogin() {
 
-    private long getLongValue(Long value) {
+        Intent intent =
+                new Intent(
+                        MyProfileActivity.this,
+                        LoginActivity.class
+                );
 
-        if (value == null) {
-            return 0;
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
+    }
+
+    private String readResponse(
+            HttpURLConnection connection,
+            int responseCode
+    ) {
+
+        try {
+
+            InputStream stream;
+
+            if (responseCode >= 200
+                    && responseCode < 400) {
+
+                stream =
+                        connection.getInputStream();
+
+            } else {
+
+                stream =
+                        connection.getErrorStream();
+            }
+
+            if (stream == null) {
+                return "";
+            }
+
+            BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    stream,
+                                    StandardCharsets.UTF_8
+                            )
+                    );
+
+            StringBuilder result =
+                    new StringBuilder();
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+
+            reader.close();
+
+            return result.toString();
+
+        } catch (Exception e) {
+
+            return "";
         }
-
-        return value;
     }
 }
