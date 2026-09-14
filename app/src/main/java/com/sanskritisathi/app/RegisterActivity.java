@@ -3,7 +3,7 @@ package com.sanskritisathi.app;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.text.Patterns;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -55,7 +55,9 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         if (loginText != null) {
-            loginText.setOnClickListener(v -> finish());
+            loginText.setOnClickListener(
+                    v -> finish()
+            );
         }
     }
 
@@ -64,8 +66,7 @@ public class RegisterActivity extends AppCompatActivity {
         String name = getName();
         String email = getEmail();
         String password = getPassword();
-        String confirmPassword =
-                getConfirmPassword();
+        String confirmPassword = getConfirmPassword();
 
         if (!validateInput(
                 name,
