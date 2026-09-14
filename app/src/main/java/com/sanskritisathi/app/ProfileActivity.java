@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -28,6 +29,8 @@ public class ProfileActivity extends AppCompatActivity {
     private Button saveProfileButton;
     private Button logoutButton;
 
+    private boolean loadingProfile = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +38,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         bindViews();
+        setupListeners();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
             openLogin();
@@ -42,11 +46,19 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         loadProfile();
-        setupListeners();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (SupabaseAuthManager.isLoggedIn(this)
+                && !loadingProfile) {
+            loadProfile();
+        }
     }
 
     private void bindViews() {
-
         nameInput = findViewById(R.id.nameInput);
         usernameInput = findViewById(R.id.usernameInput);
         bioInput = findViewById(R.id.bioInput);
@@ -73,24 +85,27 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    // =========================================================
-    // LOAD PROFILE
-    // =========================================================
-
     private void loadProfile() {
 
         String userId =
                 SupabaseAuthManager.getUserId(this);
 
-        if (TextUtils.isEmpty(userId)) {
+        String accessToken =
+                SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(userId)
+                || TextUtils.isEmpty(accessToken)) {
+
             Toast.makeText(
                     this,
-                    "User session nahi mili",
+                    "Login session nahi mili",
                     Toast.LENGTH_SHORT
             ).show();
 
             return;
         }
+
+        loadingProfile = true;
 
         new Thread(() -> {
 
@@ -103,12 +118,13 @@ public class ProfileActivity extends AppCompatActivity {
                                 + "/rest/v1/profiles"
                                 + "?id=eq."
                                 + userId
-                                + "&select=*";
+                                + "&select=id,email,name,username,bio,profile_image_url";
 
                 URL url = new URL(endpoint);
 
                 connection =
-                        (HttpURLConnection) url.openConnection();
+                        (HttpURLConnection)
+                                url.openConnection();
 
                 connection.setRequestMethod("GET");
                 connection.setConnectTimeout(15000);
@@ -121,9 +137,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                 connection.setRequestProperty(
                         "Authorization",
-                        "Bearer "
-                                + SupabaseAuthManager
-                                .getAccessToken(this)
+                        "Bearer " + accessToken
                 );
 
                 connection.setRequestProperty(
@@ -143,30 +157,39 @@ public class ProfileActivity extends AppCompatActivity {
                 if (responseCode >= 200
                         && responseCode < 300) {
 
-                    runOnUiThread(() ->
-                            applyProfile(response)
-                    );
+                    runOnUiThread(() -> {
+
+                        loadingProfile = false;
+
+                        displayProfile(response);
+                    });
 
                 } else {
 
-                    runOnUiThread(() ->
-                            Toast.makeText(
-                                    ProfileActivity.this,
-                                    "Profile load nahi hui",
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
+                    runOnUiThread(() -> {
+
+                        loadingProfile = false;
+
+                        Toast.makeText(
+                                ProfileActivity.this,
+                                "Profile load failed",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    });
                 }
 
             } catch (Exception e) {
 
-                runOnUiThread(() ->
-                        Toast.makeText(
-                                ProfileActivity.this,
-                                "Network error",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                runOnUiThread(() -> {
+
+                    loadingProfile = false;
+
+                    Toast.makeText(
+                            ProfileActivity.this,
+                            "Network error",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
 
             } finally {
 
@@ -178,19 +201,25 @@ public class ProfileActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void applyProfile(String response) {
+    private void displayProfile(String response) {
 
         try {
 
-            if (response == null
-                    || response.trim().equals("[]")) {
+            if (TextUtils.isEmpty(response)) {
                 return;
             }
 
-            org.json.JSONArray array =
-                    new org.json.JSONArray(response);
+            JSONArray array =
+                    new JSONArray(response);
 
             if (array.length() == 0) {
+
+                Toast.makeText(
+                        this,
+                        "Profile abhi create nahi hui",
+                        Toast.LENGTH_SHORT
+                ).show();
+
                 return;
             }
 
@@ -206,17 +235,9 @@ public class ProfileActivity extends AppCompatActivity {
             String bio =
                     profile.optString("bio", "");
 
-            if (!TextUtils.isEmpty(name)) {
-                nameInput.setText(name);
-            }
-
-            if (!TextUtils.isEmpty(username)) {
-                usernameInput.setText(username);
-            }
-
-            if (!TextUtils.isEmpty(bio)) {
-                bioInput.setText(bio);
-            }
+            nameInput.setText(name);
+            usernameInput.setText(username);
+            bioInput.setText(bio);
 
         } catch (Exception e) {
 
@@ -227,10 +248,6 @@ public class ProfileActivity extends AppCompatActivity {
             ).show();
         }
     }
-
-    // =========================================================
-    // SAVE PROFILE
-    // =========================================================
 
     private void saveProfile() {
 
@@ -251,41 +268,29 @@ public class ProfileActivity extends AppCompatActivity {
                         .trim();
 
         if (TextUtils.isEmpty(name)) {
-
-            nameInput.setError(
-                    "Name डालें"
-            );
-
+            nameInput.setError("Name डालें");
             nameInput.requestFocus();
             return;
         }
 
         if (TextUtils.isEmpty(username)) {
-
-            usernameInput.setError(
-                    "Username डालें"
-            );
-
+            usernameInput.setError("Username डालें");
             usernameInput.requestFocus();
             return;
         }
 
         if (username.contains(" ")) {
-
             usernameInput.setError(
                     "Username में space नहीं होना चाहिए"
             );
-
             usernameInput.requestFocus();
             return;
         }
 
         if (username.length() < 3) {
-
             usernameInput.setError(
                     "Username कम से कम 3 characters का होना चाहिए"
             );
-
             usernameInput.requestFocus();
             return;
         }
@@ -296,7 +301,11 @@ public class ProfileActivity extends AppCompatActivity {
         String email =
                 SupabaseAuthManager.getUserEmail(this);
 
-        if (TextUtils.isEmpty(userId)) {
+        String accessToken =
+                SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(userId)
+                || TextUtils.isEmpty(accessToken)) {
 
             Toast.makeText(
                     this,
@@ -308,7 +317,7 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        setSaveEnabled(false);
+        setButtonsEnabled(false);
 
         new Thread(() -> {
 
@@ -337,19 +346,10 @@ public class ProfileActivity extends AppCompatActivity {
                         (HttpURLConnection)
                                 url.openConnection();
 
-                connection.setRequestMethod(
-                        "POST"
-                );
-
+                connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
-
-                connection.setConnectTimeout(
-                        15000
-                );
-
-                connection.setReadTimeout(
-                        20000
-                );
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
 
                 connection.setRequestProperty(
                         "apikey",
@@ -358,9 +358,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                 connection.setRequestProperty(
                         "Authorization",
-                        "Bearer "
-                                + SupabaseAuthManager
-                                .getAccessToken(this)
+                        "Bearer " + accessToken
                 );
 
                 connection.setRequestProperty(
@@ -370,7 +368,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                 connection.setRequestProperty(
                         "Prefer",
-                        "resolution=merge-duplicates"
+                        "resolution=merge-duplicates,return=representation"
                 );
 
                 byte[] bytes =
@@ -400,7 +398,9 @@ public class ProfileActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> {
 
-                        setSaveEnabled(true);
+                        setButtonsEnabled(true);
+
+                        displayProfile(response);
 
                         Toast.makeText(
                                 ProfileActivity.this,
@@ -413,7 +413,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                     runOnUiThread(() -> {
 
-                        setSaveEnabled(true);
+                        setButtonsEnabled(true);
 
                         Toast.makeText(
                                 ProfileActivity.this,
@@ -428,7 +428,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
 
-                    setSaveEnabled(true);
+                    setButtonsEnabled(true);
 
                     Toast.makeText(
                             ProfileActivity.this,
@@ -446,10 +446,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         }).start();
     }
-
-    // =========================================================
-    // LOGOUT
-    // =========================================================
 
     private void logout() {
 
@@ -483,14 +479,9 @@ public class ProfileActivity extends AppCompatActivity {
                             String message
                     ) {
 
-                        /*
-                         * Local session clear karke bhi
-                         * user ko login screen par bhejenge.
-                         */
-                        SupabaseAuthManager
-                                .clearSession(
-                                        ProfileActivity.this
-                                );
+                        SupabaseAuthManager.clearSession(
+                                ProfileActivity.this
+                        );
 
                         setButtonsEnabled(true);
 
@@ -499,10 +490,6 @@ public class ProfileActivity extends AppCompatActivity {
                 }
         );
     }
-
-    // =========================================================
-    // LOGIN
-    // =========================================================
 
     private void openLogin() {
 
@@ -521,47 +508,16 @@ public class ProfileActivity extends AppCompatActivity {
         finish();
     }
 
-    // =========================================================
-    // BUTTON STATE
-    // =========================================================
-
-    private void setSaveEnabled(
-            boolean enabled
-    ) {
+    private void setButtonsEnabled(boolean enabled) {
 
         if (saveProfileButton != null) {
-            saveProfileButton.setEnabled(
-                    enabled
-            );
+            saveProfileButton.setEnabled(enabled);
         }
 
         if (logoutButton != null) {
-            logoutButton.setEnabled(
-                    enabled
-            );
+            logoutButton.setEnabled(enabled);
         }
     }
-
-    private void setButtonsEnabled(
-            boolean enabled
-    ) {
-
-        if (saveProfileButton != null) {
-            saveProfileButton.setEnabled(
-                    enabled
-            );
-        }
-
-        if (logoutButton != null) {
-            logoutButton.setEnabled(
-                    enabled
-            );
-        }
-    }
-
-    // =========================================================
-    // HTTP RESPONSE
-    // =========================================================
 
     private String readResponse(
             HttpURLConnection connection,
@@ -601,11 +557,7 @@ public class ProfileActivity extends AppCompatActivity {
 
             String line;
 
-            while (
-                    (line = reader.readLine())
-                            != null
-            ) {
-
+            while ((line = reader.readLine()) != null) {
                 result.append(line);
             }
 
