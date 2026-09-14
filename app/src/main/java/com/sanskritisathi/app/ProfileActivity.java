@@ -1,5 +1,6 @@
 package com.sanskritisathi.app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -8,103 +9,230 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
+import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private EditText nameInput;
     private EditText usernameInput;
     private EditText bioInput;
-    private Button saveProfileButton;
 
-    private FirebaseAuth firebaseAuth;
-    private FirebaseFirestore firestore;
+    private Button saveProfileButton;
+    private Button logoutButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_profile);
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
+        bindViews();
+
+        if (!SupabaseAuthManager.isLoggedIn(this)) {
+            openLogin();
+            return;
+        }
+
+        loadProfile();
+        setupListeners();
+    }
+
+    private void bindViews() {
 
         nameInput = findViewById(R.id.nameInput);
         usernameInput = findViewById(R.id.usernameInput);
         bioInput = findViewById(R.id.bioInput);
-        saveProfileButton = findViewById(R.id.saveProfileButton);
 
-        FirebaseUser currentUser =
-                firebaseAuth.getCurrentUser();
+        saveProfileButton =
+                findViewById(R.id.saveProfileButton);
 
-        if (currentUser == null) {
+        logoutButton =
+                findViewById(R.id.logoutButton);
+    }
+
+    private void setupListeners() {
+
+        if (saveProfileButton != null) {
+            saveProfileButton.setOnClickListener(
+                    v -> saveProfile()
+            );
+        }
+
+        if (logoutButton != null) {
+            logoutButton.setOnClickListener(
+                    v -> logout()
+            );
+        }
+    }
+
+    // =========================================================
+    // LOAD PROFILE
+    // =========================================================
+
+    private void loadProfile() {
+
+        String userId =
+                SupabaseAuthManager.getUserId(this);
+
+        if (TextUtils.isEmpty(userId)) {
             Toast.makeText(
                     this,
-                    "Pehle Login karein",
+                    "User session nahi mili",
                     Toast.LENGTH_SHORT
             ).show();
 
-            finish();
             return;
         }
 
-        loadProfile(currentUser.getUid());
+        new Thread(() -> {
 
-        saveProfileButton.setOnClickListener(
-                v -> saveProfile(currentUser)
-        );
-    }
+            HttpURLConnection connection = null;
 
-    private void loadProfile(String uid) {
+            try {
 
-        firestore.collection("users")
-                .document(uid)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
+                String endpoint =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/profiles"
+                                + "?id=eq."
+                                + userId
+                                + "&select=*";
 
-                    if (!documentSnapshot.exists()) {
-                        return;
-                    }
+                URL url = new URL(endpoint);
 
-                    String name =
-                            documentSnapshot.getString("name");
+                connection =
+                        (HttpURLConnection) url.openConnection();
 
-                    String username =
-                            documentSnapshot.getString("username");
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
 
-                    String bio =
-                            documentSnapshot.getString("bio");
+                connection.setRequestProperty(
+                        "apikey",
+                        SupabaseConfig.PUBLISHABLE_KEY
+                );
 
-                    if (!TextUtils.isEmpty(name)) {
-                        nameInput.setText(name);
-                    }
+                connection.setRequestProperty(
+                        "Authorization",
+                        "Bearer "
+                                + SupabaseAuthManager
+                                .getAccessToken(this)
+                );
 
-                    if (!TextUtils.isEmpty(username)) {
-                        usernameInput.setText(username);
-                    }
+                connection.setRequestProperty(
+                        "Accept",
+                        "application/json"
+                );
 
-                    if (!TextUtils.isEmpty(bio)) {
-                        bioInput.setText(bio);
-                    }
-                })
-                .addOnFailureListener(e ->
+                int responseCode =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(
+                                connection,
+                                responseCode
+                        );
+
+                if (responseCode >= 200
+                        && responseCode < 300) {
+
+                    runOnUiThread(() ->
+                            applyProfile(response)
+                    );
+
+                } else {
+
+                    runOnUiThread(() ->
+                            Toast.makeText(
+                                    ProfileActivity.this,
+                                    "Profile load nahi hui",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                    );
+                }
+
+            } catch (Exception e) {
+
+                runOnUiThread(() ->
                         Toast.makeText(
-                                this,
-                                "Profile load nahi hui",
+                                ProfileActivity.this,
+                                "Network error",
                                 Toast.LENGTH_SHORT
                         ).show()
                 );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
     }
 
-    private void saveProfile(
-            FirebaseUser currentUser
-    ) {
+    private void applyProfile(String response) {
+
+        try {
+
+            if (response == null
+                    || response.trim().equals("[]")) {
+                return;
+            }
+
+            org.json.JSONArray array =
+                    new org.json.JSONArray(response);
+
+            if (array.length() == 0) {
+                return;
+            }
+
+            JSONObject profile =
+                    array.getJSONObject(0);
+
+            String name =
+                    profile.optString("name", "");
+
+            String username =
+                    profile.optString("username", "");
+
+            String bio =
+                    profile.optString("bio", "");
+
+            if (!TextUtils.isEmpty(name)) {
+                nameInput.setText(name);
+            }
+
+            if (!TextUtils.isEmpty(username)) {
+                usernameInput.setText(username);
+            }
+
+            if (!TextUtils.isEmpty(bio)) {
+                bioInput.setText(bio);
+            }
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Profile data read nahi hui",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+    }
+
+    // =========================================================
+    // SAVE PROFILE
+    // =========================================================
+
+    private void saveProfile() {
 
         String name =
                 nameInput.getText()
@@ -114,7 +242,8 @@ public class ProfileActivity extends AppCompatActivity {
         String username =
                 usernameInput.getText()
                         .toString()
-                        .trim();
+                        .trim()
+                        .replace("@", "");
 
         String bio =
                 bioInput.getText()
@@ -141,17 +270,6 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        /*
-         * Username ko clean format mein rakhenge.
-         * Example:
-         * @raja123 -> raja123
-         */
-        username =
-                username.replace(
-                        "@",
-                        ""
-                ).trim();
-
         if (username.contains(" ")) {
 
             usernameInput.setError(
@@ -172,132 +290,332 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        /*
-         * Search ke liye normalized fields.
-         */
-        String nameLower =
-                name.toLowerCase(
-                        Locale.ROOT
+        String userId =
+                SupabaseAuthManager.getUserId(this);
+
+        String email =
+                SupabaseAuthManager.getUserEmail(this);
+
+        if (TextUtils.isEmpty(userId)) {
+
+            Toast.makeText(
+                    this,
+                    "Login session nahi mili",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            openLogin();
+            return;
+        }
+
+        setSaveEnabled(false);
+
+        new Thread(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+
+                JSONObject body =
+                        new JSONObject();
+
+                body.put("id", userId);
+                body.put("email", email);
+                body.put("name", name);
+                body.put("username", username);
+                body.put("bio", bio);
+
+                String endpoint =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/profiles"
+                                + "?on_conflict=id";
+
+                URL url =
+                        new URL(endpoint);
+
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod(
+                        "POST"
                 );
 
-        String usernameLower =
-                username.toLowerCase(
-                        Locale.ROOT
+                connection.setDoOutput(true);
+
+                connection.setConnectTimeout(
+                        15000
                 );
 
-        Map<String, Object> profile =
-                new HashMap<>();
+                connection.setReadTimeout(
+                        20000
+                );
 
-        profile.put(
-                "uid",
-                currentUser.getUid()
-        );
+                connection.setRequestProperty(
+                        "apikey",
+                        SupabaseConfig.PUBLISHABLE_KEY
+                );
 
-        profile.put(
-                "name",
-                name
-        );
+                connection.setRequestProperty(
+                        "Authorization",
+                        "Bearer "
+                                + SupabaseAuthManager
+                                .getAccessToken(this)
+                );
 
-        profile.put(
-                "nameLower",
-                nameLower
-        );
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "application/json"
+                );
 
-        profile.put(
-                "username",
-                username
-        );
+                connection.setRequestProperty(
+                        "Prefer",
+                        "resolution=merge-duplicates"
+                );
 
-        profile.put(
-                "usernameLower",
-                usernameLower
-        );
+                byte[] bytes =
+                        body.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
 
-        profile.put(
-                "email",
-                currentUser.getEmail()
-        );
+                OutputStream output =
+                        connection.getOutputStream();
 
-        profile.put(
-                "bio",
-                bio
-        );
+                output.write(bytes);
+                output.flush();
+                output.close();
 
-        /*
-         * Existing profile photo URL preserve karenge.
-         * Isse profile save karne par photo URL blank nahi hoga.
-         */
-        firestore.collection("users")
-                .document(currentUser.getUid())
-                .get()
-                .addOnSuccessListener(existingDocument -> {
+                int responseCode =
+                        connection.getResponseCode();
 
-                    String oldProfileImageUrl =
-                            existingDocument.getString(
-                                    "profileImageUrl"
-                            );
+                String response =
+                        readResponse(
+                                connection,
+                                responseCode
+                        );
 
-                    if (oldProfileImageUrl == null) {
-                        oldProfileImageUrl = "";
-                    }
+                if (responseCode >= 200
+                        && responseCode < 300) {
 
-                    profile.put(
-                            "profileImageUrl",
-                            oldProfileImageUrl
-                    );
+                    runOnUiThread(() -> {
 
-                    profile.put(
-                            "updatedAt",
-                            FieldValue.serverTimestamp()
-                    );
+                        setSaveEnabled(true);
 
-                    saveProfileToFirestore(
-                            currentUser.getUid(),
-                            profile
-                    );
-                })
-                .addOnFailureListener(e -> {
+                        Toast.makeText(
+                                ProfileActivity.this,
+                                "Profile save ho gayi ✅",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    });
+
+                } else {
+
+                    runOnUiThread(() -> {
+
+                        setSaveEnabled(true);
+
+                        Toast.makeText(
+                                ProfileActivity.this,
+                                "Profile save failed: "
+                                        + response,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    });
+                }
+
+            } catch (Exception e) {
+
+                runOnUiThread(() -> {
+
+                    setSaveEnabled(true);
 
                     Toast.makeText(
-                            this,
-                            "Profile data load nahi hua",
+                            ProfileActivity.this,
+                            "Network error",
                             Toast.LENGTH_SHORT
                     ).show();
                 });
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
     }
 
-    private void saveProfileToFirestore(
-            String uid,
-            Map<String, Object> profile
+    // =========================================================
+    // LOGOUT
+    // =========================================================
+
+    private void logout() {
+
+        setButtonsEnabled(false);
+
+        SupabaseAuthManager.logout(
+                this,
+                new SupabaseAuthManager.AuthCallback() {
+
+                    @Override
+                    public void onSuccess(
+                            String accessToken,
+                            String refreshToken,
+                            String userId,
+                            String userEmail
+                    ) {
+
+                        setButtonsEnabled(true);
+
+                        Toast.makeText(
+                                ProfileActivity.this,
+                                "Logout successful",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        openLogin();
+                    }
+
+                    @Override
+                    public void onError(
+                            String message
+                    ) {
+
+                        /*
+                         * Local session clear karke bhi
+                         * user ko login screen par bhejenge.
+                         */
+                        SupabaseAuthManager
+                                .clearSession(
+                                        ProfileActivity.this
+                                );
+
+                        setButtonsEnabled(true);
+
+                        openLogin();
+                    }
+                }
+        );
+    }
+
+    // =========================================================
+    // LOGIN
+    // =========================================================
+
+    private void openLogin() {
+
+        Intent intent =
+                new Intent(
+                        ProfileActivity.this,
+                        LoginActivity.class
+                );
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
+    }
+
+    // =========================================================
+    // BUTTON STATE
+    // =========================================================
+
+    private void setSaveEnabled(
+            boolean enabled
     ) {
 
-        saveProfileButton.setEnabled(false);
+        if (saveProfileButton != null) {
+            saveProfileButton.setEnabled(
+                    enabled
+            );
+        }
 
-        firestore.collection("users")
-                .document(uid)
-                .set(profile)
-                .addOnSuccessListener(unused -> {
+        if (logoutButton != null) {
+            logoutButton.setEnabled(
+                    enabled
+            );
+        }
+    }
 
-                    saveProfileButton.setEnabled(true);
+    private void setButtonsEnabled(
+            boolean enabled
+    ) {
 
-                    Toast.makeText(
-                            this,
-                            "Profile save ho gayi ✅",
-                            Toast.LENGTH_SHORT
-                    ).show();
+        if (saveProfileButton != null) {
+            saveProfileButton.setEnabled(
+                    enabled
+            );
+        }
 
-                    finish();
-                })
-                .addOnFailureListener(e -> {
+        if (logoutButton != null) {
+            logoutButton.setEnabled(
+                    enabled
+            );
+        }
+    }
 
-                    saveProfileButton.setEnabled(true);
+    // =========================================================
+    // HTTP RESPONSE
+    // =========================================================
 
-                    Toast.makeText(
-                            this,
-                            "Profile save nahi hui: "
-                                    + e.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
+    private String readResponse(
+            HttpURLConnection connection,
+            int responseCode
+    ) {
+
+        try {
+
+            InputStream stream;
+
+            if (responseCode >= 200
+                    && responseCode < 400) {
+
+                stream =
+                        connection.getInputStream();
+
+            } else {
+
+                stream =
+                        connection.getErrorStream();
+            }
+
+            if (stream == null) {
+                return "";
+            }
+
+            BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    stream,
+                                    StandardCharsets.UTF_8
+                            )
+                    );
+
+            StringBuilder result =
+                    new StringBuilder();
+
+            String line;
+
+            while (
+                    (line = reader.readLine())
+                            != null
+            ) {
+
+                result.append(line);
+            }
+
+            reader.close();
+
+            return result.toString();
+
+        } catch (Exception e) {
+
+            return "";
+        }
     }
 }
