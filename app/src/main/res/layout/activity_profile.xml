@@ -8,7 +8,6 @@
     android:orientation="vertical"
     android:background="#10151D">
 
-    <!-- TOP BAR -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -17,7 +16,6 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp">
 
-        <!-- BACK BUTTON -->
         <ImageButton
             android:id="@+id/backButton"
             android:layout_width="48dp"
@@ -28,7 +26,6 @@
             android:src="@drawable/ic_back"
             android:tint="#FFFFFF" />
 
-        <!-- CENTER TITLE -->
         <FrameLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -46,7 +43,6 @@
 
         </FrameLayout>
 
-        <!-- SETTINGS BUTTON -->
         <ImageButton
             android:id="@+id/settingsButton"
             android:layout_width="48dp"
@@ -59,7 +55,6 @@
 
     </LinearLayout>
 
-    <!-- CONTENT -->
     <ScrollView
         android:id="@+id/profileScrollView"
         android:layout_width="match_parent"
@@ -79,7 +74,6 @@
             android:paddingEnd="24dp"
             android:paddingBottom="36dp">
 
-            <!-- LOGO -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -89,7 +83,6 @@
                 android:textSize="42sp"
                 android:textStyle="bold" />
 
-            <!-- TITLE -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -100,17 +93,53 @@
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
-            <!-- SUBTITLE -->
+            <!-- PROFILE PHOTO -->
+
+            <ImageView
+                android:id="@+id/profileImageView"
+                android:layout_width="110dp"
+                android:layout_height="110dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/profile_circle_bg"
+                android:contentDescription="Profile Photo"
+                android:padding="3dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_profile" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/changePhotoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:text="Change Photo"
+                android:textAllCaps="false"
+                android:textColor="#D6A84F"
+                android:textSize="14sp"
+                app:backgroundTint="#252B35"
+                app:cornerRadius="14dp"
+                app:strokeColor="#D6A84F"
+                app:strokeWidth="1dp" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:gravity="center"
+                android:text="JPG / PNG • Profile photo"
+                android:textColor="#7F8793"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:gravity="center"
                 android:text="Apni pehchaan Sanskriti Sathi ke saath jodiye"
                 android:textColor="#AAB2BF"
                 android:textSize="14sp" />
 
-            <!-- NAME -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -136,7 +165,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- USERNAME -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -162,7 +190,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- BIO -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -190,7 +217,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- SAVE -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/saveProfileButton"
                 android:layout_width="match_parent"
@@ -204,7 +230,6 @@
                 app:backgroundTint="#D6A84F"
                 app:cornerRadius="16dp" />
 
-            <!-- LOGOUT -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/logoutButton"
                 android:layout_width="match_parent"
@@ -220,7 +245,6 @@
                 app:strokeColor="#D6A84F"
                 app:strokeWidth="1dp" />
 
-            <!-- BOTTOM DECORATION -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
