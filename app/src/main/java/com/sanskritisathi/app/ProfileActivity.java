@@ -147,9 +147,7 @@ public class ProfileActivity extends AppCompatActivity {
     private void openGallery() {
 
         Intent intent =
-                new Intent(
-                        Intent.ACTION_PICK
-                );
+                new Intent(Intent.ACTION_PICK);
 
         intent.setType("image/*");
 
@@ -219,24 +217,42 @@ public class ProfileActivity extends AppCompatActivity {
 
             try {
 
-                Bitmap bitmap =
+                InputStream inputStream =
+                        getContentResolver()
+                                .openInputStream(imageUri);
+
+                if (inputStream == null) {
+                    throw new Exception(
+                            "Image stream open nahi hua"
+                    );
+                }
+
+                Bitmap originalBitmap =
                         BitmapFactory.decodeStream(
-                                getContentResolver()
-                                        .openInputStream(
-                                                imageUri
-                                        )
+                                inputStream
                         );
 
-                if (bitmap == null) {
+                inputStream.close();
+
+                if (originalBitmap == null) {
                     throw new Exception(
                             "Image read nahi hui"
                     );
                 }
 
-                int maxSize = 1200;
+                /*
+                 * Profile photo ko 900px ke andar resize.
+                 * Isse Base64 request chhoti rahegi.
+                 */
+                int maxSize = 900;
 
-                int width = bitmap.getWidth();
-                int height = bitmap.getHeight();
+                int width =
+                        originalBitmap.getWidth();
+
+                int height =
+                        originalBitmap.getHeight();
+
+                Bitmap bitmap = originalBitmap;
 
                 if (width > maxSize
                         || height > maxSize) {
@@ -248,18 +264,24 @@ public class ProfileActivity extends AppCompatActivity {
                             );
 
                     int newWidth =
-                            Math.round(
-                                    width * ratio
+                            Math.max(
+                                    1,
+                                    Math.round(
+                                            width * ratio
+                                    )
                             );
 
                     int newHeight =
-                            Math.round(
-                                    height * ratio
+                            Math.max(
+                                    1,
+                                    Math.round(
+                                            height * ratio
+                                    )
                             );
 
                     bitmap =
                             Bitmap.createScaledBitmap(
-                                    bitmap,
+                                    originalBitmap,
                                     newWidth,
                                     newHeight,
                                     true
@@ -269,14 +291,51 @@ public class ProfileActivity extends AppCompatActivity {
                 ByteArrayOutputStream output =
                         new ByteArrayOutputStream();
 
-                bitmap.compress(
-                        Bitmap.CompressFormat.JPEG,
-                        85,
-                        output
-                );
+                /*
+                 * Quality 75:
+                 * profile photo ke liye sufficient
+                 * aur upload size chhota.
+                 */
+                boolean compressed =
+                        bitmap.compress(
+                                Bitmap.CompressFormat.JPEG,
+                                75,
+                                output
+                        );
+
+                if (!compressed) {
+                    throw new Exception(
+                            "JPEG compression failed"
+                    );
+                }
 
                 byte[] imageBytes =
                         output.toByteArray();
+
+                output.close();
+
+                if (bitmap != originalBitmap) {
+                    bitmap.recycle();
+                }
+
+                originalBitmap.recycle();
+
+                if (imageBytes.length == 0) {
+                    throw new Exception(
+                            "Image data empty hai"
+                    );
+                }
+
+                /*
+                 * Safety limit.
+                 * 1.5 MB se badi compressed image ko
+                 * upload nahi karenge.
+                 */
+                if (imageBytes.length > 1572864) {
+                    throw new Exception(
+                            "Photo size abhi bhi bahut badi hai"
+                    );
+                }
 
                 String base64 =
                         Base64.getEncoder()
@@ -285,11 +344,11 @@ public class ProfileActivity extends AppCompatActivity {
                                 );
 
                 String fileName =
-                        "profile_" +
-                                userId +
-                                "_" +
-                                System.currentTimeMillis() +
-                                ".jpg";
+                        "profile_"
+                                + userId
+                                + "_"
+                                + System.currentTimeMillis()
+                                + ".jpg";
 
                 JSONObject body =
                         new JSONObject();
@@ -335,11 +394,16 @@ public class ProfileActivity extends AppCompatActivity {
                 );
 
                 connection.setReadTimeout(
-                        60000
+                        90000
                 );
 
                 connection.setRequestProperty(
                         "Content-Type",
+                        "application/json; charset=UTF-8"
+                );
+
+                connection.setRequestProperty(
+                        "Accept",
                         "application/json"
                 );
 
@@ -358,6 +422,10 @@ public class ProfileActivity extends AppCompatActivity {
                                 .getBytes(
                                         StandardCharsets.UTF_8
                                 );
+
+                connection.setFixedLengthStreamingMode(
+                        bodyBytes.length
+                );
 
                 OutputStream stream =
                         connection.getOutputStream();
@@ -390,12 +458,25 @@ public class ProfileActivity extends AppCompatActivity {
                             );
 
                     if (!success) {
-                        throw new Exception(
+
+                        String error =
                                 result.optString(
                                         "error",
-                                        "B2 upload failed"
-                                )
-                        );
+                                        "Unknown B2 error"
+                                );
+
+                        String details =
+                                result.optString(
+                                        "details",
+                                        ""
+                                );
+
+                        if (!TextUtils.isEmpty(details)) {
+                            error +=
+                                    "\n" + details;
+                        }
+
+                        throw new Exception(error);
                     }
 
                     String fileNameFromB2 =
@@ -407,6 +488,7 @@ public class ProfileActivity extends AppCompatActivity {
                     if (TextUtils.isEmpty(
                             fileNameFromB2
                     )) {
+
                         throw new Exception(
                                 "B2 fileName missing"
                         );
@@ -421,9 +503,47 @@ public class ProfileActivity extends AppCompatActivity {
 
                 } else {
 
+                    String serverError;
+
+                    try {
+
+                        JSONObject errorJson =
+                                new JSONObject(response);
+
+                        String error =
+                                errorJson.optString(
+                                        "error",
+                                        ""
+                                );
+
+                        String details =
+                                errorJson.optString(
+                                        "details",
+                                        ""
+                                );
+
+                        serverError = error;
+
+                        if (!TextUtils.isEmpty(details)) {
+                            serverError +=
+                                    "\n" + details;
+                        }
+
+                    } catch (Exception ignored) {
+
+                        serverError = response;
+                    }
+
+                    if (TextUtils.isEmpty(serverError)) {
+                        serverError =
+                                "HTTP " + responseCode;
+                    }
+
                     throw new Exception(
-                            "Upload failed: "
-                                    + response
+                            "HTTP "
+                                    + responseCode
+                                    + ": "
+                                    + serverError
                     );
                 }
 
@@ -436,7 +556,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                     Toast.makeText(
                             ProfileActivity.this,
-                            "Photo upload failed: "
+                            "Photo upload failed:\n"
                                     + e.getMessage(),
                             Toast.LENGTH_LONG
                     ).show();
@@ -461,6 +581,23 @@ public class ProfileActivity extends AppCompatActivity {
 
         String accessToken =
                 SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(userId)
+                || TextUtils.isEmpty(accessToken)) {
+
+            runOnUiThread(() -> {
+
+                changePhotoButton.setEnabled(true);
+
+                Toast.makeText(
+                        this,
+                        "Login session nahi mili",
+                        Toast.LENGTH_LONG
+                ).show();
+            });
+
+            return;
+        }
 
         new Thread(() -> {
 
@@ -521,6 +658,11 @@ public class ProfileActivity extends AppCompatActivity {
                         "application/json"
                 );
 
+                connection.setRequestProperty(
+                        "Prefer",
+                        "return=representation"
+                );
+
                 byte[] bytes =
                         body.toString()
                                 .getBytes(
@@ -561,7 +703,9 @@ public class ProfileActivity extends AppCompatActivity {
                 } else {
 
                     throw new Exception(
-                            "Profile update failed: "
+                            "Profile update HTTP "
+                                    + responseCode
+                                    + ": "
                                     + response
                     );
                 }
@@ -575,7 +719,8 @@ public class ProfileActivity extends AppCompatActivity {
 
                     Toast.makeText(
                             ProfileActivity.this,
-                            "Photo reference save failed",
+                            "Photo reference save failed:\n"
+                                    + e.getMessage(),
                             Toast.LENGTH_LONG
                     ).show();
                 });
@@ -689,8 +834,9 @@ public class ProfileActivity extends AppCompatActivity {
 
                         Toast.makeText(
                                 ProfileActivity.this,
-                                "Profile load failed",
-                                Toast.LENGTH_SHORT
+                                "Profile load failed:\n"
+                                        + response,
+                                Toast.LENGTH_LONG
                         ).show();
                     });
                 }
@@ -703,8 +849,9 @@ public class ProfileActivity extends AppCompatActivity {
 
                     Toast.makeText(
                             ProfileActivity.this,
-                            "Network error",
-                            Toast.LENGTH_SHORT
+                            "Profile network error:\n"
+                                    + e.getMessage(),
+                            Toast.LENGTH_LONG
                     ).show();
                 });
 
@@ -714,7 +861,6 @@ public class ProfileActivity extends AppCompatActivity {
                     connection.disconnect();
                 }
             }
-
         }).start();
     }
 
@@ -732,7 +878,6 @@ public class ProfileActivity extends AppCompatActivity {
                     new JSONArray(response);
 
             if (array.length() == 0) {
-
                 return;
             }
 
@@ -770,8 +915,9 @@ public class ProfileActivity extends AppCompatActivity {
 
             Toast.makeText(
                     this,
-                    "Profile data read nahi hui",
-                    Toast.LENGTH_SHORT
+                    "Profile data read nahi hui:\n"
+                            + e.getMessage(),
+                    Toast.LENGTH_LONG
             ).show();
         }
     }
@@ -795,33 +941,41 @@ public class ProfileActivity extends AppCompatActivity {
                         .trim();
 
         if (TextUtils.isEmpty(name)) {
+
             nameInput.setError(
                     "Name डालें"
             );
+
             nameInput.requestFocus();
             return;
         }
 
         if (TextUtils.isEmpty(username)) {
+
             usernameInput.setError(
                     "Username डालें"
             );
+
             usernameInput.requestFocus();
             return;
         }
 
         if (username.contains(" ")) {
+
             usernameInput.setError(
                     "Username में space नहीं होना चाहिए"
             );
+
             usernameInput.requestFocus();
             return;
         }
 
         if (username.length() < 3) {
+
             usernameInput.setError(
                     "Username कम से कम 3 characters का होना चाहिए"
             );
+
             usernameInput.requestFocus();
             return;
         }
@@ -984,7 +1138,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                         Toast.makeText(
                                 ProfileActivity.this,
-                                "Profile save failed: "
+                                "Profile save failed:\n"
                                         + response,
                                 Toast.LENGTH_LONG
                         ).show();
@@ -999,8 +1153,9 @@ public class ProfileActivity extends AppCompatActivity {
 
                     Toast.makeText(
                             ProfileActivity.this,
-                            "Network error",
-                            Toast.LENGTH_SHORT
+                            "Network error:\n"
+                                    + e.getMessage(),
+                            Toast.LENGTH_LONG
                     ).show();
                 });
 
@@ -1072,6 +1227,7 @@ public class ProfileActivity extends AppCompatActivity {
         );
 
         startActivity(intent);
+
         finish();
     }
 
