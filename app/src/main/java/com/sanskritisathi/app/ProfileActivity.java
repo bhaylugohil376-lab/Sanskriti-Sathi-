@@ -327,12 +327,10 @@ public class ProfileActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     enablePhotoButton();
 
-                    Toast.makeText(
-                            ProfileActivity.this,
-                            "Photo upload failed:\n"
-                                    + safeMessage(e),
-                            Toast.LENGTH_LONG
-                    ).show();
+                    showUploadErrorDialog(
+                            "Photo upload failed",
+                            safeMessage(e)
+                    );
                 });
 
             } finally {
@@ -598,6 +596,45 @@ public class ProfileActivity extends AppCompatActivity {
         if (changePhotoButton != null) {
             changePhotoButton.setEnabled(true);
         }
+    }
+
+    private void showUploadErrorDialog(
+            String title,
+            String message
+    ) {
+        new androidx.appcompat.app.AlertDialog.Builder(
+                ProfileActivity.this
+        )
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .setNegativeButton(
+                        "Copy",
+                        (dialog, which) -> {
+                            android.content.ClipboardManager clipboard =
+                                    (android.content.ClipboardManager)
+                                            getSystemService(
+                                                    CLIPBOARD_SERVICE
+                                            );
+
+                            if (clipboard != null) {
+                                android.content.ClipData clip =
+                                        android.content.ClipData.newPlainText(
+                                                "B2 Upload Error",
+                                                message
+                                        );
+
+                                clipboard.setPrimaryClip(clip);
+
+                                Toast.makeText(
+                                        ProfileActivity.this,
+                                        "Error copied",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        }
+                )
+                .show();
     }
 
     private void saveProfileImageReference(
