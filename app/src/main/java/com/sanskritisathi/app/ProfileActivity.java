@@ -986,210 +986,6 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void loadPrivateProfilePhoto(String fileName) {
-
-        String accessToken =
-                SupabaseAuthManager.getAccessToken(this);
-
-        if (TextUtils.isEmpty(accessToken)
-                || TextUtils.isEmpty(fileName)) {
-            return;
-        }
-
-        new Thread(() -> {
-
-            HttpURLConnection connection = null;
-
-            try {
-
-                JSONObject body = new JSONObject();
-
-                body.put(
-                        "action",
-                        "get_profile_photo"
-                );
-
-                body.put(
-                        "fileName",
-                        fileName
-                );
-
-                URL url = new URL(
-                        SupabaseConfig.PROJECT_URL
-                                + "/functions/v1/bright-action"
-                );
-
-                connection =
-                        (HttpURLConnection) url.openConnection();
-
-                connection.setRequestMethod("POST");
-                connection.setDoOutput(true);
-                connection.setUseCaches(false);
-
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(30000);
-
-                connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json; charset=UTF-8"
-                );
-
-                connection.setRequestProperty(
-                        "Accept",
-                        "application/json"
-                );
-
-                connection.setRequestProperty(
-                        "apikey",
-                        SupabaseConfig.PUBLISHABLE_KEY
-                );
-
-                connection.setRequestProperty(
-                        "Authorization",
-                        "Bearer " + accessToken
-                );
-
-                byte[] bodyBytes =
-                        body.toString()
-                                .getBytes(StandardCharsets.UTF_8);
-
-                connection.setFixedLengthStreamingMode(
-                        bodyBytes.length
-                );
-
-                OutputStream output =
-                        connection.getOutputStream();
-
-                output.write(bodyBytes);
-                output.flush();
-                output.close();
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        readResponse(
-                                connection,
-                                responseCode
-                        );
-
-                if (responseCode < 200
-                        || responseCode >= 300) {
-                    return;
-                }
-
-                JSONObject result =
-                        new JSONObject(response);
-
-                if (!result.optBoolean(
-                        "success",
-                        false
-                )) {
-                    return;
-                }
-
-                String downloadUrl =
-                        result.optString(
-                                "downloadUrl",
-                                ""
-                        );
-
-                String authorizationToken =
-                        result.optString(
-                                "authorizationToken",
-                                ""
-                        );
-
-                if (TextUtils.isEmpty(downloadUrl)
-                        || TextUtils.isEmpty(
-                                authorizationToken
-                        )) {
-                    return;
-                }
-
-                String finalUrl =
-                        downloadUrl
-                                + "?Authorization="
-                                + URLEncoder.encode(
-                                        authorizationToken,
-                                        "UTF-8"
-                                );
-
-                loadBitmapFromB2(finalUrl);
-
-            } catch (Exception ignored) {
-
-            } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-
-        }).start();
-    }
-
-    private void loadBitmapFromB2(String imageUrl) {
-
-        HttpURLConnection connection = null;
-
-        try {
-
-            URL url = new URL(imageUrl);
-
-            connection =
-                    (HttpURLConnection) url.openConnection();
-
-            connection.setRequestMethod("GET");
-            connection.setUseCaches(false);
-
-            connection.setConnectTimeout(15000);
-            connection.setReadTimeout(30000);
-
-            connection.setRequestProperty(
-                    "Accept",
-                    "image/jpeg,image/png,image/*"
-            );
-
-            int responseCode =
-                    connection.getResponseCode();
-
-            if (responseCode < 200
-                    || responseCode >= 300) {
-                return;
-            }
-
-            InputStream inputStream =
-                    connection.getInputStream();
-
-            Bitmap bitmap =
-                    BitmapFactory.decodeStream(
-                            inputStream
-                    );
-
-            inputStream.close();
-
-            if (bitmap == null) {
-                return;
-            }
-
-            runOnUiThread(() -> {
-
-                if (profileImageView != null) {
-                    profileImageView.setImageBitmap(bitmap);
-                }
-            });
-
-        } catch (Exception ignored) {
-
-        } finally {
-
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    }
-
     private void saveProfile() {
 
         String name =
@@ -1570,4 +1366,215 @@ public class ProfileActivity extends AppCompatActivity {
             return "";
         }
     }
+
+    private void loadPrivateProfilePhoto(String fileName) {
+
+        String accessToken =
+                SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(accessToken)
+                || TextUtils.isEmpty(fileName)) {
+            return;
+        }
+
+        new Thread(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+                JSONObject body = new JSONObject();
+                body.put("action", "get_profile_photo");
+                body.put("fileName", fileName);
+
+                URL url = new URL(
+                        SupabaseConfig.PROJECT_URL
+                                + "/functions/v1/bright-action"
+                );
+
+                connection =
+                        (HttpURLConnection) url.openConnection();
+
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setUseCaches(false);
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(30000);
+
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "application/json; charset=UTF-8"
+                );
+                connection.setRequestProperty(
+                        "Accept",
+                        "application/json"
+                );
+                connection.setRequestProperty(
+                        "apikey",
+                        SupabaseConfig.PUBLISHABLE_KEY
+                );
+                connection.setRequestProperty(
+                        "Authorization",
+                        "Bearer " + accessToken
+                );
+
+                byte[] bodyBytes =
+                        body.toString()
+                                .getBytes(StandardCharsets.UTF_8);
+
+                connection.setFixedLengthStreamingMode(
+                        bodyBytes.length
+                );
+
+                OutputStream output =
+                        connection.getOutputStream();
+                output.write(bodyBytes);
+                output.flush();
+                output.close();
+
+                int responseCode =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(connection, responseCode);
+
+                if (responseCode < 200 || responseCode >= 300) {
+                    runOnUiThread(() -> Toast.makeText(
+                            ProfileActivity.this,
+                            "Photo auth failed: HTTP " + responseCode,
+                            Toast.LENGTH_LONG
+                    ).show());
+                    return;
+                }
+
+                JSONObject result =
+                        new JSONObject(response);
+
+                if (!result.optBoolean("success", false)) {
+                    runOnUiThread(() -> Toast.makeText(
+                            ProfileActivity.this,
+                            "B2 photo authorization failed",
+                            Toast.LENGTH_LONG
+                    ).show());
+                    return;
+                }
+
+                String downloadUrl =
+                        result.optString("downloadUrl", "");
+
+                String authorizationToken =
+                        result.optString("authorizationToken", "");
+
+                if (TextUtils.isEmpty(downloadUrl)
+                        || TextUtils.isEmpty(authorizationToken)) {
+                    return;
+                }
+
+                loadBitmapFromB2(
+                        downloadUrl,
+                        authorizationToken
+                );
+
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(
+                        ProfileActivity.this,
+                        "Photo load error: " + safeMessage(e),
+                        Toast.LENGTH_LONG
+                ).show());
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private void loadBitmapFromB2(
+            String downloadUrl,
+            String authorizationToken
+    ) {
+
+        new Thread(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+                String finalUrl =
+                        downloadUrl
+                                + "?Authorization="
+                                + URLEncoder.encode(
+                                        authorizationToken,
+                                        "UTF-8"
+                                );
+
+                URL url = new URL(finalUrl);
+
+                connection =
+                        (HttpURLConnection) url.openConnection();
+
+                connection.setRequestMethod("GET");
+                connection.setUseCaches(false);
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(30000);
+
+                connection.setRequestProperty(
+                        "Authorization",
+                        authorizationToken
+                );
+                connection.setRequestProperty(
+                        "Accept",
+                        "image/*"
+                );
+
+                int responseCode =
+                        connection.getResponseCode();
+
+                if (responseCode < 200 || responseCode >= 300) {
+                    runOnUiThread(() -> Toast.makeText(
+                            ProfileActivity.this,
+                            "B2 image HTTP " + responseCode,
+                            Toast.LENGTH_LONG
+                    ).show());
+                    return;
+                }
+
+                InputStream inputStream =
+                        connection.getInputStream();
+
+                Bitmap bitmap =
+                        BitmapFactory.decodeStream(inputStream);
+
+                inputStream.close();
+
+                if (bitmap == null) {
+                    runOnUiThread(() -> Toast.makeText(
+                            ProfileActivity.this,
+                            "B2 image read nahi hui",
+                            Toast.LENGTH_LONG
+                    ).show());
+                    return;
+                }
+
+                runOnUiThread(() -> {
+                    if (profileImageView != null) {
+                        profileImageView.setImageBitmap(bitmap);
+                        profileImageView.setScaleType(
+                                ImageView.ScaleType.CENTER_CROP
+                        );
+                    }
+                });
+
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(
+                        ProfileActivity.this,
+                        "B2 image error: " + safeMessage(e),
+                        Toast.LENGTH_LONG
+                ).show());
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
+    }
+
 }
