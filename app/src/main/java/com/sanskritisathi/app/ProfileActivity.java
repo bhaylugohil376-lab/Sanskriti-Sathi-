@@ -205,7 +205,7 @@ public class ProfileActivity extends AppCompatActivity {
 
                 URL url = new URL(
                         SupabaseConfig.PROJECT_URL
-                                + "/functions/v1/b2-upload"
+                                + "/functions/v1/bright-action"
                 );
 
                 connection = (HttpURLConnection) url.openConnection();
