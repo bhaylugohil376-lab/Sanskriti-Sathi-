@@ -1461,7 +1461,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         SupabaseAuthManager.logout(this, new SupabaseAuthManager.AuthCallback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(String accessToken, String refreshToken, String userId, String email) {
                 openLogin();
             }
 
