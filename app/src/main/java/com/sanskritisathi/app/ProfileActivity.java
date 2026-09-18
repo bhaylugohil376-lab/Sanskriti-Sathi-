@@ -970,10 +970,9 @@ public class ProfileActivity extends AppCompatActivity {
                             ""
                     );
 
-            // B2 bucket is private, so load the photo through
-            // the bright-action image proxy.
             if (!TextUtils.isEmpty(profileImageFileName)
                     && profileImageFileName.startsWith("photos/")) {
+
                 loadPrivateProfilePhoto(profileImageFileName);
             }
 
@@ -988,14 +987,9 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Loads a private B2 profile photo through the Supabase Edge Function.
-     * The Edge Function returns the actual JPEG/PNG bytes, not JSON.
-     */
     private void loadPrivateProfilePhoto(String fileName) {
 
-        if (TextUtils.isEmpty(fileName)
-                || !fileName.startsWith("photos/")) {
+        if (TextUtils.isEmpty(fileName)) {
             return;
         }
 
@@ -1011,131 +1005,106 @@ public class ProfileActivity extends AppCompatActivity {
             HttpURLConnection connection = null;
 
             try {
-
-                URL url = new URL(
+                String endpoint =
                         SupabaseConfig.PROJECT_URL
-                                + "/functions/v1/bright-action"
-                );
+                                + "/functions/v1/bright-action";
+
+                URL url = new URL(endpoint);
 
                 connection =
                         (HttpURLConnection) url.openConnection();
 
                 connection.setRequestMethod("POST");
-                connection.setDoOutput(true);
-                connection.setUseCaches(false);
                 connection.setConnectTimeout(20000);
                 connection.setReadTimeout(30000);
+                connection.setDoOutput(true);
+                connection.setUseCaches(false);
 
                 connection.setRequestProperty(
                         "Content-Type",
                         "application/json; charset=UTF-8"
                 );
-
                 connection.setRequestProperty(
                         "Accept",
                         "image/*"
                 );
-
                 connection.setRequestProperty(
                         "apikey",
                         SupabaseConfig.PUBLISHABLE_KEY
                 );
-
                 connection.setRequestProperty(
                         "Authorization",
                         "Bearer " + accessToken
                 );
 
                 JSONObject request = new JSONObject();
-                request.put(
-                        "action",
-                        "get_profile_photo"
-                );
-                request.put(
-                        "fileName",
-                        fileName
-                );
+                request.put("action", "get_profile_photo");
+                request.put("fileName", fileName);
 
-                byte[] requestBytes =
-                        request.toString()
-                                .getBytes(StandardCharsets.UTF_8);
+                byte[] requestBytes = request.toString()
+                        .getBytes(StandardCharsets.UTF_8);
 
                 connection.setFixedLengthStreamingMode(
                         requestBytes.length
                 );
 
-                OutputStream output =
-                        connection.getOutputStream();
-
+                OutputStream output = connection.getOutputStream();
                 output.write(requestBytes);
                 output.flush();
                 output.close();
 
-                int responseCode =
-                        connection.getResponseCode();
+                int responseCode = connection.getResponseCode();
 
-                if (responseCode >= 200
-                        && responseCode < 300) {
+                if (responseCode >= 200 && responseCode < 300) {
 
-                    InputStream input =
+                    InputStream inputStream =
                             connection.getInputStream();
 
-                    Bitmap bitmap =
-                            BitmapFactory.decodeStream(input);
+                    Bitmap bitmap;
 
-                    input.close();
+                    try {
+                        bitmap = BitmapFactory.decodeStream(inputStream);
+                    } finally {
+                        inputStream.close();
+                    }
 
                     if (bitmap == null) {
-                        throw new Exception(
-                                "Image decode failed"
-                        );
+                        throw new Exception("JPEG decode failed");
                     }
 
                     runOnUiThread(() -> {
-
                         if (!isFinishing()
                                 && !isDestroyed()
                                 && profileImageView != null) {
-
                             profileImageView.setImageBitmap(bitmap);
                         }
                     });
 
                 } else {
 
-                    String error =
-                            readResponse(
-                                    connection,
-                                    responseCode
-                            );
+                    String response = readResponse(
+                            connection,
+                            responseCode
+                    );
 
-                    final String message =
-                            formatHttpError(
-                                    responseCode,
-                                    error
-                            );
-
-                    runOnUiThread(() ->
-                            Toast.makeText(
-                                    ProfileActivity.this,
-                                    "Photo load error: " + message,
-                                    Toast.LENGTH_LONG
-                            ).show()
+                    throw new Exception(
+                            formatHttpError(responseCode, response)
                     );
                 }
 
             } catch (Exception e) {
 
-                final String message =
-                        safeMessage(e);
+                final String message = safeMessage(e);
 
-                runOnUiThread(() ->
+                runOnUiThread(() -> {
+                    if (!isFinishing() && !isDestroyed()) {
                         Toast.makeText(
                                 ProfileActivity.this,
                                 "Photo load error: " + message,
                                 Toast.LENGTH_LONG
-                        ).show()
-                );
+                        ).show();
+                    }
+                });
 
             } finally {
 
@@ -1143,7 +1112,6 @@ public class ProfileActivity extends AppCompatActivity {
                     connection.disconnect();
                 }
             }
-
         }).start();
     }
 
