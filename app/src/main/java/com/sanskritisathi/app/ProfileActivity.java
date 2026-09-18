@@ -75,8 +75,7 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (SupabaseAuthManager.isLoggedIn(this)
-                && !loadingProfile) {
+        if (SupabaseAuthManager.isLoggedIn(this) && !loadingProfile) {
             loadProfile();
         }
     }
@@ -115,10 +114,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         if (settingsButton != null) {
             settingsButton.setOnClickListener(v -> {
-                Intent intent = new Intent(
-                        ProfileActivity.this,
-                        SettingsActivity.class
-                );
+                Intent intent = new Intent(ProfileActivity.this, SettingsActivity.class);
                 startActivity(intent);
             });
         }
@@ -131,41 +127,25 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(
-            int requestCode,
-            int resultCode,
-            Intent data
-    ) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode != PICK_PROFILE_PHOTO
-                || resultCode != RESULT_OK
-                || data == null
-                || data.getData() == null) {
+        if (requestCode != PICK_PROFILE_PHOTO || resultCode != RESULT_OK || data == null || data.getData() == null) {
             return;
         }
 
         Uri imageUri = data.getData();
-
         profileImageView.setImageURI(imageUri);
 
         uploadProfilePhoto(imageUri);
     }
 
     private void uploadProfilePhoto(Uri imageUri) {
-
         String userId = SupabaseAuthManager.getUserId(this);
         String accessToken = SupabaseAuthManager.getAccessToken(this);
 
-        if (TextUtils.isEmpty(userId)
-                || TextUtils.isEmpty(accessToken)) {
-
-            Toast.makeText(
-                    this,
-                    "Login session nahi mili",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+        if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(accessToken)) {
+            Toast.makeText(this, "Login session nahi mili", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -173,86 +153,41 @@ public class ProfileActivity extends AppCompatActivity {
             changePhotoButton.setEnabled(false);
         }
 
-        Toast.makeText(
-                this,
-                "Photo upload ho rahi hai...",
-                Toast.LENGTH_SHORT
-        ).show();
+        Toast.makeText(this, "Photo upload ho rahi hai...", Toast.LENGTH_SHORT).show();
 
         new Thread(() -> {
-
             HttpURLConnection connection = null;
 
             try {
                 byte[] imageBytes = compressProfileImage(imageUri);
+                String base64 = Base64.getEncoder().encodeToString(imageBytes);
 
-                String base64 = Base64.getEncoder()
-                        .encodeToString(imageBytes);
-
-                String fileName =
-                        "profile_"
-                                + userId
-                                + "_"
-                                + System.currentTimeMillis()
-                                + ".jpg";
+                String fileName = "profile_" + userId + "_" + System.currentTimeMillis() + ".jpg";
 
                 JSONObject body = new JSONObject();
-
                 body.put("fileName", fileName);
                 body.put("fileBase64", base64);
                 body.put("folder", "photos");
                 body.put("contentType", "image/jpeg");
 
-                URL url = new URL(
-                        SupabaseConfig.PROJECT_URL
-                                + "/functions/v1/bright-action"
-                );
+                URL url = new URL(SupabaseConfig.PROJECT_URL + "/functions/v1/bright-action");
 
                 connection = (HttpURLConnection) url.openConnection();
-
                 connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
                 connection.setUseCaches(false);
-
                 connection.setConnectTimeout(30000);
                 connection.setReadTimeout(90000);
 
-                connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json; charset=UTF-8"
-                );
+                connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Cache-Control", "no-cache");
+                connection.setRequestProperty("Connection", "close");
+                connection.setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY);
+                connection.setRequestProperty("Authorization", "Bearer " + accessToken);
 
-                connection.setRequestProperty(
-                        "Accept",
-                        "application/json"
-                );
-
-                connection.setRequestProperty(
-                        "Cache-Control",
-                        "no-cache"
-                );
-
-                connection.setRequestProperty(
-                        "Connection",
-                        "close"
-                );
-
-                connection.setRequestProperty(
-                        "apikey",
-                        SupabaseConfig.PUBLISHABLE_KEY
-                );
-
-                connection.setRequestProperty(
-                        "Authorization",
-                        "Bearer " + accessToken
-                );
-
-                byte[] bodyBytes = body.toString()
-                        .getBytes(StandardCharsets.UTF_8);
-
-                connection.setFixedLengthStreamingMode(
-                        bodyBytes.length
-                );
+                byte[] bodyBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+                connection.setFixedLengthStreamingMode(bodyBytes.length);
 
                 OutputStream stream = connection.getOutputStream();
                 stream.write(bodyBytes);
@@ -260,77 +195,37 @@ public class ProfileActivity extends AppCompatActivity {
                 stream.close();
 
                 int responseCode = connection.getResponseCode();
+                String response = readResponse(connection, responseCode);
 
-                String response = readResponse(
-                        connection,
-                        responseCode
-                );
-
-                if (responseCode >= 200
-                        && responseCode < 300) {
-
+                if (responseCode >= 200 && responseCode < 300) {
                     JSONObject result;
-
                     try {
                         result = new JSONObject(response);
                     } catch (Exception jsonError) {
-                        throw new Exception(
-                                "B2 response JSON invalid.\nHTTP "
-                                        + responseCode
-                                        + "\nRaw response:\n"
-                                        + limitForToast(response)
-                        );
+                        throw new Exception("B2 response JSON invalid.\nHTTP " + responseCode + "\nRaw response:\n" + limitForToast(response));
                     }
 
-                    boolean success = result.optBoolean(
-                            "success",
-                            false
-                    );
-
+                    boolean success = result.optBoolean("success", false);
                     if (!success) {
-                        throw new Exception(
-                                formatB2Error(
-                                        responseCode,
-                                        result,
-                                        response
-                                )
-                        );
+                        throw new Exception(formatB2Error(responseCode, result, response));
                     }
 
-                    String fileNameFromB2 = result.optString(
-                            "fileName",
-                            ""
-                    );
-
+                    String fileNameFromB2 = result.optString("fileName", "");
                     if (TextUtils.isEmpty(fileNameFromB2)) {
-                        throw new Exception(
-                                "B2 fileName missing.\nResponse:\n"
-                                        + limitForToast(response)
-                        );
+                        throw new Exception("B2 fileName missing.\nResponse:\n" + limitForToast(response));
                     }
 
                     profileImageFileName = fileNameFromB2;
-
                     saveProfileImageReference(fileNameFromB2);
 
                 } else {
-                    throw new Exception(
-                            formatHttpError(
-                                    responseCode,
-                                    response
-                            )
-                    );
+                    throw new Exception(formatHttpError(responseCode, response));
                 }
 
             } catch (Exception e) {
-
                 runOnUiThread(() -> {
                     enablePhotoButton();
-
-                    showUploadErrorDialog(
-                            "Photo upload failed",
-                            safeMessage(e)
-                    );
+                    showUploadErrorDialog("Photo upload failed", safeMessage(e));
                 });
 
             } finally {
@@ -338,227 +233,353 @@ public class ProfileActivity extends AppCompatActivity {
                     connection.disconnect();
                 }
             }
-
         }).start();
     }
 
     /**
-     * Converts the selected image to JPEG and keeps it <= 600 KB.
-     * Smaller requests help prevent Supabase gateway/function request-size failures.
+     * Fetch private B2 photo via Supabase Edge Function using authenticated GET request.
+     * Raw image bytes (JPEG/JFIF/ICC_PROFILE) are converted into Bitmap and set to profileImageView.
      */
-    private byte[] compressProfileImage(Uri imageUri) throws Exception {
+    private void fetchAndDisplayB2Image(String photoFileName) {
+        if (TextUtils.isEmpty(photoFileName)) return;
 
-        InputStream inputStream =
-                getContentResolver().openInputStream(imageUri);
+        String accessToken = SupabaseAuthManager.getAccessToken(this);
 
-        if (inputStream == null) {
-            throw new Exception("Image stream open nahi hua");
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                String downloadUrl = SupabaseConfig.PROJECT_URL + "/functions/v1/bright-action?file="
+                        + URLEncoder.encode(photoFileName, "UTF-8")
+                        + "&folder=photos";
+
+                URL url = new URL(downloadUrl);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(60000);
+
+                connection.setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY);
+                if (!TextUtils.isEmpty(accessToken)) {
+                    connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+                }
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    InputStream inputStream = connection.getInputStream();
+                    final Bitmap loadedBitmap = BitmapFactory.decodeStream(inputStream);
+                    inputStream.close();
+
+                    if (loadedBitmap != null) {
+                        runOnUiThread(() -> profileImageView.setImageBitmap(loadedBitmap));
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private void loadProfile() {
+        String userId = SupabaseAuthManager.getUserId(this);
+        String accessToken = SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(accessToken)) {
+            openLogin();
+            return;
         }
 
-        Bitmap originalBitmap;
+        loadingProfile = true;
 
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                String endpoint = SupabaseConfig.PROJECT_URL + "/rest/v1/profiles?id=eq." + URLEncoder.encode(userId, "UTF-8");
+                URL url = new URL(endpoint);
+
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY);
+                connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+                connection.setRequestProperty("Accept", "application/json");
+
+                int responseCode = connection.getResponseCode();
+                String response = readResponse(connection, responseCode);
+
+                if (responseCode >= 200 && responseCode < 300) {
+                    JSONArray array = new JSONArray(response);
+                    if (array.length() > 0) {
+                        JSONObject profileData = array.getJSONObject(0);
+
+                        String name = profileData.optString("name", "");
+                        String username = profileData.optString("username", "");
+                        String bio = profileData.optString("bio", "");
+                        String photoFileName = profileData.optString("profile_image_url", "");
+
+                        profileImageFileName = photoFileName;
+
+                        runOnUiThread(() -> {
+                            if (nameInput != null) nameInput.setText(name);
+                            if (usernameInput != null) usernameInput.setText(username);
+                            if (bioInput != null) bioInput.setText(bio);
+
+                            if (!TextUtils.isEmpty(photoFileName)) {
+                                fetchAndDisplayB2Image(photoFileName);
+                            }
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                loadingProfile = false;
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private void saveProfile() {
+        String userId = SupabaseAuthManager.getUserId(this);
+        String accessToken = SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(accessToken)) {
+            Toast.makeText(this, "Login session nahi mili", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String name = nameInput != null ? nameInput.getText().toString().trim() : "";
+        String username = usernameInput != null ? usernameInput.getText().toString().trim() : "";
+        String bio = bioInput != null ? bioInput.getText().toString().trim() : "";
+
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                JSONObject body = new JSONObject();
+                body.put("name", name);
+                body.put("username", username);
+                body.put("bio", bio);
+                body.put("profile_image_url", profileImageFileName);
+
+                String endpoint = SupabaseConfig.PROJECT_URL + "/rest/v1/profiles?id=eq." + URLEncoder.encode(userId, "UTF-8");
+                URL url = new URL(endpoint);
+
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("PATCH");
+                connection.setDoOutput(true);
+                connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                connection.setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY);
+                connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+
+                byte[] bodyBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+                OutputStream os = connection.getOutputStream();
+                os.write(bodyBytes);
+                os.flush();
+                os.close();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    runOnUiThread(() -> Toast.makeText(ProfileActivity.this, "Profile saved", Toast.LENGTH_SHORT).show());
+                } else {
+                    runOnUiThread(() -> Toast.makeText(ProfileActivity.this, "Save failed: HTTP " + responseCode, Toast.LENGTH_SHORT).show());
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(ProfileActivity.this, safeMessage(e), Toast.LENGTH_SHORT).show());
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private void saveProfileImageReference(String fileName) {
+        String userId = SupabaseAuthManager.getUserId(this);
+        String accessToken = SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(accessToken)) {
+            runOnUiThread(() -> {
+                enablePhotoButton();
+                Toast.makeText(this, "Login session nahi mili", Toast.LENGTH_LONG).show();
+            });
+            return;
+        }
+
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                JSONObject body = new JSONObject();
+                body.put("profile_image_url", fileName);
+
+                String endpoint = SupabaseConfig.PROJECT_URL + "/rest/v1/profiles?id=eq." + URLEncoder.encode(userId, "UTF-8");
+                URL url = new URL(endpoint);
+
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("PATCH");
+                connection.setDoOutput(true);
+                connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                connection.setRequestProperty("apikey", SupabaseConfig.PUBLISHABLE_KEY);
+                connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+
+                byte[] bodyBytes = body.toString().getBytes(StandardCharsets.UTF_8);
+                OutputStream os = connection.getOutputStream();
+                os.write(bodyBytes);
+                os.flush();
+                os.close();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode >= 200 && responseCode < 300) {
+                    runOnUiThread(() -> {
+                        enablePhotoButton();
+                        Toast.makeText(ProfileActivity.this, "Profile photo updated!", Toast.LENGTH_SHORT).show();
+                        fetchAndDisplayB2Image(fileName);
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        enablePhotoButton();
+                        Toast.makeText(ProfileActivity.this, "DB update failed: HTTP " + responseCode, Toast.LENGTH_SHORT).show();
+                    });
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> {
+                    enablePhotoButton();
+                    Toast.makeText(ProfileActivity.this, safeMessage(e), Toast.LENGTH_SHORT).show();
+                });
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        }).start();
+    }
+
+    private byte[] compressProfileImage(Uri imageUri) throws Exception {
+        InputStream inputStream = getContentResolver().openInputStream(imageUri);
+        if (inputStream == null) throw new Exception("Image stream open nahi hua");
+
+        Bitmap originalBitmap;
         try {
             originalBitmap = BitmapFactory.decodeStream(inputStream);
         } finally {
             inputStream.close();
         }
 
-        if (originalBitmap == null) {
-            throw new Exception("Image read nahi hui");
-        }
+        if (originalBitmap == null) throw new Exception("Image read nahi hui");
 
         Bitmap workingBitmap = originalBitmap;
-
         try {
             int[] sizes = {900, 800, 720, 640, 560};
             int[] qualities = {75, 68, 62, 56, 50, 45, 40};
 
             for (int maxSize : sizes) {
-
-                Bitmap resizedBitmap = scaleBitmap(
-                        originalBitmap,
-                        maxSize
-                );
+                Bitmap resizedBitmap = scaleBitmap(originalBitmap, maxSize);
 
                 if (resizedBitmap != originalBitmap) {
-                    if (workingBitmap != originalBitmap) {
-                        workingBitmap.recycle();
-                    }
+                    if (workingBitmap != originalBitmap) workingBitmap.recycle();
                     workingBitmap = resizedBitmap;
                 }
 
                 for (int quality : qualities) {
-
-                    ByteArrayOutputStream output =
-                            new ByteArrayOutputStream();
-
-                    boolean compressed = workingBitmap.compress(
-                            Bitmap.CompressFormat.JPEG,
-                            quality,
-                            output
-                    );
+                    ByteArrayOutputStream output = new ByteArrayOutputStream();
+                    boolean compressed = workingBitmap.compress(Bitmap.CompressFormat.JPEG, quality, output);
 
                     if (!compressed) {
                         output.close();
-                        throw new Exception(
-                                "JPEG compression failed"
-                        );
+                        throw new Exception("JPEG compression failed");
                     }
 
                     byte[] bytes = output.toByteArray();
                     output.close();
 
-                    if (bytes.length > 0
-                            && bytes.length <= MAX_IMAGE_BYTES) {
+                    if (bytes.length > 0 && bytes.length <= MAX_IMAGE_BYTES) {
                         return bytes;
                     }
                 }
             }
-
-            throw new Exception(
-                    "Photo ko 600 KB ke andar compress nahi kar paaya."
-            );
-
+            throw new Exception("Photo ko 600 KB ke andar compress nahi kar paaya.");
         } finally {
-            if (workingBitmap != originalBitmap) {
-                workingBitmap.recycle();
-            }
-
+            if (workingBitmap != originalBitmap) workingBitmap.recycle();
             originalBitmap.recycle();
         }
     }
 
-    private Bitmap scaleBitmap(
-            Bitmap source,
-            int maxSize
-    ) {
+    private Bitmap scaleBitmap(Bitmap source, int maxSize) {
         int width = source.getWidth();
         int height = source.getHeight();
 
-        if (width <= maxSize && height <= maxSize) {
-            return source;
-        }
+        if (width <= maxSize && height <= maxSize) return source;
 
-        float ratio = Math.min(
-                (float) maxSize / width,
-                (float) maxSize / height
-        );
+        float ratio = Math.min((float) maxSize / width, (float) maxSize / height);
+        int newWidth = Math.max(1, Math.round(width * ratio));
+        int newHeight = Math.max(1, Math.round(height * ratio));
 
-        int newWidth = Math.max(
-                1,
-                Math.round(width * ratio)
-        );
-
-        int newHeight = Math.max(
-                1,
-                Math.round(height * ratio)
-        );
-
-        return Bitmap.createScaledBitmap(
-                source,
-                newWidth,
-                newHeight,
-                true
-        );
+        return Bitmap.createScaledBitmap(source, newWidth, newHeight, true);
     }
 
-    private String formatB2Error(
-            int responseCode,
-            JSONObject result,
-            String rawResponse
-    ) {
-        StringBuilder message = new StringBuilder();
+    private String readResponse(HttpURLConnection conn, int code) {
+        try {
+            InputStream stream = (code >= 200 && code < 300) ? conn.getInputStream() : conn.getErrorStream();
+            if (stream == null) return "";
 
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+
+            reader.close();
+            return sb.toString().trim();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String formatB2Error(int responseCode, JSONObject result, String rawResponse) {
+        StringBuilder message = new StringBuilder();
         String step = result.optString("step", "");
         String status = result.optString("status", "");
         String error = result.optString("error", "");
         String details = result.optString("details", "");
 
-        message.append("HTTP ")
-                .append(responseCode);
+        message.append("HTTP ").append(responseCode);
+        if (!TextUtils.isEmpty(step)) message.append("\nStep: ").append(step);
+        if (!TextUtils.isEmpty(status)) message.append("\nStatus: ").append(status);
+        if (!TextUtils.isEmpty(error)) message.append("\nError: ").append(error);
+        if (!TextUtils.isEmpty(details)) message.append("\nDetails: ").append(details);
 
-        if (!TextUtils.isEmpty(step)) {
-            message.append("\nStep: ")
-                    .append(step);
-        }
-
-        if (!TextUtils.isEmpty(status)) {
-            message.append("\nStatus: ")
-                    .append(status);
-        }
-
-        if (!TextUtils.isEmpty(error)) {
-            message.append("\nError: ")
-                    .append(error);
-        }
-
-        if (!TextUtils.isEmpty(details)) {
-            message.append("\nDetails: ")
-                    .append(details);
-        }
-
-        if (TextUtils.isEmpty(error)
-                && TextUtils.isEmpty(details)) {
-            message.append("\nRaw response:\n")
-                    .append(limitForToast(rawResponse));
+        if (TextUtils.isEmpty(error) && TextUtils.isEmpty(details)) {
+            message.append("\nRaw response:\n").append(limitForToast(rawResponse));
         }
 
         return message.toString();
     }
 
-    private String formatHttpError(
-            int responseCode,
-            String response
-    ) {
+    private String formatHttpError(int responseCode, String response) {
         StringBuilder message = new StringBuilder();
-
-        message.append("HTTP ")
-                .append(responseCode);
+        message.append("HTTP ").append(responseCode);
 
         if (!TextUtils.isEmpty(response)) {
             try {
                 JSONObject json = new JSONObject(response);
+                String messageText = json.optString("message", "");
+                String error = json.optString("error", "");
+                String details = json.optString("details", "");
 
-                String messageText = json.optString(
-                        "message",
-                        ""
-                );
+                if (!TextUtils.isEmpty(error)) message.append("\nError: ").append(error);
+                if (!TextUtils.isEmpty(messageText)) message.append("\nMessage: ").append(messageText);
+                if (!TextUtils.isEmpty(details)) message.append("\nDetails: ").append(details);
 
-                String error = json.optString(
-                        "error",
-                        ""
-                );
-
-                String details = json.optString(
-                        "details",
-                        ""
-                );
-
-                if (!TextUtils.isEmpty(error)) {
-                    message.append("\nError: ")
-                            .append(error);
+                if (TextUtils.isEmpty(error) && TextUtils.isEmpty(messageText) && TextUtils.isEmpty(details)) {
+                    message.append("\nResponse:\n").append(limitForToast(response));
                 }
-
-                if (!TextUtils.isEmpty(messageText)) {
-                    message.append("\nMessage: ")
-                            .append(messageText);
-                }
-
-                if (!TextUtils.isEmpty(details)) {
-                    message.append("\nDetails: ")
-                            .append(details);
-                }
-
-                if (TextUtils.isEmpty(error)
-                        && TextUtils.isEmpty(messageText)
-                        && TextUtils.isEmpty(details)) {
-                    message.append("\nResponse:\n")
-                            .append(limitForToast(response));
-                }
-
             } catch (Exception ignored) {
-                message.append("\nResponse:\n")
-                        .append(limitForToast(response));
+                message.append("\nResponse:\n").append(limitForToast(response));
             }
         } else {
             message.append("\nServer ne empty response diya.");
@@ -569,27 +590,15 @@ public class ProfileActivity extends AppCompatActivity {
 
     private String safeMessage(Exception e) {
         String message = e.getMessage();
-
-        if (TextUtils.isEmpty(message)) {
-            return e.getClass().getSimpleName();
-        }
-
+        if (TextUtils.isEmpty(message)) return e.getClass().getSimpleName();
         return limitForToast(message);
     }
 
     private String limitForToast(String text) {
-        if (text == null) {
-            return "";
-        }
-
+        if (text == null) return "";
         final int maxLength = 1800;
-
-        if (text.length() <= maxLength) {
-            return text;
-        }
-
-        return text.substring(0, maxLength)
-                + "\n...[response truncated]";
+        if (text.length() <= maxLength) return text;
+        return text.substring(0, maxLength) + "\n...[response truncated]";
     }
 
     private void enablePhotoButton() {
@@ -598,901 +607,31 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void showUploadErrorDialog(
-            String title,
-            String message
-    ) {
-        new androidx.appcompat.app.AlertDialog.Builder(
-                ProfileActivity.this
-        )
+    private void showUploadErrorDialog(String title, String message) {
+        new androidx.appcompat.app.AlertDialog.Builder(ProfileActivity.this)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", null)
-                .setNegativeButton(
-                        "Copy",
-                        (dialog, which) -> {
-                            android.content.ClipboardManager clipboard =
-                                    (android.content.ClipboardManager)
-                                            getSystemService(
-                                                    CLIPBOARD_SERVICE
-                                            );
-
-                            if (clipboard != null) {
-                                android.content.ClipData clip =
-                                        android.content.ClipData.newPlainText(
-                                                "B2 Upload Error",
-                                                message
-                                        );
-
-                                clipboard.setPrimaryClip(clip);
-
-                                Toast.makeText(
-                                        ProfileActivity.this,
-                                        "Error copied",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            }
-                        }
-                )
+                .setNegativeButton("Copy", (dialog, which) -> {
+                    android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    if (clipboard != null) {
+                        android.content.ClipData clip = android.content.ClipData.newPlainText("B2 Upload Error", message);
+                        clipboard.setPrimaryClip(clip);
+                        Toast.makeText(ProfileActivity.this, "Error copied", Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .show();
     }
 
-    private void saveProfileImageReference(
-            String fileName
-    ) {
-
-        String userId =
-                SupabaseAuthManager.getUserId(this);
-
-        String accessToken =
-                SupabaseAuthManager.getAccessToken(this);
-
-        if (TextUtils.isEmpty(userId)
-                || TextUtils.isEmpty(accessToken)) {
-
-            runOnUiThread(() -> {
-
-                enablePhotoButton();
-
-                Toast.makeText(
-                        this,
-                        "Login session nahi mili",
-                        Toast.LENGTH_LONG
-                ).show();
-            });
-
-            return;
-        }
-
-        new Thread(() -> {
-
-            HttpURLConnection connection = null;
-
-            try {
-
-                JSONObject body =
-                        new JSONObject();
-
-                body.put(
-                        "profile_image_url",
-                        fileName
-                );
-
-                String endpoint =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/profiles"
-                                + "?id=eq."
-                                + URLEncoder.encode(
-                                        userId,
-                                        "UTF-8"
-                                );
-
-                URL url =
-                        new URL(endpoint);
-
-                connection =
-                        (HttpURLConnection)
-                                url.openConnection();
-
-                connection.setRequestMethod("PATCH");
-                connection.setDoOutput(true);
-                connection.setUseCaches(false);
-
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(20000);
-
-                connection.setRequestProperty(
-                        "apikey",
-                        SupabaseConfig.PUBLISHABLE_KEY
-                );
-
-                connection.setRequestProperty(
-                        "Authorization",
-                        "Bearer " + accessToken
-                );
-
-                connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json"
-                );
-
-                connection.setRequestProperty(
-                        "Accept",
-                        "application/json"
-                );
-
-                connection.setRequestProperty(
-                        "Prefer",
-                        "return=representation"
-                );
-
-                byte[] bytes =
-                        body.toString()
-                                .getBytes(
-                                        StandardCharsets.UTF_8
-                                );
-
-                OutputStream output =
-                        connection.getOutputStream();
-
-                output.write(bytes);
-                output.flush();
-                output.close();
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        readResponse(
-                                connection,
-                                responseCode
-                        );
-
-                if (responseCode >= 200
-                        && responseCode < 300) {
-
-                    runOnUiThread(() -> {
-
-                        enablePhotoButton();
-
-                        Toast.makeText(
-                                ProfileActivity.this,
-                                "Profile photo B2 me save ho gayi ✅",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    });
-
-                } else {
-
-                    throw new Exception(
-                            "Profile update failed:\n"
-                                    + formatHttpError(
-                                    responseCode,
-                                    response
-                            )
-                    );
-                }
-
-            } catch (Exception e) {
-
-                runOnUiThread(() -> {
-
-                    enablePhotoButton();
-
-                    Toast.makeText(
-                            ProfileActivity.this,
-                            "Photo reference save failed:\n"
-                                    + safeMessage(e),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
-
-            } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-
-        }).start();
-    }
-
-    private void loadProfile() {
-
-        String userId =
-                SupabaseAuthManager.getUserId(this);
-
-        String accessToken =
-                SupabaseAuthManager.getAccessToken(this);
-
-        if (TextUtils.isEmpty(userId)
-                || TextUtils.isEmpty(accessToken)) {
-
-            Toast.makeText(
-                    this,
-                    "Login session nahi mili",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            return;
-        }
-
-        loadingProfile = true;
-
-        new Thread(() -> {
-
-            HttpURLConnection connection = null;
-
-            try {
-
-                String endpoint =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/profiles"
-                                + "?id=eq."
-                                + URLEncoder.encode(
-                                        userId,
-                                        "UTF-8"
-                                )
-                                + "&select=id,email,name,username,bio,profile_image_url";
-
-                URL url =
-                        new URL(endpoint);
-
-                connection =
-                        (HttpURLConnection)
-                                url.openConnection();
-
-                connection.setRequestMethod("GET");
-                connection.setUseCaches(false);
-
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(20000);
-
-                connection.setRequestProperty(
-                        "apikey",
-                        SupabaseConfig.PUBLISHABLE_KEY
-                );
-
-                connection.setRequestProperty(
-                        "Authorization",
-                        "Bearer " + accessToken
-                );
-
-                connection.setRequestProperty(
-                        "Accept",
-                        "application/json"
-                );
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        readResponse(
-                                connection,
-                                responseCode
-                        );
-
-                if (responseCode >= 200
-                        && responseCode < 300) {
-
-                    runOnUiThread(() -> {
-
-                        loadingProfile = false;
-
-                        displayProfile(response);
-                    });
-
-                } else {
-
-                    runOnUiThread(() -> {
-
-                        loadingProfile = false;
-
-                        Toast.makeText(
-                                ProfileActivity.this,
-                                "Profile load failed:\n"
-                                        + formatHttpError(
-                                        responseCode,
-                                        response
-                                ),
-                                Toast.LENGTH_LONG
-                        ).show();
-                    });
-                }
-
-            } catch (Exception e) {
-
-                runOnUiThread(() -> {
-
-                    loadingProfile = false;
-
-                    Toast.makeText(
-                            ProfileActivity.this,
-                            "Profile network error:\n"
-                                    + safeMessage(e),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
-
-            } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        }).start();
-    }
-
-    private void displayProfile(
-            String response
-    ) {
-
-        try {
-
-            if (TextUtils.isEmpty(response)) {
-                return;
-            }
-
-            JSONArray array =
-                    new JSONArray(response);
-
-            if (array.length() == 0) {
-                return;
-            }
-
-            JSONObject profile =
-                    array.getJSONObject(0);
-
-            nameInput.setText(
-                    profile.optString(
-                            "name",
-                            ""
-                    )
-            );
-
-            usernameInput.setText(
-                    profile.optString(
-                            "username",
-                            ""
-                    )
-            );
-
-            bioInput.setText(
-                    profile.optString(
-                            "bio",
-                            ""
-                    )
-            );
-
-            profileImageFileName =
-                    profile.optString(
-                            "profile_image_url",
-                            ""
-                    );
-
-            if (!TextUtils.isEmpty(profileImageFileName)
-                    && profileImageFileName.startsWith("photos/")) {
-
-                loadPrivateProfilePhoto(profileImageFileName);
-            }
-
-        } catch (Exception e) {
-
-            Toast.makeText(
-                    this,
-                    "Profile data read nahi hui:\n"
-                            + safeMessage(e),
-                    Toast.LENGTH_LONG
-            ).show();
-        }
-    }
-
-    private void loadPrivateProfilePhoto(String fileName) {
-
-        if (TextUtils.isEmpty(fileName)) {
-            return;
-        }
-
-        final String accessToken =
-                SupabaseAuthManager.getAccessToken(this);
-
-        if (TextUtils.isEmpty(accessToken)) {
-            return;
-        }
-
-        new Thread(() -> {
-
-            HttpURLConnection connection = null;
-
-            try {
-                String endpoint =
-                        SupabaseConfig.PROJECT_URL
-                                + "/functions/v1/bright-action";
-
-                URL url = new URL(endpoint);
-
-                connection =
-                        (HttpURLConnection) url.openConnection();
-
-                connection.setRequestMethod("POST");
-                connection.setConnectTimeout(20000);
-                connection.setReadTimeout(30000);
-                connection.setDoOutput(true);
-                connection.setUseCaches(false);
-
-                connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json; charset=UTF-8"
-                );
-                connection.setRequestProperty(
-                        "Accept",
-                        "image/*"
-                );
-                connection.setRequestProperty(
-                        "apikey",
-                        SupabaseConfig.PUBLISHABLE_KEY
-                );
-                connection.setRequestProperty(
-                        "Authorization",
-                        "Bearer " + accessToken
-                );
-
-                JSONObject request = new JSONObject();
-                request.put("action", "get_profile_photo");
-                request.put("fileName", fileName);
-
-                byte[] requestBytes = request.toString()
-                        .getBytes(StandardCharsets.UTF_8);
-
-                connection.setFixedLengthStreamingMode(
-                        requestBytes.length
-                );
-
-                OutputStream output = connection.getOutputStream();
-                output.write(requestBytes);
-                output.flush();
-                output.close();
-
-                int responseCode = connection.getResponseCode();
-
-                if (responseCode >= 200 && responseCode < 300) {
-
-                    InputStream inputStream =
-                            connection.getInputStream();
-
-                    Bitmap bitmap;
-
-                    try {
-                        bitmap = BitmapFactory.decodeStream(inputStream);
-                    } finally {
-                        inputStream.close();
-                    }
-
-                    if (bitmap == null) {
-                        throw new Exception("JPEG decode failed");
-                    }
-
-                    runOnUiThread(() -> {
-                        if (!isFinishing()
-                                && !isDestroyed()
-                                && profileImageView != null) {
-                            profileImageView.setImageBitmap(bitmap);
-                        }
-                    });
-
-                } else {
-
-                    String response = readResponse(
-                            connection,
-                            responseCode
-                    );
-
-                    throw new Exception(
-                            formatHttpError(responseCode, response)
-                    );
-                }
-
-            } catch (Exception e) {
-
-                final String message = safeMessage(e);
-
-                runOnUiThread(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        Toast.makeText(
-                                ProfileActivity.this,
-                                "Photo load error: " + message,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
-
-            } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        }).start();
-    }
-
-    private void saveProfile() {
-
-        String name =
-                nameInput.getText()
-                        .toString()
-                        .trim();
-
-        String username =
-                usernameInput.getText()
-                        .toString()
-                        .trim()
-                        .replace("@", "");
-
-        String bio =
-                bioInput.getText()
-                        .toString()
-                        .trim();
-
-        if (TextUtils.isEmpty(name)) {
-
-            nameInput.setError(
-                    "Name डालें"
-            );
-
-            nameInput.requestFocus();
-            return;
-        }
-
-        if (TextUtils.isEmpty(username)) {
-
-            usernameInput.setError(
-                    "Username डालें"
-            );
-
-            usernameInput.requestFocus();
-            return;
-        }
-
-        if (username.contains(" ")) {
-
-            usernameInput.setError(
-                    "Username में space नहीं होना चाहिए"
-            );
-
-            usernameInput.requestFocus();
-            return;
-        }
-
-        if (username.length() < 3) {
-
-            usernameInput.setError(
-                    "Username कम से कम 3 characters का होना चाहिए"
-            );
-
-            usernameInput.requestFocus();
-            return;
-        }
-
-        String userId =
-                SupabaseAuthManager.getUserId(this);
-
-        String email =
-                SupabaseAuthManager.getUserEmail(this);
-
-        String accessToken =
-                SupabaseAuthManager.getAccessToken(this);
-
-        if (TextUtils.isEmpty(userId)
-                || TextUtils.isEmpty(accessToken)) {
-
-            Toast.makeText(
-                    this,
-                    "Login session nahi mili",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            openLogin();
-            return;
-        }
-
-        setButtonsEnabled(false);
-
-        new Thread(() -> {
-
-            HttpURLConnection connection = null;
-
-            try {
-
-                JSONObject body =
-                        new JSONObject();
-
-                body.put(
-                        "id",
-                        userId
-                );
-
-                body.put(
-                        "email",
-                        email
-                );
-
-                body.put(
-                        "name",
-                        name
-                );
-
-                body.put(
-                        "username",
-                        username
-                );
-
-                body.put(
-                        "bio",
-                        bio
-                );
-
-                if (!TextUtils.isEmpty(
-                        profileImageFileName
-                )) {
-
-                    body.put(
-                            "profile_image_url",
-                            profileImageFileName
-                    );
-                }
-
-                String endpoint =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/profiles"
-                                + "?on_conflict=id";
-
-                URL url =
-                        new URL(endpoint);
-
-                connection =
-                        (HttpURLConnection)
-                                url.openConnection();
-
-                connection.setRequestMethod("POST");
-                connection.setDoOutput(true);
-                connection.setUseCaches(false);
-
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(20000);
-
-                connection.setRequestProperty(
-                        "apikey",
-                        SupabaseConfig.PUBLISHABLE_KEY
-                );
-
-                connection.setRequestProperty(
-                        "Authorization",
-                        "Bearer " + accessToken
-                );
-
-                connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json"
-                );
-
-                connection.setRequestProperty(
-                        "Accept",
-                        "application/json"
-                );
-
-                connection.setRequestProperty(
-                        "Prefer",
-                        "resolution=merge-duplicates,return=representation"
-                );
-
-                byte[] bytes =
-                        body.toString()
-                                .getBytes(
-                                        StandardCharsets.UTF_8
-                                );
-
-                OutputStream output =
-                        connection.getOutputStream();
-
-                output.write(bytes);
-                output.flush();
-                output.close();
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                String response =
-                        readResponse(
-                                connection,
-                                responseCode
-                        );
-
-                if (responseCode >= 200
-                        && responseCode < 300) {
-
-                    runOnUiThread(() -> {
-
-                        setButtonsEnabled(true);
-
-                        Toast.makeText(
-                                ProfileActivity.this,
-                                "Profile save ho gayi ✅",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    });
-
-                } else {
-
-                    runOnUiThread(() -> {
-
-                        setButtonsEnabled(true);
-
-                        Toast.makeText(
-                                ProfileActivity.this,
-                                "Profile save failed:\n"
-                                        + formatHttpError(
-                                        responseCode,
-                                        response
-                                ),
-                                Toast.LENGTH_LONG
-                        ).show();
-                    });
-                }
-
-            } catch (Exception e) {
-
-                runOnUiThread(() -> {
-
-                    setButtonsEnabled(true);
-
-                    Toast.makeText(
-                            ProfileActivity.this,
-                            "Network error:\n"
-                                    + safeMessage(e),
-                            Toast.LENGTH_LONG
-                    ).show();
-                });
-
-            } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-
-        }).start();
-    }
-
     private void logout() {
-
-        setButtonsEnabled(false);
-
-        SupabaseAuthManager.logout(
-                this,
-                new SupabaseAuthManager.AuthCallback() {
-
-                    @Override
-                    public void onSuccess(
-                            String accessToken,
-                            String refreshToken,
-                            String userId,
-                            String userEmail
-                    ) {
-
-                        setButtonsEnabled(true);
-
-                        Toast.makeText(
-                                ProfileActivity.this,
-                                "Logout successful",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        openLogin();
-                    }
-
-                    @Override
-                    public void onError(
-                            String message
-                    ) {
-
-                        SupabaseAuthManager.clearSession(
-                                ProfileActivity.this
-                        );
-
-                        setButtonsEnabled(true);
-
-                        openLogin();
-                    }
-                }
-        );
+        SupabaseAuthManager.logout(this);
+        openLogin();
     }
 
     private void openLogin() {
-
-        Intent intent =
-                new Intent(
-                        ProfileActivity.this,
-                        LoginActivity.class
-                );
-
-        intent.addFlags(
-                Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
-        );
-
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-
         finish();
-    }
-
-    private void setButtonsEnabled(
-            boolean enabled
-    ) {
-
-        if (saveProfileButton != null) {
-            saveProfileButton.setEnabled(
-                    enabled
-            );
-        }
-
-        if (logoutButton != null) {
-            logoutButton.setEnabled(
-                    enabled
-            );
-        }
-    }
-
-    private String readResponse(
-            HttpURLConnection connection,
-            int responseCode
-    ) {
-
-        try {
-
-            InputStream stream;
-
-            if (responseCode >= 200
-                    && responseCode < 400) {
-
-                stream =
-                        connection.getInputStream();
-
-            } else {
-
-                stream =
-                        connection.getErrorStream();
-            }
-
-            if (stream == null) {
-                return "";
-            }
-
-            BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(
-                                    stream,
-                                    StandardCharsets.UTF_8
-                            )
-                    );
-
-            StringBuilder result =
-                    new StringBuilder();
-
-            String line;
-
-            while ((line =
-                    reader.readLine()) != null) {
-
-                result.append(line);
-            }
-
-            reader.close();
-
-            return result.toString();
-
-        } catch (Exception e) {
-
-            return "";
-        }
     }
 }
