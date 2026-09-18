@@ -1459,8 +1459,17 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void logout() {
 
-        SupabaseAuthManager.logout(this);
-        openLogin();
+        SupabaseAuthManager.logout(this, new SupabaseAuthManager.AuthCallback() {
+            @Override
+            public void onSuccess() {
+                openLogin();
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> Toast.makeText(ProfileActivity.this, error, Toast.LENGTH_SHORT).show());
+            }
+        });
     }
 
     private void openLogin() {
