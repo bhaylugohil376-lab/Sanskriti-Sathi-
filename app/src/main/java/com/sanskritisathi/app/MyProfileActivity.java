@@ -1,495 +1,649 @@
 package com.sanskritisathi.app;
 
 import android.app.Dialog;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Base64;
-import android.view.Gravity;
-import android.view.ViewGroup;
+import android.text.TextUtils;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.bumptech.glide.Glide;
-
+import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 public class MyProfileActivity extends AppCompatActivity {
 
+    private TextView profileName;
+    private TextView profileUsername;
+    private TextView profileBio;
+
+    private TextView postsCount;
+    private TextView followersCount;
+    private TextView followingCount;
+
+    private TextView emptyProfileText;
+
+    private ImageButton backButton;
+    private ImageButton settingsButton;
+
     private ImageView profileImage;
-    private android.widget.TextView profileName;
-    private android.widget.TextView profileUsername;
-    private android.widget.TextView profileBio;
 
-    private final OkHttpClient client = new OkHttpClient();
-
-    private String currentProfilePhotoFileName = null;
+    private String profileImageFileName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_my_profile);
 
-        profileImage = findViewById(R.id.profileImage);
+        bindViews();
+        setupListeners();
+
+        if (!SupabaseAuthManager.isLoggedIn(this)) {
+            openLogin();
+            return;
+        }
+
+        loadProfile();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (SupabaseAuthManager.isLoggedIn(this)) {
+            loadProfile();
+        }
+    }
+
+    private void bindViews() {
+
         profileName = findViewById(R.id.profileName);
         profileUsername = findViewById(R.id.profileUsername);
         profileBio = findViewById(R.id.profileBio);
 
-        setupListeners();
-        loadProfile();
+        postsCount = findViewById(R.id.postsCount);
+        followersCount = findViewById(R.id.followersCount);
+        followingCount = findViewById(R.id.followingCount);
+
+        emptyProfileText =
+                findViewById(R.id.emptyProfileText);
+
+        backButton =
+                findViewById(R.id.backButton);
+
+        settingsButton =
+                findViewById(R.id.settingsButton);
+
+        profileImage =
+                findViewById(R.id.profileImage);
     }
 
     private void setupListeners() {
 
-        ImageButton backButton = findViewById(R.id.backButton);
-        ImageButton settingsButton = findViewById(R.id.settingsButton);
-
-        android.widget.Button editProfileButton =
-                findViewById(R.id.editProfileButton);
-
-        android.widget.Button shareProfileButton =
-                findViewById(R.id.shareProfileButton);
-
         if (backButton != null) {
-            backButton.setOnClickListener(v -> finish());
+            backButton.setOnClickListener(v ->
+                    finish()
+            );
         }
 
         if (settingsButton != null) {
             settingsButton.setOnClickListener(v -> {
-                Toast.makeText(
-                        this,
-                        "Settings",
-                        Toast.LENGTH_SHORT
-                ).show();
+
+                Intent intent =
+                        new Intent(
+                                MyProfileActivity.this,
+                                SettingsActivity.class
+                        );
+
+                startActivity(intent);
             });
         }
 
-        if (editProfileButton != null) {
-            editProfileButton.setOnClickListener(v -> {
-                try {
-                    startActivity(
-                            new android.content.Intent(
-                                    this,
-                                    ProfileActivity.class
-                            )
-                    );
-                } catch (Exception e) {
-                    Toast.makeText(
-                            this,
-                            "Edit Profile open nahi ho raha",
-                            Toast.LENGTH_SHORT
-                    ).show();
-                }
+        View editButton =
+                findViewById(R.id.editProfileButton);
+
+        if (editButton != null) {
+            editButton.setOnClickListener(v -> {
+
+                Intent intent =
+                        new Intent(
+                                MyProfileActivity.this,
+                                ProfileActivity.class
+                        );
+
+                startActivity(intent);
             });
         }
 
-        if (shareProfileButton != null) {
-            shareProfileButton.setOnClickListener(v -> shareProfile());
+        View shareButton =
+                findViewById(R.id.shareProfileButton);
+
+        if (shareButton != null) {
+            shareButton.setOnClickListener(v ->
+                    shareProfile()
+            );
         }
 
-        // PROFILE PHOTO CLICK
+        // Profile photo click
         if (profileImage != null) {
             profileImage.setClickable(true);
             profileImage.setFocusable(true);
 
             profileImage.setOnClickListener(v ->
-                    openProfilePhotoViewer()
+                    showProfilePhotoViewer()
             );
         }
     }
 
     private void loadProfile() {
 
-        if (SupabaseConfig.SUPABASE == null) {
-            showEmptyProfile();
+        String userId =
+                SupabaseAuthManager.getUserId(this);
+
+        String accessToken =
+                SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(userId)
+                || TextUtils.isEmpty(accessToken)) {
+
+            openLogin();
             return;
         }
 
-        String userId = SupabaseConfig.SUPABASE.auth.currentUser != null
-                ? SupabaseConfig.SUPABASE.auth.currentUser.id
-                : null;
+        new Thread(() -> {
 
-        if (userId == null || userId.isEmpty()) {
-            showEmptyProfile();
-            return;
-        }
+            HttpURLConnection connection = null;
 
-        String url = SupabaseConfig.PROJECT_URL
-                + "/rest/v1/profiles"
-                + "?id=eq."
-                + userId
-                + "&select=name,username,bio,profile_image_url";
+            try {
 
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader(
+                String endpoint =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/profiles"
+                                + "?id=eq."
+                                + userId
+                                + "&select=name,username,bio,profile_image_url";
+
+                URL url = new URL(endpoint);
+
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod("GET");
+
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
+
+                connection.setRequestProperty(
                         "apikey",
-                        SupabaseConfig.ANON_KEY
-                )
-                .addHeader(
+                        SupabaseConfig.PUBLISHABLE_KEY
+                );
+
+                connection.setRequestProperty(
                         "Authorization",
-                        "Bearer " + SupabaseConfig.ANON_KEY
-                )
-                .get()
-                .build();
+                        "Bearer " + accessToken
+                );
 
-        client.newCall(request).enqueue(new Callback() {
+                connection.setRequestProperty(
+                        "Accept",
+                        "application/json"
+                );
 
-            @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> showEmptyProfile());
-            }
+                int responseCode =
+                        connection.getResponseCode();
 
-            @Override
-            public void onResponse(Call call, Response response)
-                    throws IOException {
+                String response =
+                        readResponse(
+                                connection,
+                                responseCode
+                        );
 
-                String responseBody = response.body() != null
-                        ? response.body().string()
-                        : "";
-
-                if (!response.isSuccessful()) {
-                    runOnUiThread(() -> showEmptyProfile());
-                    return;
-                }
-
-                try {
-
-                    org.json.JSONArray array =
-                            new org.json.JSONArray(responseBody);
-
-                    if (array.length() == 0) {
-                        runOnUiThread(() -> showEmptyProfile());
-                        return;
-                    }
-
-                    JSONObject profile =
-                            array.getJSONObject(0);
+                if (responseCode >= 200
+                        && responseCode < 300) {
 
                     runOnUiThread(() ->
-                            displayProfile(profile)
+                            displayProfile(response)
                     );
 
-                } catch (Exception e) {
-                    runOnUiThread(() -> showEmptyProfile());
+                } else {
+
+                    runOnUiThread(() ->
+                            Toast.makeText(
+                                    MyProfileActivity.this,
+                                    "Profile load failed",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                    );
+                }
+
+            } catch (Exception e) {
+
+                runOnUiThread(() ->
+                        Toast.makeText(
+                                MyProfileActivity.this,
+                                "Network error",
+                                Toast.LENGTH_SHORT
+                        ).show()
+                );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
                 }
             }
-        });
+
+        }).start();
     }
 
-    private void displayProfile(JSONObject profile) {
+    private void displayProfile(String response) {
 
         try {
 
-            String name = profile.optString(
-                    "name",
-                    ""
-            );
+            JSONArray array =
+                    new JSONArray(response);
 
-            String username = profile.optString(
-                    "username",
-                    ""
-            );
+            if (array.length() == 0) {
 
-            String bio = profile.optString(
-                    "bio",
-                    ""
-            );
-
-            String photoFileName = profile.optString(
-                    "profile_image_url",
-                    ""
-            );
-
-            if (profileName != null) {
-                profileName.setText(
-                        name.isEmpty() ? "User" : name
-                );
+                showEmptyProfile();
+                return;
             }
 
-            if (profileUsername != null) {
+            JSONObject profile =
+                    array.getJSONObject(0);
 
-                if (!username.isEmpty()) {
-                    if (username.startsWith("@")) {
-                        profileUsername.setText(username);
-                    } else {
-                        profileUsername.setText(
-                                "@" + username
-                        );
-                    }
-                } else {
-                    profileUsername.setText("");
-                }
-            }
-
-            if (profileBio != null) {
-                profileBio.setText(bio);
-            }
-
-            if (photoFileName != null
-                    && !photoFileName.isEmpty()
-                    && !photoFileName.equals("null")) {
-
-                currentProfilePhotoFileName =
-                        photoFileName;
-
-                fetchAndDisplayB2Image(
-                        photoFileName
-                );
-
-            } else {
-                currentProfilePhotoFileName = null;
-
-                if (profileImage != null) {
-                    profileImage.setImageResource(
-                            android.R.drawable.ic_menu_myplaces
+            String name =
+                    profile.optString(
+                            "name",
+                            ""
                     );
-                }
+
+            String username =
+                    profile.optString(
+                            "username",
+                            ""
+                    );
+
+            String bio =
+                    profile.optString(
+                            "bio",
+                            ""
+                    );
+
+            profileImageFileName =
+                    profile.optString(
+                            "profile_image_url",
+                            ""
+                    );
+
+            if (TextUtils.isEmpty(name)) {
+                name = "Sanskriti Sathi User";
+            }
+
+            if (TextUtils.isEmpty(username)) {
+                username = "username";
+            }
+
+            if (TextUtils.isEmpty(bio)) {
+                bio = "Apni Sanskriti • Apna Gaurav";
+            }
+
+            profileName.setText(name);
+
+            profileUsername.setText(
+                    "@" + username.replace("@", "")
+            );
+
+            profileBio.setText(bio);
+
+            if (emptyProfileText != null) {
+                emptyProfileText.setVisibility(
+                        View.GONE
+                );
+            }
+
+            // Load profile photo
+            if (!TextUtils.isEmpty(profileImageFileName)) {
+                fetchAndDisplayB2Image(
+                        profileImageFileName
+                );
             }
 
         } catch (Exception e) {
+
             showEmptyProfile();
         }
     }
 
+    /**
+     * Loads private B2 profile image through bright-action.
+     *
+     * Supports:
+     * 1. Direct image response
+     * 2. JSON response with downloadUrl + authorizationToken
+     */
     private void fetchAndDisplayB2Image(
             String photoFileName
     ) {
 
-        try {
-
-            JSONObject json = new JSONObject();
-
-            json.put(
-                    "action",
-                    "get_profile_photo"
-            );
-
-            json.put(
-                    "fileName",
-                    photoFileName
-            );
-
-            RequestBody body = RequestBody.create(
-                    json.toString(),
-                    MediaType.parse("application/json")
-            );
-
-            Request request = new Request.Builder()
-                    .url(
-                            SupabaseConfig.PROJECT_URL
-                                    + "/functions/v1/bright-action"
-                    )
-                    .addHeader(
-                            "Authorization",
-                            "Bearer "
-                                    + SupabaseConfig.ANON_KEY
-                    )
-                    .addHeader(
-                            "apikey",
-                            SupabaseConfig.ANON_KEY
-                    )
-                    .post(body)
-                    .build();
-
-            client.newCall(request).enqueue(
-                    new Callback() {
-
-                        @Override
-                        public void onFailure(
-                                Call call,
-                                IOException e
-                        ) {
-                            runOnUiThread(() -> {
-
-                                if (profileImage != null) {
-                                    profileImage.setImageResource(
-                                            android.R.drawable.ic_menu_myplaces
-                                    );
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onResponse(
-                                Call call,
-                                Response response
-                        ) throws IOException {
-
-                            if (response.body() == null) {
-                                return;
-                            }
-
-                            String contentType =
-                                    response.header(
-                                            "Content-Type",
-                                            ""
-                                    );
-
-                            byte[] responseBytes =
-                                    response.body().bytes();
-
-                            /*
-                             * CASE 1:
-                             * Edge Function directly image return kar rahi hai
-                             */
-                            if (contentType != null
-                                    && contentType
-                                    .toLowerCase()
-                                    .startsWith("image/")) {
-
-                                runOnUiThread(() -> {
-
-                                    android.graphics.Bitmap bitmap =
-                                            android.graphics.BitmapFactory
-                                                    .decodeByteArray(
-                                                            responseBytes,
-                                                            0,
-                                                            responseBytes.length
-                                                    );
-
-                                    if (bitmap != null
-                                            && profileImage != null) {
-
-                                        profileImage.setImageBitmap(
-                                                bitmap
-                                        );
-                                    }
-                                });
-
-                                return;
-                            }
-
-                            /*
-                             * CASE 2:
-                             * Edge Function JSON return karti hai
-                             */
-                            try {
-
-                                String jsonText =
-                                        new String(
-                                                responseBytes,
-                                                java.nio.charset.StandardCharsets
-                                                        .UTF_8
-                                        );
-
-                                JSONObject result =
-                                        new JSONObject(jsonText);
-
-                                String downloadUrl =
-                                        result.optString(
-                                                "downloadUrl",
-                                                ""
-                                        );
-
-                                String authorizationToken =
-                                        result.optString(
-                                                "authorizationToken",
-                                                ""
-                                        );
-
-                                if (downloadUrl.isEmpty()) {
-                                    return;
-                                }
-
-                                Request.Builder imageRequest =
-                                        new Request.Builder()
-                                                .url(downloadUrl)
-                                                .get();
-
-                                if (!authorizationToken.isEmpty()) {
-
-                                    imageRequest.addHeader(
-                                            "Authorization",
-                                            authorizationToken
-                                    );
-                                }
-
-                                client.newCall(
-                                        imageRequest.build()
-                                ).enqueue(new Callback() {
-
-                                    @Override
-                                    public void onFailure(
-                                            Call call,
-                                            IOException e
-                                    ) {
-                                    }
-
-                                    @Override
-                                    public void onResponse(
-                                            Call call,
-                                            Response imageResponse
-                                    ) throws IOException {
-
-                                        if (imageResponse.body()
-                                                == null) {
-                                            return;
-                                        }
-
-                                        byte[] imageBytes =
-                                                imageResponse
-                                                        .body()
-                                                        .bytes();
-
-                                        runOnUiThread(() -> {
-
-                                            android.graphics.Bitmap bitmap =
-                                                    android.graphics.BitmapFactory
-                                                            .decodeByteArray(
-                                                                    imageBytes,
-                                                                    0,
-                                                                    imageBytes.length
-                                                            );
-
-                                            if (bitmap != null
-                                                    && profileImage != null) {
-
-                                                profileImage
-                                                        .setImageBitmap(
-                                                                bitmap
-                                                        );
-                                            }
-                                        });
-                                    }
-                                });
-
-                            } catch (Exception ignored) {
-                            }
-                        }
-                    }
-            );
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (TextUtils.isEmpty(photoFileName)) {
+            return;
         }
+
+        final String accessToken =
+                SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(accessToken)) {
+            return;
+        }
+
+        new Thread(() -> {
+
+            HttpURLConnection connection = null;
+            HttpURLConnection imageConnection = null;
+
+            try {
+
+                String endpoint =
+                        SupabaseConfig.PROJECT_URL
+                                + "/functions/v1/bright-action";
+
+                JSONObject request =
+                        new JSONObject();
+
+                request.put(
+                        "action",
+                        "get_profile_photo"
+                );
+
+                request.put(
+                        "fileName",
+                        photoFileName
+                );
+
+                URL url =
+                        new URL(endpoint);
+
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setUseCaches(false);
+
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(60000);
+
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "application/json; charset=UTF-8"
+                );
+
+                connection.setRequestProperty(
+                        "Accept",
+                        "application/json, image/*"
+                );
+
+                connection.setRequestProperty(
+                        "apikey",
+                        SupabaseConfig.PUBLISHABLE_KEY
+                );
+
+                connection.setRequestProperty(
+                        "Authorization",
+                        "Bearer " + accessToken
+                );
+
+                byte[] requestBytes =
+                        request.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
+
+                connection.setFixedLengthStreamingMode(
+                        requestBytes.length
+                );
+
+                OutputStream output =
+                        connection.getOutputStream();
+
+                output.write(requestBytes);
+                output.flush();
+                output.close();
+
+                int responseCode =
+                        connection.getResponseCode();
+
+                String contentType =
+                        connection.getHeaderField(
+                                "Content-Type"
+                        );
+
+                if (responseCode < 200
+                        || responseCode >= 300) {
+
+                    String error =
+                            readResponse(
+                                    connection,
+                                    responseCode
+                            );
+
+                    throw new Exception(
+                            "Photo load failed: HTTP "
+                                    + responseCode
+                                    + "\n"
+                                    + error
+                    );
+                }
+
+                /*
+                 * CASE 1:
+                 * Edge Function directly returns image bytes.
+                 */
+                if (contentType != null
+                        && contentType
+                        .toLowerCase()
+                        .startsWith("image/")) {
+
+                    InputStream input =
+                            connection.getInputStream();
+
+                    Bitmap bitmap =
+                            BitmapFactory.decodeStream(
+                                    input
+                            );
+
+                    input.close();
+
+                    if (bitmap == null) {
+                        throw new Exception(
+                                "Image decode failed"
+                        );
+                    }
+
+                    final Bitmap finalBitmap =
+                            bitmap;
+
+                    runOnUiThread(() -> {
+
+                        if (!isFinishing()
+                                && !isDestroyed()
+                                && profileImage != null) {
+
+                            profileImage.setImageBitmap(
+                                    finalBitmap
+                            );
+                        }
+                    });
+
+                    return;
+                }
+
+                /*
+                 * CASE 2:
+                 * Edge Function returns JSON.
+                 */
+                String jsonResponse =
+                        readResponse(
+                                connection,
+                                responseCode
+                        );
+
+                JSONObject result =
+                        new JSONObject(
+                                jsonResponse
+                        );
+
+                if (!result.optBoolean(
+                        "success",
+                        false
+                )) {
+
+                    throw new Exception(
+                            "Photo authorization failed"
+                    );
+                }
+
+                String downloadUrl =
+                        result.optString(
+                                "downloadUrl",
+                                ""
+                        );
+
+                String authorizationToken =
+                        result.optString(
+                                "authorizationToken",
+                                ""
+                        );
+
+                if (TextUtils.isEmpty(downloadUrl)
+                        || TextUtils.isEmpty(
+                        authorizationToken
+                )) {
+
+                    throw new Exception(
+                            "Photo URL/token missing"
+                    );
+                }
+
+                URL imageUrl =
+                        new URL(downloadUrl);
+
+                imageConnection =
+                        (HttpURLConnection)
+                                imageUrl.openConnection();
+
+                imageConnection.setRequestMethod(
+                        "GET"
+                );
+
+                imageConnection.setUseCaches(false);
+
+                imageConnection.setConnectTimeout(
+                        30000
+                );
+
+                imageConnection.setReadTimeout(
+                        60000
+                );
+
+                imageConnection.setRequestProperty(
+                        "Authorization",
+                        authorizationToken
+                );
+
+                int imageResponseCode =
+                        imageConnection
+                                .getResponseCode();
+
+                if (imageResponseCode < 200
+                        || imageResponseCode >= 300) {
+
+                    throw new Exception(
+                            "B2 image download failed: HTTP "
+                                    + imageResponseCode
+                    );
+                }
+
+                InputStream imageInput =
+                        imageConnection
+                                .getInputStream();
+
+                Bitmap bitmap =
+                        BitmapFactory.decodeStream(
+                                imageInput
+                        );
+
+                imageInput.close();
+
+                if (bitmap == null) {
+                    throw new Exception(
+                            "B2 image decode failed"
+                    );
+                }
+
+                final Bitmap finalBitmap =
+                        bitmap;
+
+                runOnUiThread(() -> {
+
+                    if (!isFinishing()
+                            && !isDestroyed()
+                            && profileImage != null) {
+
+                        profileImage.setImageBitmap(
+                                finalBitmap
+                        );
+                    }
+                });
+
+            } catch (Exception e) {
+
+                // Photo failure should not break profile screen.
+                // Keep default profile image.
+
+            } finally {
+
+                if (imageConnection != null) {
+                    imageConnection.disconnect();
+                }
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
     }
 
-    // =========================================================
-    // FULL SCREEN PROFILE PHOTO VIEWER
-    // =========================================================
-
-    private void openProfilePhotoViewer() {
+    /**
+     * Full-screen profile photo viewer.
+     */
+    private void showProfilePhotoViewer() {
 
         if (profileImage == null) {
             return;
         }
 
         if (profileImage.getDrawable() == null) {
-
             Toast.makeText(
                     this,
                     "Profile photo available nahi hai",
@@ -500,15 +654,33 @@ public class MyProfileActivity extends AppCompatActivity {
         }
 
         final Dialog dialog =
-                new Dialog(this);
-
-        dialog.requestWindowFeature(
-                android.view.Window.FEATURE_NO_TITLE
-        );
+                new Dialog(
+                        this,
+                        android.R.style.Theme_Black_NoTitleBar_Fullscreen
+                );
 
         dialog.setContentView(
                 R.layout.dialog_profile_photo
         );
+
+        Window window =
+                dialog.getWindow();
+
+        if (window != null) {
+
+            window.setBackgroundDrawableResource(
+                    android.R.color.black
+            );
+
+            window.setLayout(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT
+            );
+
+            window.addFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+            );
+        }
 
         ImageView viewerImage =
                 dialog.findViewById(
@@ -520,140 +692,190 @@ public class MyProfileActivity extends AppCompatActivity {
                         R.id.closeButton
                 );
 
-        if (viewerImage == null) {
-            dialog.dismiss();
-            return;
+        if (viewerImage != null) {
+
+            viewerImage.setImageDrawable(
+                    profileImage.getDrawable()
+            );
+
+            viewerImage.setScaleType(
+                    ImageView.ScaleType.FIT_CENTER
+            );
         }
 
-        /*
-         * Current profile image ko viewer me show karo.
-         */
-        viewerImage.setImageDrawable(
-                profileImage.getDrawable()
-        );
-
-        /*
-         * Close button
-         */
         if (closeButton != null) {
-            closeButton.setOnClickListener(
-                    v -> dialog.dismiss()
+
+            closeButton.setOnClickListener(v ->
+                    dialog.dismiss()
             );
         }
 
-        /*
-         * Photo par tap = close
-         */
-        viewerImage.setOnClickListener(
-                v -> dialog.dismiss()
-        );
+        if (viewerImage != null) {
 
-        /*
-         * Dialog window setup
-         */
-        if (dialog.getWindow() != null) {
-
-            dialog.getWindow().setBackgroundDrawable(
-                    new ColorDrawable(Color.BLACK)
-            );
-
-            dialog.getWindow().setDimAmount(0f);
-
-            dialog.getWindow().setGravity(
-                    Gravity.CENTER
+            viewerImage.setOnClickListener(v ->
+                    dialog.dismiss()
             );
         }
 
         dialog.show();
 
-        /*
-         * IMPORTANT:
-         * setLayout() show() ke BAAD karna hai.
-         */
-        if (dialog.getWindow() != null) {
+        // Window size must be set after show().
+        Window dialogWindow =
+                dialog.getWindow();
 
-            dialog.getWindow().setLayout(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
+        if (dialogWindow != null) {
+
+            dialogWindow.setLayout(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT
             );
 
-            dialog.getWindow().setBackgroundDrawable(
-                    new ColorDrawable(Color.BLACK)
+            dialogWindow.setBackgroundDrawableResource(
+                    android.R.color.black
             );
         }
     }
 
-    // =========================================================
-    // SHARE PROFILE
-    // =========================================================
+    private void showEmptyProfile() {
+
+        if (profileName != null) {
+            profileName.setText(
+                    "Complete Your Profile"
+            );
+        }
+
+        if (profileUsername != null) {
+            profileUsername.setText(
+                    "@username"
+            );
+        }
+
+        if (profileBio != null) {
+            profileBio.setText(
+                    "Apni Sanskriti • Apna Gaurav"
+            );
+        }
+
+        if (emptyProfileText != null) {
+
+            emptyProfileText.setText(
+                    "Profile data abhi available nahi hai"
+            );
+
+            emptyProfileText.setVisibility(
+                    View.VISIBLE
+            );
+        }
+    }
 
     private void shareProfile() {
 
-        String username = "";
+        String name =
+                profileName != null
+                        ? profileName.getText().toString()
+                        : "Sanskriti Sathi User";
 
-        if (profileUsername != null) {
-            username =
-                    profileUsername
-                            .getText()
-                            .toString();
-        }
+        String username =
+                profileUsername != null
+                        ? profileUsername.getText().toString()
+                        : "@username";
 
-        String shareText;
+        String shareText =
+                name
+                        + "\n"
+                        + username
+                        + "\n\n"
+                        + "Sanskriti Sathi par mera profile dekhiye.";
 
-        if (username.isEmpty()) {
-            shareText =
-                    "Check out my profile on Sanskriti Sathi!";
-        } else {
-            shareText =
-                    "Check out "
-                            + username
-                            + " on Sanskriti Sathi!";
-        }
-
-        android.content.Intent shareIntent =
-                new android.content.Intent(
-                        android.content.Intent.ACTION_SEND
+        Intent shareIntent =
+                new Intent(
+                        Intent.ACTION_SEND
                 );
 
-        shareIntent.setType("text/plain");
+        shareIntent.setType(
+                "text/plain"
+        );
 
         shareIntent.putExtra(
-                android.content.Intent.EXTRA_TEXT,
+                Intent.EXTRA_TEXT,
                 shareText
         );
 
         startActivity(
-                android.content.Intent.createChooser(
+                Intent.createChooser(
                         shareIntent,
                         "Share Profile"
                 )
         );
     }
 
-    // =========================================================
-    // EMPTY PROFILE
-    // =========================================================
+    private void openLogin() {
 
-    private void showEmptyProfile() {
+        Intent intent =
+                new Intent(
+                        MyProfileActivity.this,
+                        LoginActivity.class
+                );
 
-        if (profileName != null) {
-            profileName.setText("User");
-        }
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
 
-        if (profileUsername != null) {
-            profileUsername.setText("");
-        }
+        startActivity(intent);
 
-        if (profileBio != null) {
-            profileBio.setText("");
-        }
+        finish();
+    }
 
-        currentProfilePhotoFileName = null;
+    private String readResponse(
+            HttpURLConnection connection,
+            int responseCode
+    ) {
 
-        if (profileImage != null) {
-            profileImage.setImageResource(
-                    android.R.drawable.ic_menu_myplaces
-            );
+        try {
+
+            InputStream stream;
+
+            if (responseCode >= 200
+                    && responseCode < 400) {
+
+                stream =
+                        connection.getInputStream();
+
+            } else {
+
+                stream =
+                        connection.getErrorStream();
+            }
+
+            if (stream == null) {
+                return "";
+            }
+
+            BufferedReader reader =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    stream,
+                                    StandardCharsets.UTF_8
+                            )
+                    );
+
+            StringBuilder result =
+                    new StringBuilder();
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+
+            reader.close();
+
+            return result.toString();
+
+        } catch (Exception e) {
+
+            return "";
         }
     }
 }
