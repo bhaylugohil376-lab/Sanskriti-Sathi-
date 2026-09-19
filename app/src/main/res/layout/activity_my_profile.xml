@@ -22,7 +22,6 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp">
 
-            <!-- BACK -->
             <ImageButton
                 android:id="@+id/backButton"
                 android:layout_width="48dp"
@@ -32,7 +31,6 @@
                 android:padding="12dp"
                 android:src="@drawable/ic_back" />
 
-            <!-- TITLE AREA -->
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -50,7 +48,6 @@
 
             </FrameLayout>
 
-            <!-- SETTINGS -->
             <ImageButton
                 android:id="@+id/settingsButton"
                 android:layout_width="48dp"
@@ -75,16 +72,17 @@
             <!-- PROFILE PHOTO -->
             <ImageView
                 android:id="@+id/profileImage"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
+                android:layout_width="104dp"
+                android:layout_height="104dp"
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/profile_circle_background"
-                android:contentDescription="Profile photo"
+                android:clickable="true"
+                android:contentDescription="Open profile photo"
+                android:focusable="true"
                 android:padding="3dp"
                 android:scaleType="centerCrop"
                 android:src="@android:drawable/ic_menu_myplaces" />
 
-            <!-- NAME -->
             <TextView
                 android:id="@+id/profileName"
                 android:layout_width="match_parent"
@@ -96,7 +94,6 @@
                 android:textSize="21sp"
                 android:textStyle="bold" />
 
-            <!-- USERNAME -->
             <TextView
                 android:id="@+id/profileUsername"
                 android:layout_width="match_parent"
@@ -107,7 +104,6 @@
                 android:textColor="#D6A84F"
                 android:textSize="14sp" />
 
-            <!-- BIO -->
             <TextView
                 android:id="@+id/profileBio"
                 android:layout_width="match_parent"
@@ -133,7 +129,6 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp">
 
-            <!-- POSTS -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -160,7 +155,6 @@
 
             </LinearLayout>
 
-            <!-- FOLLOWERS -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -187,7 +181,6 @@
 
             </LinearLayout>
 
-            <!-- FOLLOWING -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -298,13 +291,11 @@
 
         </LinearLayout>
 
-        <!-- TAB DIVIDER -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#29313C" />
 
-        <!-- POSTS GRID -->
         <GridLayout
             android:id="@+id/profilePostsGrid"
             android:layout_width="match_parent"
@@ -313,7 +304,6 @@
             android:padding="2dp"
             android:useDefaultMargins="false" />
 
-        <!-- EMPTY STATE -->
         <TextView
             android:id="@+id/emptyProfileText"
             android:layout_width="match_parent"
