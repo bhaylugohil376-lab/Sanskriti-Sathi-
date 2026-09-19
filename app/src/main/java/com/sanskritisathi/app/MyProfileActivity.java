@@ -1,11 +1,18 @@
 package com.sanskritisathi.app;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -88,49 +95,144 @@ public class MyProfileActivity extends AppCompatActivity {
     private void setupListeners() {
 
         if (backButton != null) {
-            backButton.setOnClickListener(v ->
-                    finish()
-            );
+            backButton.setOnClickListener(v -> finish());
         }
 
         if (settingsButton != null) {
             settingsButton.setOnClickListener(v -> {
 
-                Intent intent =
-                        new Intent(
-                                MyProfileActivity.this,
-                                SettingsActivity.class
-                        );
+                Intent intent = new Intent(
+                        MyProfileActivity.this,
+                        SettingsActivity.class
+                );
 
                 startActivity(intent);
             });
         }
 
-        View editButton =
-                findViewById(R.id.editProfileButton);
+        View editButton = findViewById(R.id.editProfileButton);
 
         if (editButton != null) {
             editButton.setOnClickListener(v -> {
 
-                Intent intent =
-                        new Intent(
-                                MyProfileActivity.this,
-                                ProfileActivity.class
-                        );
+                Intent intent = new Intent(
+                        MyProfileActivity.this,
+                        ProfileActivity.class
+                );
 
                 startActivity(intent);
             });
         }
 
-        View shareButton =
-                findViewById(R.id.shareProfileButton);
+        View shareButton = findViewById(R.id.shareProfileButton);
 
         if (shareButton != null) {
-            shareButton.setOnClickListener(v ->
-                    shareProfile()
+            shareButton.setOnClickListener(v -> shareProfile());
+        }
+
+        // PROFILE PHOTO CLICK
+        if (profileImage != null) {
+
+            profileImage.setOnClickListener(v ->
+                    openProfilePhotoViewer()
             );
         }
     }
+
+    // ============================================================
+    // FULL SCREEN PROFILE PHOTO VIEWER
+    // ============================================================
+
+    private void openProfilePhotoViewer() {
+
+        if (profileImage == null ||
+                profileImage.getDrawable() == null) {
+
+            Toast.makeText(
+                    this,
+                    "Profile photo available nahi hai",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        Dialog dialog = new Dialog(this);
+
+        dialog.requestWindowFeature(
+                android.view.Window.FEATURE_NO_TITLE
+        );
+
+        dialog.setContentView(
+                R.layout.dialog_profile_photo
+        );
+
+        if (dialog.getWindow() != null) {
+
+            dialog.getWindow().setBackgroundDrawable(
+                    new ColorDrawable(Color.BLACK)
+            );
+
+            dialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+            );
+
+            dialog.getWindow().setGravity(
+                    Gravity.CENTER
+            );
+        }
+
+        ZoomImageView viewerImage =
+                dialog.findViewById(R.id.viewerImage);
+
+        ImageButton closeButton =
+                dialog.findViewById(R.id.closeButton);
+
+        if (viewerImage == null) {
+            dialog.dismiss();
+            return;
+        }
+
+        // Same B2-loaded image
+        viewerImage.setImageDrawable(
+                profileImage.getDrawable()
+        );
+
+        if (closeButton != null) {
+
+            closeButton.setOnClickListener(
+                    v -> dialog.dismiss()
+            );
+        }
+
+        // Tap image once when not zoomed -> close
+        viewerImage.setOnSingleTapConfirmedListener(
+                () -> {
+
+                    if (!viewerImage.isZoomed()) {
+                        dialog.dismiss();
+                    }
+                }
+        );
+
+        dialog.setOnShowListener(d -> {
+
+            if (dialog.getWindow() != null) {
+
+                dialog.getWindow().setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+            }
+        });
+
+        dialog.show();
+    }
+
+    // ============================================================
+    // LOAD PROFILE
+    // ============================================================
 
     private void loadProfile() {
 
@@ -160,8 +262,7 @@ public class MyProfileActivity extends AppCompatActivity {
                                 + userId
                                 + "&select=name,username,bio,profile_image_url";
 
-                URL url =
-                        new URL(endpoint);
+                URL url = new URL(endpoint);
 
                 connection =
                         (HttpURLConnection)
@@ -234,6 +335,10 @@ public class MyProfileActivity extends AppCompatActivity {
         }).start();
     }
 
+    // ============================================================
+    // DISPLAY PROFILE
+    // ============================================================
+
     private void displayProfile(String response) {
 
         try {
@@ -251,22 +356,13 @@ public class MyProfileActivity extends AppCompatActivity {
                     array.getJSONObject(0);
 
             String name =
-                    profile.optString(
-                            "name",
-                            ""
-                    );
+                    profile.optString("name", "");
 
             String username =
-                    profile.optString(
-                            "username",
-                            ""
-                    );
+                    profile.optString("username", "");
 
             String bio =
-                    profile.optString(
-                            "bio",
-                            ""
-                    );
+                    profile.optString("bio", "");
 
             String profileImageFileName =
                     profile.optString(
@@ -295,13 +391,16 @@ public class MyProfileActivity extends AppCompatActivity {
             profileBio.setText(bio);
 
             if (emptyProfileText != null) {
+
                 emptyProfileText.setVisibility(
                         View.GONE
                 );
             }
 
-            // Load private Backblaze B2 profile photo
-            if (!TextUtils.isEmpty(profileImageFileName)) {
+            // B2 PROFILE PHOTO
+            if (!TextUtils.isEmpty(
+                    profileImageFileName
+            )) {
 
                 fetchAndDisplayB2Image(
                         profileImageFileName
@@ -313,6 +412,10 @@ public class MyProfileActivity extends AppCompatActivity {
             showEmptyProfile();
         }
     }
+
+    // ============================================================
+    // B2 PHOTO LOADER
+    // ============================================================
 
     private void fetchAndDisplayB2Image(
             String photoFileName
@@ -422,17 +525,14 @@ public class MyProfileActivity extends AppCompatActivity {
                             );
 
                     throw new Exception(
-                            "Photo load failed: HTTP "
+                            "Photo load failed HTTP "
                                     + responseCode
                                     + "\n"
                                     + error
                     );
                 }
 
-                /*
-                 * Case 1:
-                 * Edge Function directly returns image bytes.
-                 */
+                // DIRECT IMAGE
                 if (contentType != null
                         && contentType
                         .toLowerCase()
@@ -472,11 +572,7 @@ public class MyProfileActivity extends AppCompatActivity {
                     return;
                 }
 
-                /*
-                 * Case 2:
-                 * Edge Function returns JSON containing
-                 * temporary B2 download URL + token.
-                 */
+                // JSON RESPONSE
                 String jsonResponse =
                         readResponse(
                                 connection,
@@ -556,7 +652,7 @@ public class MyProfileActivity extends AppCompatActivity {
                             );
 
                     throw new Exception(
-                            "B2 image download failed: HTTP "
+                            "B2 image download failed HTTP "
                                     + imageResponseCode
                                     + "\n"
                                     + error
@@ -619,27 +715,35 @@ public class MyProfileActivity extends AppCompatActivity {
         }).start();
     }
 
+    // ============================================================
+    // EMPTY PROFILE
+    // ============================================================
+
     private void showEmptyProfile() {
 
         if (profileName != null) {
+
             profileName.setText(
                     "Complete Your Profile"
             );
         }
 
         if (profileUsername != null) {
+
             profileUsername.setText(
                     "@username"
             );
         }
 
         if (profileBio != null) {
+
             profileBio.setText(
                     "Apni Sanskriti • Apna Gaurav"
             );
         }
 
         if (emptyProfileText != null) {
+
             emptyProfileText.setText(
                     "Profile data abhi available nahi hai"
             );
@@ -649,6 +753,10 @@ public class MyProfileActivity extends AppCompatActivity {
             );
         }
     }
+
+    // ============================================================
+    // SHARE
+    // ============================================================
 
     private void shareProfile() {
 
@@ -687,6 +795,10 @@ public class MyProfileActivity extends AppCompatActivity {
         );
     }
 
+    // ============================================================
+    // LOGIN
+    // ============================================================
+
     private void openLogin() {
 
         Intent intent =
@@ -701,8 +813,13 @@ public class MyProfileActivity extends AppCompatActivity {
         );
 
         startActivity(intent);
+
         finish();
     }
+
+    // ============================================================
+    // RESPONSE READER
+    // ============================================================
 
     private String readResponse(
             HttpURLConnection connection,
@@ -755,6 +872,169 @@ public class MyProfileActivity extends AppCompatActivity {
         } catch (Exception e) {
 
             return "";
+        }
+    }
+
+    // ============================================================
+    // ZOOM IMAGE VIEW
+    // ============================================================
+
+    public static class ZoomImageView
+            extends androidx.appcompat.widget.AppCompatImageView {
+
+        private float scale = 1f;
+
+        private float lastX;
+        private float lastY;
+
+        private float downX;
+        private float downY;
+
+        private boolean moving = false;
+
+        private ScaleGestureDetector scaleDetector;
+
+        private Runnable singleTapListener;
+
+        public ZoomImageView(
+                android.content.Context context
+        ) {
+            super(context);
+            init(context);
+        }
+
+        public ZoomImageView(
+                android.content.Context context,
+                android.util.AttributeSet attrs
+        ) {
+            super(context, attrs);
+            init(context);
+        }
+
+        private void init(
+                android.content.Context context
+        ) {
+
+            setScaleType(
+                    ImageView.ScaleType.FIT_CENTER
+            );
+
+            scaleDetector =
+                    new ScaleGestureDetector(
+                            context,
+                            new ScaleGestureDetector
+                                    .SimpleOnScaleGestureListener() {
+
+                                @Override
+                                public boolean onScale(
+                                        ScaleGestureDetector detector
+                                ) {
+
+                                    scale *=
+                                            detector.getScaleFactor();
+
+                                    scale =
+                                            Math.max(
+                                                    1f,
+                                                    Math.min(
+                                                            scale,
+                                                            5f
+                                                    )
+                                            );
+
+                                    setScaleX(scale);
+                                    setScaleY(scale);
+
+                                    return true;
+                                }
+                            }
+                    );
+        }
+
+        @Override
+        public boolean onTouchEvent(
+                MotionEvent event
+        ) {
+
+            scaleDetector.onTouchEvent(event);
+
+            switch (event.getActionMasked()) {
+
+                case MotionEvent.ACTION_DOWN:
+
+                    downX = event.getX();
+                    downY = event.getY();
+
+                    lastX = event.getX();
+                    lastY = event.getY();
+
+                    moving = false;
+
+                    return true;
+
+                case MotionEvent.ACTION_MOVE:
+
+                    if (scale > 1f
+                            && event.getPointerCount() == 1) {
+
+                        float dx =
+                                event.getX() - lastX;
+
+                        float dy =
+                                event.getY() - lastY;
+
+                        setTranslationX(
+                                getTranslationX() + dx
+                        );
+
+                        setTranslationY(
+                                getTranslationY() + dy
+                        );
+
+                        lastX = event.getX();
+                        lastY = event.getY();
+
+                        moving = true;
+                    }
+
+                    return true;
+
+                case MotionEvent.ACTION_UP:
+
+                    float dx =
+                            Math.abs(
+                                    event.getX() - downX
+                            );
+
+                    float dy =
+                            Math.abs(
+                                    event.getY() - downY
+                            );
+
+                    if (!moving
+                            && dx < 20
+                            && dy < 20
+                            && scale <= 1.05f) {
+
+                        if (singleTapListener != null) {
+                            singleTapListener.run();
+                        }
+                    }
+
+                    return true;
+            }
+
+            return true;
+        }
+
+        public boolean isZoomed() {
+            return scale > 1.05f;
+        }
+
+        public void setOnSingleTapConfirmedListener(
+                Runnable listener
+        ) {
+            this.singleTapListener = listener;
         }
     }
 }
