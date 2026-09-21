@@ -46,6 +46,9 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private String profileImageFileName = "";
 
+    // True only when the real profile photo has loaded successfully.
+    private boolean profilePhotoLoaded = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,6 +146,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
         // Profile photo click
         if (profileImage != null) {
+
             profileImage.setClickable(true);
             profileImage.setFocusable(true);
 
@@ -255,6 +259,9 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private void displayProfile(String response) {
 
+        // Reset photo state before loading the current profile.
+        profilePhotoLoaded = false;
+
         try {
 
             JSONArray array =
@@ -321,9 +328,22 @@ public class MyProfileActivity extends AppCompatActivity {
 
             // Load profile photo
             if (!TextUtils.isEmpty(profileImageFileName)) {
+
                 fetchAndDisplayB2Image(
                         profileImageFileName
                 );
+
+            } else {
+
+                // No real photo saved.
+                profilePhotoLoaded = false;
+
+                if (profileImage != null) {
+
+                    profileImage.setImageResource(
+                            android.R.drawable.ic_menu_myplaces
+                    );
+                }
             }
 
         } catch (Exception e) {
@@ -491,6 +511,9 @@ public class MyProfileActivity extends AppCompatActivity {
                             profileImage.setImageBitmap(
                                     finalBitmap
                             );
+
+                            // Real photo successfully loaded.
+                            profilePhotoLoaded = true;
                         }
                     });
 
@@ -612,6 +635,9 @@ public class MyProfileActivity extends AppCompatActivity {
                         profileImage.setImageBitmap(
                                 finalBitmap
                         );
+
+                        // Real photo successfully loaded.
+                        profilePhotoLoaded = true;
                     }
                 });
 
@@ -619,6 +645,10 @@ public class MyProfileActivity extends AppCompatActivity {
 
                 // Photo failure should not break profile screen.
                 // Keep default profile image.
+
+                runOnUiThread(() ->
+                        profilePhotoLoaded = false
+                );
 
             } finally {
 
@@ -639,11 +669,10 @@ public class MyProfileActivity extends AppCompatActivity {
      */
     private void showProfilePhotoViewer() {
 
-        if (profileImage == null) {
-            return;
-        }
+        // Do not open the viewer for the default placeholder.
+        if (profileImage == null
+                || !profilePhotoLoaded) {
 
-        if (profileImage.getDrawable() == null) {
             Toast.makeText(
                     this,
                     "Profile photo available nahi hai",
@@ -662,25 +691,6 @@ public class MyProfileActivity extends AppCompatActivity {
         dialog.setContentView(
                 R.layout.dialog_profile_photo
         );
-
-        Window window =
-                dialog.getWindow();
-
-        if (window != null) {
-
-            window.setBackgroundDrawableResource(
-                    android.R.color.black
-            );
-
-            window.setLayout(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.MATCH_PARENT
-            );
-
-            window.addFlags(
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN
-            );
-        }
 
         ImageView viewerImage =
                 dialog.findViewById(
@@ -701,6 +711,11 @@ public class MyProfileActivity extends AppCompatActivity {
             viewerImage.setScaleType(
                     ImageView.ScaleType.FIT_CENTER
             );
+
+            // Tap image to close.
+            viewerImage.setOnClickListener(v ->
+                    dialog.dismiss()
+            );
         }
 
         if (closeButton != null) {
@@ -710,16 +725,31 @@ public class MyProfileActivity extends AppCompatActivity {
             );
         }
 
-        if (viewerImage != null) {
+        dialog.setOnShowListener(d -> {
 
-            viewerImage.setOnClickListener(v ->
-                    dialog.dismiss()
-            );
-        }
+            Window window =
+                    dialog.getWindow();
+
+            if (window != null) {
+
+                window.setBackgroundDrawableResource(
+                        android.R.color.black
+                );
+
+                window.setLayout(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.MATCH_PARENT
+                );
+
+                window.addFlags(
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN
+                );
+            }
+        });
 
         dialog.show();
 
-        // Window size must be set after show().
+        // Make sure full-screen size is applied after show().
         Window dialogWindow =
                 dialog.getWindow();
 
@@ -738,6 +768,8 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private void showEmptyProfile() {
 
+        profilePhotoLoaded = false;
+
         if (profileName != null) {
             profileName.setText(
                     "Complete Your Profile"
@@ -753,6 +785,13 @@ public class MyProfileActivity extends AppCompatActivity {
         if (profileBio != null) {
             profileBio.setText(
                     "Apni Sanskriti • Apna Gaurav"
+            );
+        }
+
+        if (profileImage != null) {
+
+            profileImage.setImageResource(
+                    android.R.drawable.ic_menu_myplaces
             );
         }
 
