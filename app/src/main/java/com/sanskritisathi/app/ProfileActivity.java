@@ -12,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
@@ -34,7 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private static final int PICK_PROFILE_PHOTO = 1001;
 
-    // Keep the request comfortably below common gateway limits.
+    // Maximum compressed image size sent to Edge Function
     private static final int MAX_IMAGE_BYTES = 600 * 1024;
 
     private EditText nameInput;
@@ -51,7 +52,9 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageButton settingsButton;
 
     private boolean loadingProfile = false;
+    private boolean uploadingPhoto = false;
 
+    // This stores the B2 file name, NOT a public URL.
     private String profileImageFileName = "";
 
     @Override
@@ -76,12 +79,15 @@ public class ProfileActivity extends AppCompatActivity {
         super.onResume();
 
         if (SupabaseAuthManager.isLoggedIn(this)
-                && !loadingProfile) {
+                && !loadingProfile
+                && !uploadingPhoto) {
+
             loadProfile();
         }
     }
 
     private void bindViews() {
+
         nameInput = findViewById(R.id.nameInput);
         usernameInput = findViewById(R.id.usernameInput);
         bioInput = findViewById(R.id.bioInput);
@@ -97,37 +103,64 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
+
         if (saveProfileButton != null) {
-            saveProfileButton.setOnClickListener(v -> saveProfile());
+            saveProfileButton.setOnClickListener(
+                    v -> saveProfile()
+            );
         }
 
         if (logoutButton != null) {
-            logoutButton.setOnClickListener(v -> logout());
+            logoutButton.setOnClickListener(
+                    v -> logout()
+            );
         }
 
         if (changePhotoButton != null) {
-            changePhotoButton.setOnClickListener(v -> openGallery());
+            changePhotoButton.setOnClickListener(
+                    v -> openGallery()
+            );
         }
 
         if (backButton != null) {
-            backButton.setOnClickListener(v -> finish());
+            backButton.setOnClickListener(
+                    v -> finish()
+            );
         }
 
         if (settingsButton != null) {
             settingsButton.setOnClickListener(v -> {
+
                 Intent intent = new Intent(
                         ProfileActivity.this,
                         SettingsActivity.class
                 );
+
                 startActivity(intent);
             });
         }
     }
 
+    // ---------------------------------------------------------
+    // GALLERY
+    // ---------------------------------------------------------
+
     private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
+
+        if (uploadingPhoto) {
+            return;
+        }
+
+        Intent intent = new Intent(
+                Intent.ACTION_PICK
+        );
+
         intent.setType("image/*");
-        startActivityForResult(intent, PICK_PROFILE_PHOTO);
+
+        startActivityForResult(
+                intent,
+                PICK_PROFILE_PHOTO
+        );
     }
 
     @Override
@@ -136,7 +169,11 @@ public class ProfileActivity extends AppCompatActivity {
             int resultCode,
             Intent data
     ) {
-        super.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(
+                requestCode,
+                resultCode,
+                data
+        );
 
         if (requestCode != PICK_PROFILE_PHOTO
                 || resultCode != RESULT_OK
@@ -147,15 +184,29 @@ public class ProfileActivity extends AppCompatActivity {
 
         Uri imageUri = data.getData();
 
-        profileImageView.setImageURI(imageUri);
-
+        /*
+         * Important:
+         * Don't permanently replace the current B2 photo before
+         * upload + DB save succeeds.
+         */
         uploadProfilePhoto(imageUri);
     }
 
+    // ---------------------------------------------------------
+    // B2 UPLOAD
+    // ---------------------------------------------------------
+
     private void uploadProfilePhoto(Uri imageUri) {
 
-        String userId = SupabaseAuthManager.getUserId(this);
-        String accessToken = SupabaseAuthManager.getAccessToken(this);
+        if (uploadingPhoto) {
+            return;
+        }
+
+        String userId =
+                SupabaseAuthManager.getUserId(this);
+
+        String accessToken =
+                SupabaseAuthManager.getAccessToken(this);
 
         if (TextUtils.isEmpty(userId)
                 || TextUtils.isEmpty(accessToken)) {
@@ -168,6 +219,8 @@ public class ProfileActivity extends AppCompatActivity {
 
             return;
         }
+
+        uploadingPhoto = true;
 
         if (changePhotoButton != null) {
             changePhotoButton.setEnabled(false);
@@ -184,11 +237,17 @@ public class ProfileActivity extends AppCompatActivity {
             HttpURLConnection connection = null;
 
             try {
-                byte[] imageBytes = compressProfileImage(imageUri);
 
-                String base64 = Base64.getEncoder()
-                        .encodeToString(imageBytes);
+                // 1. Compress image <= 600 KB
+                byte[] imageBytes =
+                        compressProfileImage(imageUri);
 
+                // 2. Convert to Base64
+                String base64 =
+                        Base64.getEncoder()
+                                .encodeToString(imageBytes);
+
+                // 3. Unique B2 filename
                 String fileName =
                         "profile_"
                                 + userId
@@ -196,19 +255,38 @@ public class ProfileActivity extends AppCompatActivity {
                                 + System.currentTimeMillis()
                                 + ".jpg";
 
-                JSONObject body = new JSONObject();
+                JSONObject body =
+                        new JSONObject();
 
-                body.put("fileName", fileName);
-                body.put("fileBase64", base64);
-                body.put("folder", "photos");
-                body.put("contentType", "image/jpeg");
+                body.put(
+                        "fileName",
+                        fileName
+                );
 
+                body.put(
+                        "fileBase64",
+                        base64
+                );
+
+                body.put(
+                        "folder",
+                        "photos"
+                );
+
+                body.put(
+                        "contentType",
+                        "image/jpeg"
+                );
+
+                // 4. Supabase Edge Function
                 URL url = new URL(
                         SupabaseConfig.PROJECT_URL
                                 + "/functions/v1/bright-action"
                 );
 
-                connection = (HttpURLConnection) url.openConnection();
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
 
                 connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
@@ -233,11 +311,6 @@ public class ProfileActivity extends AppCompatActivity {
                 );
 
                 connection.setRequestProperty(
-                        "Connection",
-                        "close"
-                );
-
-                connection.setRequestProperty(
                         "apikey",
                         SupabaseConfig.PUBLISHABLE_KEY
                 );
@@ -247,73 +320,35 @@ public class ProfileActivity extends AppCompatActivity {
                         "Bearer " + accessToken
                 );
 
-                byte[] bodyBytes = body.toString()
-                        .getBytes(StandardCharsets.UTF_8);
+                byte[] bodyBytes =
+                        body.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
 
                 connection.setFixedLengthStreamingMode(
                         bodyBytes.length
                 );
 
-                OutputStream stream = connection.getOutputStream();
-                stream.write(bodyBytes);
-                stream.flush();
-                stream.close();
+                OutputStream output =
+                        connection.getOutputStream();
 
-                int responseCode = connection.getResponseCode();
+                output.write(bodyBytes);
+                output.flush();
+                output.close();
 
-                String response = readResponse(
-                        connection,
-                        responseCode
-                );
+                int responseCode =
+                        connection.getResponseCode();
 
-                if (responseCode >= 200
-                        && responseCode < 300) {
-
-                    JSONObject result;
-
-                    try {
-                        result = new JSONObject(response);
-                    } catch (Exception jsonError) {
-                        throw new Exception(
-                                "B2 response JSON invalid.\nHTTP "
-                                        + responseCode
-                                        + "\nRaw response:\n"
-                                        + limitForToast(response)
+                String response =
+                        readResponse(
+                                connection,
+                                responseCode
                         );
-                    }
 
-                    boolean success = result.optBoolean(
-                            "success",
-                            false
-                    );
+                if (responseCode < 200
+                        || responseCode >= 300) {
 
-                    if (!success) {
-                        throw new Exception(
-                                formatB2Error(
-                                        responseCode,
-                                        result,
-                                        response
-                                )
-                        );
-                    }
-
-                    String fileNameFromB2 = result.optString(
-                            "fileName",
-                            ""
-                    );
-
-                    if (TextUtils.isEmpty(fileNameFromB2)) {
-                        throw new Exception(
-                                "B2 fileName missing.\nResponse:\n"
-                                        + limitForToast(response)
-                        );
-                    }
-
-                    profileImageFileName = fileNameFromB2;
-
-                    saveProfileImageReference(fileNameFromB2);
-
-                } else {
                     throw new Exception(
                             formatHttpError(
                                     responseCode,
@@ -322,9 +357,61 @@ public class ProfileActivity extends AppCompatActivity {
                     );
                 }
 
+                JSONObject result;
+
+                try {
+                    result = new JSONObject(response);
+                } catch (Exception e) {
+
+                    throw new Exception(
+                            "B2 response JSON invalid.\n"
+                                    + limitForToast(response)
+                    );
+                }
+
+                boolean success =
+                        result.optBoolean(
+                                "success",
+                                false
+                        );
+
+                if (!success) {
+
+                    throw new Exception(
+                            formatB2Error(
+                                    responseCode,
+                                    result,
+                                    response
+                            )
+                    );
+                }
+
+                String fileNameFromB2 =
+                        result.optString(
+                                "fileName",
+                                ""
+                        );
+
+                if (TextUtils.isEmpty(
+                        fileNameFromB2
+                )) {
+
+                    throw new Exception(
+                            "B2 fileName missing.\n"
+                                    + limitForToast(response)
+                    );
+                }
+
+                // B2 filename received successfully
+                saveProfileImageReference(
+                        fileNameFromB2
+                );
+
             } catch (Exception e) {
 
                 runOnUiThread(() -> {
+
+                    uploadingPhoto = false;
                     enablePhotoButton();
 
                     showUploadErrorDialog(
@@ -334,6 +421,7 @@ public class ProfileActivity extends AppCompatActivity {
                 });
 
             } finally {
+
                 if (connection != null) {
                     connection.disconnect();
                 }
@@ -342,520 +430,9 @@ public class ProfileActivity extends AppCompatActivity {
         }).start();
     }
 
-    /**
-     * Loads a private B2 profile photo through the bright-action Edge Function.
-     * The function may return either image bytes directly or JSON containing
-     * downloadUrl + authorizationToken. Both responses are supported.
-     */
-    private void fetchAndDisplayB2Image(String photoFileName) {
-
-        if (TextUtils.isEmpty(photoFileName)) {
-            return;
-        }
-
-        final String accessToken =
-                SupabaseAuthManager.getAccessToken(this);
-
-        if (TextUtils.isEmpty(accessToken)) {
-            return;
-        }
-
-        new Thread(() -> {
-
-            HttpURLConnection connection = null;
-            HttpURLConnection imageConnection = null;
-
-            try {
-
-                String endpoint =
-                        SupabaseConfig.PROJECT_URL
-                                + "/functions/v1/bright-action";
-
-                JSONObject request = new JSONObject();
-                request.put("action", "get_profile_photo");
-                request.put("fileName", photoFileName);
-
-                URL url = new URL(endpoint);
-                connection = (HttpURLConnection) url.openConnection();
-
-                connection.setRequestMethod("POST");
-                connection.setDoOutput(true);
-                connection.setUseCaches(false);
-                connection.setConnectTimeout(30000);
-                connection.setReadTimeout(60000);
-
-                connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json; charset=UTF-8"
-                );
-                connection.setRequestProperty(
-                        "Accept",
-                        "application/json, image/*"
-                );
-                connection.setRequestProperty(
-                        "apikey",
-                        SupabaseConfig.PUBLISHABLE_KEY
-                );
-                connection.setRequestProperty(
-                        "Authorization",
-                        "Bearer " + accessToken
-                );
-
-                byte[] requestBytes = request.toString()
-                        .getBytes(StandardCharsets.UTF_8);
-
-                connection.setFixedLengthStreamingMode(
-                        requestBytes.length
-                );
-
-                OutputStream output = connection.getOutputStream();
-                output.write(requestBytes);
-                output.flush();
-                output.close();
-
-                int responseCode = connection.getResponseCode();
-                String contentType = connection.getHeaderField("Content-Type");
-
-                if (responseCode < 200 || responseCode >= 300) {
-                    String error = readResponse(connection, responseCode);
-                    throw new Exception(
-                            "Photo load failed: HTTP "
-                                    + responseCode
-                                    + "\n"
-                                    + limitForToast(error)
-                    );
-                }
-
-                // If the Edge Function is configured as an image proxy,
-                // decode the returned JPEG/PNG directly.
-                if (contentType != null
-                        && contentType.toLowerCase().startsWith("image/")) {
-
-                    InputStream input = connection.getInputStream();
-                    Bitmap bitmap = BitmapFactory.decodeStream(input);
-                    input.close();
-
-                    if (bitmap == null) {
-                        throw new Exception(
-                                "Private B2 image decode failed"
-                        );
-                    }
-
-                    final Bitmap finalBitmap = bitmap;
-                    runOnUiThread(() -> {
-                        if (!isFinishing()
-                                && !isDestroyed()
-                                && profileImageView != null) {
-                            profileImageView.setImageBitmap(finalBitmap);
-                        }
-                    });
-                    return;
-                }
-
-                // Current bright-action response: JSON containing a private
-                // B2 download URL and its temporary authorization token.
-                String jsonResponse = readResponse(
-                        connection,
-                        responseCode
-                );
-
-                JSONObject result = new JSONObject(jsonResponse);
-
-                if (!result.optBoolean("success", false)) {
-                    throw new Exception(
-                            "B2 photo authorization failed: "
-                                    + limitForToast(jsonResponse)
-                    );
-                }
-
-                String downloadUrl = result.optString(
-                        "downloadUrl",
-                        ""
-                );
-
-                String authorizationToken = result.optString(
-                        "authorizationToken",
-                        ""
-                );
-
-                if (TextUtils.isEmpty(downloadUrl)
-                        || TextUtils.isEmpty(authorizationToken)) {
-                    throw new Exception(
-                            "B2 download URL/token missing"
-                    );
-                }
-
-                URL imageUrl = new URL(downloadUrl);
-                imageConnection =
-                        (HttpURLConnection) imageUrl.openConnection();
-
-                imageConnection.setRequestMethod("GET");
-                imageConnection.setUseCaches(false);
-                imageConnection.setConnectTimeout(30000);
-                imageConnection.setReadTimeout(60000);
-                imageConnection.setRequestProperty(
-                        "Authorization",
-                        authorizationToken
-                );
-
-                int imageResponseCode =
-                        imageConnection.getResponseCode();
-
-                if (imageResponseCode < 200
-                        || imageResponseCode >= 300) {
-                    String error = readResponse(
-                            imageConnection,
-                            imageResponseCode
-                    );
-                    throw new Exception(
-                            "B2 image download failed: HTTP "
-                                    + imageResponseCode
-                                    + "\n"
-                                    + limitForToast(error)
-                    );
-                }
-
-                InputStream imageInput =
-                        imageConnection.getInputStream();
-
-                Bitmap bitmap =
-                        BitmapFactory.decodeStream(imageInput);
-
-                imageInput.close();
-
-                if (bitmap == null) {
-                    throw new Exception(
-                            "B2 JPEG/PNG decode failed"
-                    );
-                }
-
-                final Bitmap finalBitmap = bitmap;
-
-                runOnUiThread(() -> {
-                    if (!isFinishing()
-                            && !isDestroyed()
-                            && profileImageView != null) {
-                        profileImageView.setImageBitmap(finalBitmap);
-                    }
-                });
-
-            } catch (Exception e) {
-
-                final String message = safeMessage(e);
-
-                runOnUiThread(() -> Toast.makeText(
-                        ProfileActivity.this,
-                        "Photo load error:\n" + message,
-                        Toast.LENGTH_LONG
-                ).show());
-
-            } finally {
-
-                if (imageConnection != null) {
-                    imageConnection.disconnect();
-                }
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        }).start();
-    }
-
-    /**
-     * Converts the selected image to JPEG and keeps it <= 600 KB.
-     * Smaller requests help prevent Supabase gateway/function request-size failures.
-     */
-    private byte[] compressProfileImage(Uri imageUri) throws Exception {
-
-        InputStream inputStream =
-                getContentResolver().openInputStream(imageUri);
-
-        if (inputStream == null) {
-            throw new Exception("Image stream open nahi hua");
-        }
-
-        Bitmap originalBitmap;
-
-        try {
-            originalBitmap = BitmapFactory.decodeStream(inputStream);
-        } finally {
-            inputStream.close();
-        }
-
-        if (originalBitmap == null) {
-            throw new Exception("Image read nahi hui");
-        }
-
-        Bitmap workingBitmap = originalBitmap;
-
-        try {
-            int[] sizes = {900, 800, 720, 640, 560};
-            int[] qualities = {75, 68, 62, 56, 50, 45, 40};
-
-            for (int maxSize : sizes) {
-
-                Bitmap resizedBitmap = scaleBitmap(
-                        originalBitmap,
-                        maxSize
-                );
-
-                if (resizedBitmap != originalBitmap) {
-                    if (workingBitmap != originalBitmap) {
-                        workingBitmap.recycle();
-                    }
-                    workingBitmap = resizedBitmap;
-                }
-
-                for (int quality : qualities) {
-
-                    ByteArrayOutputStream output =
-                            new ByteArrayOutputStream();
-
-                    boolean compressed = workingBitmap.compress(
-                            Bitmap.CompressFormat.JPEG,
-                            quality,
-                            output
-                    );
-
-                    if (!compressed) {
-                        output.close();
-                        throw new Exception(
-                                "JPEG compression failed"
-                        );
-                    }
-
-                    byte[] bytes = output.toByteArray();
-                    output.close();
-
-                    if (bytes.length > 0
-                            && bytes.length <= MAX_IMAGE_BYTES) {
-                        return bytes;
-                    }
-                }
-            }
-
-            throw new Exception(
-                    "Photo ko 600 KB ke andar compress nahi kar paaya."
-            );
-
-        } finally {
-            if (workingBitmap != originalBitmap) {
-                workingBitmap.recycle();
-            }
-
-            originalBitmap.recycle();
-        }
-    }
-
-    private Bitmap scaleBitmap(
-            Bitmap source,
-            int maxSize
-    ) {
-        int width = source.getWidth();
-        int height = source.getHeight();
-
-        if (width <= maxSize && height <= maxSize) {
-            return source;
-        }
-
-        float ratio = Math.min(
-                (float) maxSize / width,
-                (float) maxSize / height
-        );
-
-        int newWidth = Math.max(
-                1,
-                Math.round(width * ratio)
-        );
-
-        int newHeight = Math.max(
-                1,
-                Math.round(height * ratio)
-        );
-
-        return Bitmap.createScaledBitmap(
-                source,
-                newWidth,
-                newHeight,
-                true
-        );
-    }
-
-    private String formatB2Error(
-            int responseCode,
-            JSONObject result,
-            String rawResponse
-    ) {
-        StringBuilder message = new StringBuilder();
-
-        String step = result.optString("step", "");
-        String status = result.optString("status", "");
-        String error = result.optString("error", "");
-        String details = result.optString("details", "");
-
-        message.append("HTTP ")
-                .append(responseCode);
-
-        if (!TextUtils.isEmpty(step)) {
-            message.append("\nStep: ")
-                    .append(step);
-        }
-
-        if (!TextUtils.isEmpty(status)) {
-            message.append("\nStatus: ")
-                    .append(status);
-        }
-
-        if (!TextUtils.isEmpty(error)) {
-            message.append("\nError: ")
-                    .append(error);
-        }
-
-        if (!TextUtils.isEmpty(details)) {
-            message.append("\nDetails: ")
-                    .append(details);
-        }
-
-        if (TextUtils.isEmpty(error)
-                && TextUtils.isEmpty(details)) {
-            message.append("\nRaw response:\n")
-                    .append(limitForToast(rawResponse));
-        }
-
-        return message.toString();
-    }
-
-    private String formatHttpError(
-            int responseCode,
-            String response
-    ) {
-        StringBuilder message = new StringBuilder();
-
-        message.append("HTTP ")
-                .append(responseCode);
-
-        if (!TextUtils.isEmpty(response)) {
-            try {
-                JSONObject json = new JSONObject(response);
-
-                String messageText = json.optString(
-                        "message",
-                        ""
-                );
-
-                String error = json.optString(
-                        "error",
-                        ""
-                );
-
-                String details = json.optString(
-                        "details",
-                        ""
-                );
-
-                if (!TextUtils.isEmpty(error)) {
-                    message.append("\nError: ")
-                            .append(error);
-                }
-
-                if (!TextUtils.isEmpty(messageText)) {
-                    message.append("\nMessage: ")
-                            .append(messageText);
-                }
-
-                if (!TextUtils.isEmpty(details)) {
-                    message.append("\nDetails: ")
-                            .append(details);
-                }
-
-                if (TextUtils.isEmpty(error)
-                        && TextUtils.isEmpty(messageText)
-                        && TextUtils.isEmpty(details)) {
-                    message.append("\nResponse:\n")
-                            .append(limitForToast(response));
-                }
-
-            } catch (Exception ignored) {
-                message.append("\nResponse:\n")
-                        .append(limitForToast(response));
-            }
-        } else {
-            message.append("\nServer ne empty response diya.");
-        }
-
-        return message.toString();
-    }
-
-    private String safeMessage(Exception e) {
-        String message = e.getMessage();
-
-        if (TextUtils.isEmpty(message)) {
-            return e.getClass().getSimpleName();
-        }
-
-        return limitForToast(message);
-    }
-
-    private String limitForToast(String text) {
-        if (text == null) {
-            return "";
-        }
-
-        final int maxLength = 1800;
-
-        if (text.length() <= maxLength) {
-            return text;
-        }
-
-        return text.substring(0, maxLength)
-                + "\n...[response truncated]";
-    }
-
-    private void enablePhotoButton() {
-        if (changePhotoButton != null) {
-            changePhotoButton.setEnabled(true);
-        }
-    }
-
-    private void showUploadErrorDialog(
-            String title,
-            String message
-    ) {
-        new androidx.appcompat.app.AlertDialog.Builder(
-                ProfileActivity.this
-        )
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", null)
-                .setNegativeButton(
-                        "Copy",
-                        (dialog, which) -> {
-                            android.content.ClipboardManager clipboard =
-                                    (android.content.ClipboardManager)
-                                            getSystemService(
-                                                    CLIPBOARD_SERVICE
-                                            );
-
-                            if (clipboard != null) {
-                                android.content.ClipData clip =
-                                        android.content.ClipData.newPlainText(
-                                                "B2 Upload Error",
-                                                message
-                                        );
-
-                                clipboard.setPrimaryClip(clip);
-
-                                Toast.makeText(
-                                        ProfileActivity.this,
-                                        "Error copied",
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            }
-                        }
-                )
-                .show();
-    }
+    // ---------------------------------------------------------
+    // SAVE B2 FILE NAME INTO SUPABASE PROFILE
+    // ---------------------------------------------------------
 
     private void saveProfileImageReference(
             String fileName
@@ -872,6 +449,7 @@ public class ProfileActivity extends AppCompatActivity {
 
             runOnUiThread(() -> {
 
+                uploadingPhoto = false;
                 enablePhotoButton();
 
                 Toast.makeText(
@@ -893,6 +471,11 @@ public class ProfileActivity extends AppCompatActivity {
                 JSONObject body =
                         new JSONObject();
 
+                /*
+                 * Important:
+                 * profile_image_url contains the B2 filename,
+                 * not a public URL.
+                 */
                 body.put(
                         "profile_image_url",
                         fileName
@@ -968,26 +551,11 @@ public class ProfileActivity extends AppCompatActivity {
                                 responseCode
                         );
 
-                if (responseCode >= 200
-                        && responseCode < 300) {
-
-                    runOnUiThread(() -> {
-
-                        enablePhotoButton();
-
-                        Toast.makeText(
-                                ProfileActivity.this,
-                                "Profile photo B2 me save ho gayi ✅",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        fetchAndDisplayB2Image(fileName);
-                    });
-
-                } else {
+                if (responseCode < 200
+                        || responseCode >= 300) {
 
                     throw new Exception(
-                            "Profile update failed:\n"
+                            "Profile photo reference save failed:\n"
                                     + formatHttpError(
                                     responseCode,
                                     response
@@ -995,10 +563,31 @@ public class ProfileActivity extends AppCompatActivity {
                     );
                 }
 
+                // Only now consider the B2 photo saved.
+                profileImageFileName = fileName;
+
+                runOnUiThread(() -> {
+
+                    uploadingPhoto = false;
+                    enablePhotoButton();
+
+                    Toast.makeText(
+                            ProfileActivity.this,
+                            "Profile photo B2 me save ho gayi ✅",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    // Load the actual photo from B2.
+                    fetchAndDisplayB2Image(
+                            fileName
+                    );
+                });
+
             } catch (Exception e) {
 
                 runOnUiThread(() -> {
 
+                    uploadingPhoto = false;
                     enablePhotoButton();
 
                     Toast.makeText(
@@ -1018,6 +607,498 @@ public class ProfileActivity extends AppCompatActivity {
 
         }).start();
     }
+
+    // ---------------------------------------------------------
+    // LOAD PRIVATE B2 IMAGE
+    // ---------------------------------------------------------
+
+    private void fetchAndDisplayB2Image(
+            String photoFileName
+    ) {
+
+        if (TextUtils.isEmpty(photoFileName)) {
+            return;
+        }
+
+        final String accessToken =
+                SupabaseAuthManager.getAccessToken(this);
+
+        if (TextUtils.isEmpty(accessToken)) {
+            return;
+        }
+
+        new Thread(() -> {
+
+            HttpURLConnection connection = null;
+            HttpURLConnection imageConnection = null;
+
+            try {
+
+                String endpoint =
+                        SupabaseConfig.PROJECT_URL
+                                + "/functions/v1/bright-action";
+
+                JSONObject request =
+                        new JSONObject();
+
+                request.put(
+                        "action",
+                        "get_profile_photo"
+                );
+
+                request.put(
+                        "fileName",
+                        photoFileName
+                );
+
+                URL url =
+                        new URL(endpoint);
+
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setUseCaches(false);
+
+                connection.setConnectTimeout(30000);
+                connection.setReadTimeout(60000);
+
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "application/json; charset=UTF-8"
+                );
+
+                connection.setRequestProperty(
+                        "Accept",
+                        "application/json, image/*"
+                );
+
+                connection.setRequestProperty(
+                        "apikey",
+                        SupabaseConfig.PUBLISHABLE_KEY
+                );
+
+                connection.setRequestProperty(
+                        "Authorization",
+                        "Bearer " + accessToken
+                );
+
+                byte[] requestBytes =
+                        request.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
+
+                connection.setFixedLengthStreamingMode(
+                        requestBytes.length
+                );
+
+                OutputStream output =
+                        connection.getOutputStream();
+
+                output.write(requestBytes);
+                output.flush();
+                output.close();
+
+                int responseCode =
+                        connection.getResponseCode();
+
+                String contentType =
+                        connection.getHeaderField(
+                                "Content-Type"
+                        );
+
+                if (responseCode < 200
+                        || responseCode >= 300) {
+
+                    String error =
+                            readResponse(
+                                    connection,
+                                    responseCode
+                            );
+
+                    throw new Exception(
+                            "Photo load failed: HTTP "
+                                    + responseCode
+                                    + "\n"
+                                    + limitForToast(error)
+                    );
+                }
+
+                // -------------------------------------------------
+                // CASE 1: Edge Function directly returns image
+                // -------------------------------------------------
+
+                if (contentType != null
+                        && contentType
+                        .toLowerCase()
+                        .startsWith("image/")) {
+
+                    InputStream input =
+                            connection.getInputStream();
+
+                    Bitmap bitmap =
+                            BitmapFactory.decodeStream(
+                                    input
+                            );
+
+                    input.close();
+
+                    if (bitmap == null) {
+                        throw new Exception(
+                                "Private B2 image decode failed"
+                        );
+                    }
+
+                    showBitmap(bitmap);
+                    return;
+                }
+
+                // -------------------------------------------------
+                // CASE 2: Edge Function returns JSON
+                // -------------------------------------------------
+
+                String jsonResponse =
+                        readResponse(
+                                connection,
+                                responseCode
+                        );
+
+                JSONObject result =
+                        new JSONObject(jsonResponse);
+
+                if (!result.optBoolean(
+                        "success",
+                        false
+                )) {
+
+                    throw new Exception(
+                            "B2 photo authorization failed:\n"
+                                    + limitForToast(
+                                    jsonResponse
+                            )
+                    );
+                }
+
+                String downloadUrl =
+                        result.optString(
+                                "downloadUrl",
+                                ""
+                        );
+
+                String authorizationToken =
+                        result.optString(
+                                "authorizationToken",
+                                ""
+                        );
+
+                if (TextUtils.isEmpty(downloadUrl)
+                        || TextUtils.isEmpty(
+                        authorizationToken
+                )) {
+
+                    throw new Exception(
+                            "B2 download URL/token missing"
+                    );
+                }
+
+                URL imageUrl =
+                        new URL(downloadUrl);
+
+                imageConnection =
+                        (HttpURLConnection)
+                                imageUrl.openConnection();
+
+                imageConnection.setRequestMethod(
+                        "GET"
+                );
+
+                imageConnection.setUseCaches(false);
+
+                imageConnection.setConnectTimeout(
+                        30000
+                );
+
+                imageConnection.setReadTimeout(
+                        60000
+                );
+
+                imageConnection.setRequestProperty(
+                        "Authorization",
+                        authorizationToken
+                );
+
+                int imageResponseCode =
+                        imageConnection.getResponseCode();
+
+                if (imageResponseCode < 200
+                        || imageResponseCode >= 300) {
+
+                    String error =
+                            readResponse(
+                                    imageConnection,
+                                    imageResponseCode
+                            );
+
+                    throw new Exception(
+                            "B2 image download failed: HTTP "
+                                    + imageResponseCode
+                                    + "\n"
+                                    + limitForToast(error)
+                    );
+                }
+
+                InputStream imageInput =
+                        imageConnection.getInputStream();
+
+                Bitmap bitmap =
+                        BitmapFactory.decodeStream(
+                                imageInput
+                        );
+
+                imageInput.close();
+
+                if (bitmap == null) {
+
+                    throw new Exception(
+                            "B2 JPEG/PNG decode failed"
+                    );
+                }
+
+                showBitmap(bitmap);
+
+            } catch (Exception e) {
+
+                final String message =
+                        safeMessage(e);
+
+                runOnUiThread(() -> {
+
+                    if (!isFinishing()
+                            && !isDestroyed()) {
+
+                        Toast.makeText(
+                                ProfileActivity.this,
+                                "Photo load error:\n"
+                                        + message,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                });
+
+            } finally {
+
+                if (imageConnection != null) {
+                    imageConnection.disconnect();
+                }
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+        }).start();
+    }
+
+    private void showBitmap(Bitmap bitmap) {
+
+        runOnUiThread(() -> {
+
+            if (isFinishing()
+                    || isDestroyed()
+                    || profileImageView == null) {
+                return;
+            }
+
+            profileImageView.setImageBitmap(bitmap);
+        });
+    }
+
+    // ---------------------------------------------------------
+    // IMAGE COMPRESSION
+    // ---------------------------------------------------------
+
+    private byte[] compressProfileImage(
+            Uri imageUri
+    ) throws Exception {
+
+        InputStream inputStream =
+                getContentResolver()
+                        .openInputStream(imageUri);
+
+        if (inputStream == null) {
+            throw new Exception(
+                    "Image stream open nahi hua"
+            );
+        }
+
+        Bitmap originalBitmap;
+
+        try {
+
+            originalBitmap =
+                    BitmapFactory.decodeStream(
+                            inputStream
+                    );
+
+        } finally {
+            inputStream.close();
+        }
+
+        if (originalBitmap == null) {
+
+            throw new Exception(
+                    "Image read nahi hui"
+            );
+        }
+
+        Bitmap workingBitmap =
+                originalBitmap;
+
+        try {
+
+            int[] sizes = {
+                    900,
+                    800,
+                    720,
+                    640,
+                    560
+            };
+
+            int[] qualities = {
+                    75,
+                    68,
+                    62,
+                    56,
+                    50,
+                    45,
+                    40
+            };
+
+            for (int maxSize : sizes) {
+
+                Bitmap resizedBitmap =
+                        scaleBitmap(
+                                originalBitmap,
+                                maxSize
+                        );
+
+                if (resizedBitmap
+                        != originalBitmap) {
+
+                    if (workingBitmap
+                            != originalBitmap) {
+
+                        workingBitmap.recycle();
+                    }
+
+                    workingBitmap =
+                            resizedBitmap;
+                }
+
+                for (int quality : qualities) {
+
+                    ByteArrayOutputStream output =
+                            new ByteArrayOutputStream();
+
+                    boolean compressed =
+                            workingBitmap.compress(
+                                    Bitmap.CompressFormat.JPEG,
+                                    quality,
+                                    output
+                            );
+
+                    if (!compressed) {
+
+                        output.close();
+
+                        throw new Exception(
+                                "JPEG compression failed"
+                        );
+                    }
+
+                    byte[] bytes =
+                            output.toByteArray();
+
+                    output.close();
+
+                    if (bytes.length > 0
+                            && bytes.length
+                            <= MAX_IMAGE_BYTES) {
+
+                        return bytes;
+                    }
+                }
+            }
+
+            throw new Exception(
+                    "Photo ko 600 KB ke andar compress nahi kar paaya."
+            );
+
+        } finally {
+
+            if (workingBitmap
+                    != originalBitmap) {
+
+                workingBitmap.recycle();
+            }
+
+            originalBitmap.recycle();
+        }
+    }
+
+    private Bitmap scaleBitmap(
+            Bitmap source,
+            int maxSize
+    ) {
+
+        int width =
+                source.getWidth();
+
+        int height =
+                source.getHeight();
+
+        if (width <= maxSize
+                && height <= maxSize) {
+
+            return source;
+        }
+
+        float ratio =
+                Math.min(
+                        (float) maxSize / width,
+                        (float) maxSize / height
+                );
+
+        int newWidth =
+                Math.max(
+                        1,
+                        Math.round(
+                                width * ratio
+                        )
+                );
+
+        int newHeight =
+                Math.max(
+                        1,
+                        Math.round(
+                                height * ratio
+                        )
+                );
+
+        return Bitmap.createScaledBitmap(
+                source,
+                newWidth,
+                newHeight,
+                true
+        );
+    }
+
+    // ---------------------------------------------------------
+    // LOAD PROFILE
+    // ---------------------------------------------------------
 
     private void loadProfile() {
 
@@ -1101,7 +1182,9 @@ public class ProfileActivity extends AppCompatActivity {
 
                         loadingProfile = false;
 
-                        displayProfile(response);
+                        displayProfile(
+                                response
+                        );
                     });
 
                 } else {
@@ -1142,6 +1225,7 @@ public class ProfileActivity extends AppCompatActivity {
                     connection.disconnect();
                 }
             }
+
         }).start();
     }
 
@@ -1192,8 +1276,13 @@ public class ProfileActivity extends AppCompatActivity {
                             ""
                     );
 
-            if (!TextUtils.isEmpty(profileImageFileName)) {
-                fetchAndDisplayB2Image(profileImageFileName);
+            if (!TextUtils.isEmpty(
+                    profileImageFileName
+            )) {
+
+                fetchAndDisplayB2Image(
+                        profileImageFileName
+                );
             }
 
         } catch (Exception e) {
@@ -1206,6 +1295,10 @@ public class ProfileActivity extends AppCompatActivity {
             ).show();
         }
     }
+
+    // ---------------------------------------------------------
+    // SAVE PROFILE DETAILS
+    // ---------------------------------------------------------
 
     private void saveProfile() {
 
@@ -1323,6 +1416,7 @@ public class ProfileActivity extends AppCompatActivity {
                         bio
                 );
 
+                // Preserve B2 filename
                 if (!TextUtils.isEmpty(
                         profileImageFileName
                 )) {
@@ -1455,6 +1549,10 @@ public class ProfileActivity extends AppCompatActivity {
         }).start();
     }
 
+    // ---------------------------------------------------------
+    // LOGOUT
+    // ---------------------------------------------------------
+
     private void logout() {
 
         setButtonsEnabled(false);
@@ -1499,6 +1597,10 @@ public class ProfileActivity extends AppCompatActivity {
         );
     }
 
+    // ---------------------------------------------------------
+    // LOGIN
+    // ---------------------------------------------------------
+
     private void openLogin() {
 
         Intent intent =
@@ -1517,6 +1619,17 @@ public class ProfileActivity extends AppCompatActivity {
         finish();
     }
 
+    // ---------------------------------------------------------
+    // UI HELPERS
+    // ---------------------------------------------------------
+
+    private void enablePhotoButton() {
+
+        if (changePhotoButton != null) {
+            changePhotoButton.setEnabled(true);
+        }
+    }
+
     private void setButtonsEnabled(
             boolean enabled
     ) {
@@ -1533,6 +1646,268 @@ public class ProfileActivity extends AppCompatActivity {
             );
         }
     }
+
+    private void showUploadErrorDialog(
+            String title,
+            String message
+    ) {
+
+        new AlertDialog.Builder(
+                ProfileActivity.this
+        )
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(
+                        "OK",
+                        null
+                )
+                .setNegativeButton(
+                        "Copy",
+                        (dialog, which) -> {
+
+                            android.content.ClipboardManager clipboard =
+                                    (android.content.ClipboardManager)
+                                            getSystemService(
+                                                    CLIPBOARD_SERVICE
+                                            );
+
+                            if (clipboard != null) {
+
+                                android.content.ClipData clip =
+                                        android.content.ClipData
+                                                .newPlainText(
+                                                        "B2 Upload Error",
+                                                        message
+                                                );
+
+                                clipboard.setPrimaryClip(
+                                        clip
+                                );
+
+                                Toast.makeText(
+                                        ProfileActivity.this,
+                                        "Error copied",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        }
+                )
+                .show();
+    }
+
+    // ---------------------------------------------------------
+    // ERROR HELPERS
+    // ---------------------------------------------------------
+
+    private String formatB2Error(
+            int responseCode,
+            JSONObject result,
+            String rawResponse
+    ) {
+
+        StringBuilder message =
+                new StringBuilder();
+
+        String step =
+                result.optString(
+                        "step",
+                        ""
+                );
+
+        String status =
+                result.optString(
+                        "status",
+                        ""
+                );
+
+        String error =
+                result.optString(
+                        "error",
+                        ""
+                );
+
+        String details =
+                result.optString(
+                        "details",
+                        ""
+                );
+
+        message.append("HTTP ")
+                .append(responseCode);
+
+        if (!TextUtils.isEmpty(step)) {
+
+            message.append("\nStep: ")
+                    .append(step);
+        }
+
+        if (!TextUtils.isEmpty(status)) {
+
+            message.append("\nStatus: ")
+                    .append(status);
+        }
+
+        if (!TextUtils.isEmpty(error)) {
+
+            message.append("\nError: ")
+                    .append(error);
+        }
+
+        if (!TextUtils.isEmpty(details)) {
+
+            message.append("\nDetails: ")
+                    .append(details);
+        }
+
+        if (TextUtils.isEmpty(error)
+                && TextUtils.isEmpty(details)) {
+
+            message.append(
+                    "\nRaw response:\n"
+            ).append(
+                    limitForToast(
+                            rawResponse
+                    )
+            );
+        }
+
+        return message.toString();
+    }
+
+    private String formatHttpError(
+            int responseCode,
+            String response
+    ) {
+
+        StringBuilder message =
+                new StringBuilder();
+
+        message.append("HTTP ")
+                .append(responseCode);
+
+        if (!TextUtils.isEmpty(response)) {
+
+            try {
+
+                JSONObject json =
+                        new JSONObject(response);
+
+                String messageText =
+                        json.optString(
+                                "message",
+                                ""
+                        );
+
+                String error =
+                        json.optString(
+                                "error",
+                                ""
+                        );
+
+                String details =
+                        json.optString(
+                                "details",
+                                ""
+                        );
+
+                if (!TextUtils.isEmpty(error)) {
+
+                    message.append(
+                            "\nError: "
+                    ).append(error);
+                }
+
+                if (!TextUtils.isEmpty(
+                        messageText
+                )) {
+
+                    message.append(
+                            "\nMessage: "
+                    ).append(messageText);
+                }
+
+                if (!TextUtils.isEmpty(details)) {
+
+                    message.append(
+                            "\nDetails: "
+                    ).append(details);
+                }
+
+                if (TextUtils.isEmpty(error)
+                        && TextUtils.isEmpty(
+                        messageText
+                )
+                        && TextUtils.isEmpty(details)) {
+
+                    message.append(
+                            "\nResponse:\n"
+                    ).append(
+                            limitForToast(
+                                    response
+                            )
+                    );
+                }
+
+            } catch (Exception ignored) {
+
+                message.append(
+                        "\nResponse:\n"
+                ).append(
+                        limitForToast(
+                                response
+                        )
+                );
+            }
+
+        } else {
+
+            message.append(
+                    "\nServer ne empty response diya."
+            );
+        }
+
+        return message.toString();
+    }
+
+    private String safeMessage(
+            Exception e
+    ) {
+
+        String message =
+                e.getMessage();
+
+        if (TextUtils.isEmpty(message)) {
+
+            return e.getClass()
+                    .getSimpleName();
+        }
+
+        return limitForToast(message);
+    }
+
+    private String limitForToast(
+            String text
+    ) {
+
+        if (text == null) {
+            return "";
+        }
+
+        final int maxLength = 1800;
+
+        if (text.length() <= maxLength) {
+            return text;
+        }
+
+        return text.substring(
+                0,
+                maxLength
+        ) + "\n...[response truncated]";
+    }
+
+    // ---------------------------------------------------------
+    // RESPONSE READER
+    // ---------------------------------------------------------
 
     private String readResponse(
             HttpURLConnection connection,
