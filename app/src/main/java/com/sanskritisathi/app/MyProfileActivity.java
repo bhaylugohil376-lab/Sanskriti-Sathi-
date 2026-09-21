@@ -6,7 +6,11 @@ import android.content.ClipboardManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Outline;
+import android.graphics.RenderEffect;
+import android.graphics.Shader;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -48,10 +52,14 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private ImageView profileImage;
 
+    private ImageButton postsTab;
+    private ImageButton reelsTab;
+    private ImageButton savedTab;
+
     private String profileImageFileName = "";
 
-    // True only after the real profile photo loads successfully.
     private boolean profilePhotoLoaded = false;
+    private boolean loadingProfile = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +67,11 @@ public class MyProfileActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_my_profile);
 
+        setupSystemBars();
         bindViews();
         setupListeners();
+        setupTabs();
+        makeProfileImageCircular();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
             openLogin();
@@ -74,62 +85,74 @@ public class MyProfileActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (SupabaseAuthManager.isLoggedIn(this)) {
+        if (SupabaseAuthManager.isLoggedIn(this)
+                && !loadingProfile) {
+
             loadProfile();
+        }
+    }
+
+    private void setupSystemBars() {
+
+        Window window = getWindow();
+
+        window.setStatusBarColor(
+                Color.parseColor("#10151D")
+        );
+
+        window.setNavigationBarColor(
+                Color.parseColor("#10151D")
+        );
+
+        /*
+         * Do NOT use:
+         * setDecorFitsSystemWindows(false)
+         *
+         * XML already uses fitsSystemWindows="true".
+         */
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            window.getDecorView().setSystemUiVisibility(0);
         }
     }
 
     private void bindViews() {
 
-        profileName =
-                findViewById(R.id.profileName);
+        profileName = findViewById(R.id.profileName);
+        profileUsername = findViewById(R.id.profileUsername);
+        profileBio = findViewById(R.id.profileBio);
 
-        profileUsername =
-                findViewById(R.id.profileUsername);
+        postsCount = findViewById(R.id.postsCount);
+        followersCount = findViewById(R.id.followersCount);
+        followingCount = findViewById(R.id.followingCount);
 
-        profileBio =
-                findViewById(R.id.profileBio);
+        emptyProfileText = findViewById(R.id.emptyProfileText);
 
-        postsCount =
-                findViewById(R.id.postsCount);
+        backButton = findViewById(R.id.backButton);
+        settingsButton = findViewById(R.id.settingsButton);
 
-        followersCount =
-                findViewById(R.id.followersCount);
+        profileImage = findViewById(R.id.profileImage);
 
-        followingCount =
-                findViewById(R.id.followingCount);
-
-        emptyProfileText =
-                findViewById(R.id.emptyProfileText);
-
-        backButton =
-                findViewById(R.id.backButton);
-
-        settingsButton =
-                findViewById(R.id.settingsButton);
-
-        profileImage =
-                findViewById(R.id.profileImage);
+        postsTab = findViewById(R.id.postsTab);
+        reelsTab = findViewById(R.id.reelsTab);
+        savedTab = findViewById(R.id.savedTab);
     }
 
     private void setupListeners() {
 
         if (backButton != null) {
 
-            backButton.setOnClickListener(v ->
-                    finish()
-            );
+            backButton.setOnClickListener(v -> finish());
         }
 
         if (settingsButton != null) {
 
             settingsButton.setOnClickListener(v -> {
 
-                Intent intent =
-                        new Intent(
-                                MyProfileActivity.this,
-                                SettingsActivity.class
-                        );
+                Intent intent = new Intent(
+                        MyProfileActivity.this,
+                        SettingsActivity.class
+                );
 
                 startActivity(intent);
             });
@@ -142,11 +165,10 @@ public class MyProfileActivity extends AppCompatActivity {
 
             editButton.setOnClickListener(v -> {
 
-                Intent intent =
-                        new Intent(
-                                MyProfileActivity.this,
-                                ProfileActivity.class
-                        );
+                Intent intent = new Intent(
+                        MyProfileActivity.this,
+                        ProfileActivity.class
+                );
 
                 startActivity(intent);
             });
@@ -157,26 +179,135 @@ public class MyProfileActivity extends AppCompatActivity {
 
         if (shareButton != null) {
 
-            shareButton.setOnClickListener(v ->
-                    shareProfile()
+            shareButton.setOnClickListener(
+                    v -> shareProfile()
             );
         }
 
-        /*
-         * Profile photo click.
-         */
         if (profileImage != null) {
 
             profileImage.setClickable(true);
             profileImage.setFocusable(true);
 
-            profileImage.setOnClickListener(v ->
-                    showProfilePhotoViewer()
+            profileImage.setOnClickListener(
+                    v -> showProfilePhotoViewer()
+            );
+        }
+    }
+
+    private void setupTabs() {
+
+        if (postsTab != null) {
+
+            postsTab.setOnClickListener(v -> {
+
+                setTabSelected(postsTab);
+
+                Toast.makeText(
+                        this,
+                        "Posts",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
+        }
+
+        if (reelsTab != null) {
+
+            reelsTab.setOnClickListener(v -> {
+
+                setTabSelected(reelsTab);
+
+                Toast.makeText(
+                        this,
+                        "Reels",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
+        }
+
+        if (savedTab != null) {
+
+            savedTab.setOnClickListener(v -> {
+
+                setTabSelected(savedTab);
+
+                Toast.makeText(
+                        this,
+                        "Saved",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
+        }
+    }
+
+    private void setTabSelected(ImageButton selected) {
+
+        if (postsTab != null) {
+            postsTab.setColorFilter(
+                    Color.parseColor("#858E9B")
+            );
+        }
+
+        if (reelsTab != null) {
+            reelsTab.setColorFilter(
+                    Color.parseColor("#858E9B")
+            );
+        }
+
+        if (savedTab != null) {
+            savedTab.setColorFilter(
+                    Color.parseColor("#858E9B")
+            );
+        }
+
+        if (selected != null) {
+
+            selected.setColorFilter(
+                    Color.WHITE
+            );
+        }
+    }
+
+    private void makeProfileImageCircular() {
+
+        if (profileImage == null) {
+            return;
+        }
+
+        profileImage.setScaleType(
+                ImageView.ScaleType.CENTER_CROP
+        );
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            profileImage.setClipToOutline(true);
+
+            profileImage.setOutlineProvider(
+                    new ViewOutlineProvider() {
+
+                        @Override
+                        public void getOutline(
+                                View view,
+                                Outline outline
+                        ) {
+
+                            outline.setOval(
+                                    0,
+                                    0,
+                                    view.getWidth(),
+                                    view.getHeight()
+                            );
+                        }
+                    }
             );
         }
     }
 
     private void loadProfile() {
+
+        if (loadingProfile) {
+            return;
+        }
 
         String userId =
                 SupabaseAuthManager.getUserId(this);
@@ -191,6 +322,8 @@ public class MyProfileActivity extends AppCompatActivity {
             return;
         }
 
+        loadingProfile = true;
+
         new Thread(() -> {
 
             HttpURLConnection connection = null;
@@ -204,8 +337,7 @@ public class MyProfileActivity extends AppCompatActivity {
                                 + userId
                                 + "&select=name,username,bio,profile_image_url";
 
-                URL url =
-                        new URL(endpoint);
+                URL url = new URL(endpoint);
 
                 connection =
                         (HttpURLConnection)
@@ -243,30 +375,39 @@ public class MyProfileActivity extends AppCompatActivity {
                 if (responseCode >= 200
                         && responseCode < 300) {
 
-                    runOnUiThread(() ->
-                            displayProfile(response)
-                    );
+                    runOnUiThread(() -> {
+
+                        loadingProfile = false;
+
+                        displayProfile(response);
+                    });
 
                 } else {
 
-                    runOnUiThread(() ->
-                            Toast.makeText(
-                                    MyProfileActivity.this,
-                                    "Profile load failed",
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
+                    runOnUiThread(() -> {
+
+                        loadingProfile = false;
+
+                        Toast.makeText(
+                                MyProfileActivity.this,
+                                "Profile load failed",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    });
                 }
 
             } catch (Exception e) {
 
-                runOnUiThread(() ->
-                        Toast.makeText(
-                                MyProfileActivity.this,
-                                "Network error",
-                                Toast.LENGTH_SHORT
-                        ).show()
-                );
+                runOnUiThread(() -> {
+
+                    loadingProfile = false;
+
+                    Toast.makeText(
+                            MyProfileActivity.this,
+                            "Network error",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
 
             } finally {
 
@@ -280,7 +421,6 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private void displayProfile(String response) {
 
-        // Reset before loading current photo.
         profilePhotoLoaded = false;
 
         try {
@@ -355,10 +495,9 @@ public class MyProfileActivity extends AppCompatActivity {
                 );
             }
 
-            /*
-             * Load actual profile photo.
-             */
-            if (!TextUtils.isEmpty(profileImageFileName)) {
+            if (!TextUtils.isEmpty(
+                    profileImageFileName
+            )) {
 
                 fetchAndDisplayB2Image(
                         profileImageFileName
@@ -366,14 +505,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
             } else {
 
-                profilePhotoLoaded = false;
-
-                if (profileImage != null) {
-
-                    profileImage.setImageResource(
-                            android.R.drawable.ic_menu_myplaces
-                    );
-                }
+                showDefaultProfileImage();
             }
 
         } catch (Exception e) {
@@ -382,15 +514,20 @@ public class MyProfileActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Loads private B2 profile image through bright-action.
-     *
-     * Supports:
-     *
-     * 1. Direct image response
-     * 2. JSON response containing:
-     *    downloadUrl + authorizationToken
-     */
+    private void showDefaultProfileImage() {
+
+        profilePhotoLoaded = false;
+
+        if (profileImage != null) {
+
+            profileImage.setImageResource(
+                    android.R.drawable.ic_menu_myplaces
+            );
+
+            makeProfileImageCircular();
+        }
+    }
+
     private void fetchAndDisplayB2Image(
             String photoFileName
     ) {
@@ -490,9 +627,6 @@ public class MyProfileActivity extends AppCompatActivity {
                                 "Content-Type"
                         );
 
-                /*
-                 * Error response.
-                 */
                 if (responseCode < 200
                         || responseCode >= 300) {
 
@@ -503,15 +637,14 @@ public class MyProfileActivity extends AppCompatActivity {
                             );
 
                     throw new Exception(
-                            "Photo load failed: HTTP "
+                            "Photo load failed HTTP "
                                     + responseCode
-                                    + "\n"
+                                    + " "
                                     + error
                     );
                 }
 
                 /*
-                 * CASE 1:
                  * Direct image response.
                  */
                 if (contentType != null
@@ -539,25 +672,14 @@ public class MyProfileActivity extends AppCompatActivity {
                     final Bitmap finalBitmap =
                             bitmap;
 
-                    runOnUiThread(() -> {
-
-                        if (!isFinishing()
-                                && !isDestroyed()
-                                && profileImage != null) {
-
-                            profileImage.setImageBitmap(
-                                    finalBitmap
-                            );
-
-                            profilePhotoLoaded = true;
-                        }
-                    });
+                    runOnUiThread(() ->
+                            setProfileBitmap(finalBitmap)
+                    );
 
                     return;
                 }
 
                 /*
-                 * CASE 2:
                  * JSON response.
                  */
                 String jsonResponse =
@@ -567,9 +689,7 @@ public class MyProfileActivity extends AppCompatActivity {
                         );
 
                 JSONObject result =
-                        new JSONObject(
-                                jsonResponse
-                        );
+                        new JSONObject(jsonResponse);
 
                 if (!result.optBoolean(
                         "success",
@@ -636,7 +756,7 @@ public class MyProfileActivity extends AppCompatActivity {
                         || imageResponseCode >= 300) {
 
                     throw new Exception(
-                            "B2 image download failed: HTTP "
+                            "B2 image download failed HTTP "
                                     + imageResponseCode
                     );
                 }
@@ -661,23 +781,16 @@ public class MyProfileActivity extends AppCompatActivity {
                 final Bitmap finalBitmap =
                         bitmap;
 
-                runOnUiThread(() -> {
-
-                    if (!isFinishing()
-                            && !isDestroyed()
-                            && profileImage != null) {
-
-                        profileImage.setImageBitmap(
-                                finalBitmap
-                        );
-
-                        profilePhotoLoaded = true;
-                    }
-                });
+                runOnUiThread(() ->
+                        setProfileBitmap(finalBitmap)
+                );
 
             } catch (Exception e) {
 
-                profilePhotoLoaded = false;
+                runOnUiThread(() -> {
+
+                    profilePhotoLoaded = false;
+                });
 
             } finally {
 
@@ -693,12 +806,30 @@ public class MyProfileActivity extends AppCompatActivity {
         }).start();
     }
 
-    /**
-     * Instagram-style profile photo viewer.
-     *
-     * No extra Java networking.
-     * Uses the already loaded profile image.
-     */
+    private void setProfileBitmap(Bitmap bitmap) {
+
+        if (isFinishing()
+                || (Build.VERSION.SDK_INT >= 17
+                && isDestroyed())) {
+            return;
+        }
+
+        if (profileImage == null
+                || bitmap == null) {
+            return;
+        }
+
+        profileImage.setImageBitmap(bitmap);
+
+        profileImage.setScaleType(
+                ImageView.ScaleType.CENTER_CROP
+        );
+
+        makeProfileImageCircular();
+
+        profilePhotoLoaded = true;
+    }
+
     private void showProfilePhotoViewer() {
 
         if (profileImage == null
@@ -759,9 +890,6 @@ public class MyProfileActivity extends AppCompatActivity {
                         R.id.qrAction
                 );
 
-        /*
-         * Background profile image.
-         */
         if (backgroundImage != null) {
 
             backgroundImage.setImageDrawable(
@@ -772,25 +900,18 @@ public class MyProfileActivity extends AppCompatActivity {
                     ImageView.ScaleType.CENTER_CROP
             );
 
-            /*
-             * Real blur on Android 12+.
-             */
-            if (android.os.Build.VERSION.SDK_INT >= 31) {
+            if (Build.VERSION.SDK_INT >= 31) {
 
                 backgroundImage.setRenderEffect(
-                        android.graphics.RenderEffect
-                                .createBlurEffect(
-                                        28f,
-                                        28f,
-                                        android.graphics.Shader.TileMode.CLAMP
-                                )
+                        RenderEffect.createBlurEffect(
+                                28f,
+                                28f,
+                                Shader.TileMode.CLAMP
+                        )
                 );
             }
         }
 
-        /*
-         * Large circular photo.
-         */
         if (viewerImage != null) {
 
             viewerImage.setImageDrawable(
@@ -801,9 +922,9 @@ public class MyProfileActivity extends AppCompatActivity {
                     ImageView.ScaleType.CENTER_CROP
             );
 
-            viewerImage.setClipToOutline(true);
+            if (Build.VERSION.SDK_INT >= 21) {
 
-            if (android.os.Build.VERSION.SDK_INT >= 21) {
+                viewerImage.setClipToOutline(true);
 
                 viewerImage.setOutlineProvider(
                         new ViewOutlineProvider() {
@@ -825,49 +946,36 @@ public class MyProfileActivity extends AppCompatActivity {
                 );
             }
 
-            viewerImage.setOnClickListener(v ->
-                    dialog.dismiss()
+            viewerImage.setOnClickListener(
+                    v -> dialog.dismiss()
             );
         }
 
-        /*
-         * Close.
-         */
         if (closeButton != null) {
 
-            closeButton.setOnClickListener(v ->
-                    dialog.dismiss()
+            closeButton.setOnClickListener(
+                    v -> dialog.dismiss()
             );
         }
 
-        /*
-         * Following.
-         */
         if (followingAction != null) {
 
-            followingAction.setOnClickListener(v -> {
-
-                Toast.makeText(
-                        MyProfileActivity.this,
-                        "Following",
-                        Toast.LENGTH_SHORT
-                ).show();
-            });
-        }
-
-        /*
-         * Share profile.
-         */
-        if (shareAction != null) {
-
-            shareAction.setOnClickListener(v ->
-                    shareProfile()
+            followingAction.setOnClickListener(v ->
+                    Toast.makeText(
+                            MyProfileActivity.this,
+                            "Following",
+                            Toast.LENGTH_SHORT
+                    ).show()
             );
         }
 
-        /*
-         * Copy profile link.
-         */
+        if (shareAction != null) {
+
+            shareAction.setOnClickListener(
+                    v -> shareProfile()
+            );
+        }
+
         if (copyAction != null) {
 
             copyAction.setOnClickListener(v -> {
@@ -909,24 +1017,17 @@ public class MyProfileActivity extends AppCompatActivity {
             });
         }
 
-        /*
-         * QR code.
-         */
         if (qrAction != null) {
 
-            qrAction.setOnClickListener(v -> {
-
-                Toast.makeText(
-                        MyProfileActivity.this,
-                        "QR code",
-                        Toast.LENGTH_SHORT
-                ).show();
-            });
+            qrAction.setOnClickListener(v ->
+                    Toast.makeText(
+                            MyProfileActivity.this,
+                            "QR code",
+                            Toast.LENGTH_SHORT
+                    ).show()
+            );
         }
 
-        /*
-         * Show.
-         */
         dialog.show();
 
         Window window =
@@ -976,12 +1077,7 @@ public class MyProfileActivity extends AppCompatActivity {
             );
         }
 
-        if (profileImage != null) {
-
-            profileImage.setImageResource(
-                    android.R.drawable.ic_menu_myplaces
-            );
-        }
+        showDefaultProfileImage();
 
         if (emptyProfileText != null) {
 
@@ -1019,13 +1115,9 @@ public class MyProfileActivity extends AppCompatActivity {
                         + "Sanskriti Sathi par mera profile dekhiye.";
 
         Intent shareIntent =
-                new Intent(
-                        Intent.ACTION_SEND
-                );
+                new Intent(Intent.ACTION_SEND);
 
-        shareIntent.setType(
-                "text/plain"
-        );
+        shareIntent.setType("text/plain");
 
         shareIntent.putExtra(
                 Intent.EXTRA_TEXT,
