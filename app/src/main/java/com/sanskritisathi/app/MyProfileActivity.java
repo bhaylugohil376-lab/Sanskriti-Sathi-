@@ -1,12 +1,16 @@
 package com.sanskritisathi.app;
 
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Outline;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
@@ -46,6 +50,9 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private String profileImageFileName = "";
 
+    // True only after the real profile photo loads successfully.
+    private boolean profilePhotoLoaded = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,13 +81,23 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private void bindViews() {
 
-        profileName = findViewById(R.id.profileName);
-        profileUsername = findViewById(R.id.profileUsername);
-        profileBio = findViewById(R.id.profileBio);
+        profileName =
+                findViewById(R.id.profileName);
 
-        postsCount = findViewById(R.id.postsCount);
-        followersCount = findViewById(R.id.followersCount);
-        followingCount = findViewById(R.id.followingCount);
+        profileUsername =
+                findViewById(R.id.profileUsername);
+
+        profileBio =
+                findViewById(R.id.profileBio);
+
+        postsCount =
+                findViewById(R.id.postsCount);
+
+        followersCount =
+                findViewById(R.id.followersCount);
+
+        followingCount =
+                findViewById(R.id.followingCount);
 
         emptyProfileText =
                 findViewById(R.id.emptyProfileText);
@@ -98,12 +115,14 @@ public class MyProfileActivity extends AppCompatActivity {
     private void setupListeners() {
 
         if (backButton != null) {
+
             backButton.setOnClickListener(v ->
                     finish()
             );
         }
 
         if (settingsButton != null) {
+
             settingsButton.setOnClickListener(v -> {
 
                 Intent intent =
@@ -120,6 +139,7 @@ public class MyProfileActivity extends AppCompatActivity {
                 findViewById(R.id.editProfileButton);
 
         if (editButton != null) {
+
             editButton.setOnClickListener(v -> {
 
                 Intent intent =
@@ -136,13 +156,17 @@ public class MyProfileActivity extends AppCompatActivity {
                 findViewById(R.id.shareProfileButton);
 
         if (shareButton != null) {
+
             shareButton.setOnClickListener(v ->
                     shareProfile()
             );
         }
 
-        // Profile photo click
+        /*
+         * Profile photo click.
+         */
         if (profileImage != null) {
+
             profileImage.setClickable(true);
             profileImage.setFocusable(true);
 
@@ -180,7 +204,8 @@ public class MyProfileActivity extends AppCompatActivity {
                                 + userId
                                 + "&select=name,username,bio,profile_image_url";
 
-                URL url = new URL(endpoint);
+                URL url =
+                        new URL(endpoint);
 
                 connection =
                         (HttpURLConnection)
@@ -255,6 +280,9 @@ public class MyProfileActivity extends AppCompatActivity {
 
     private void displayProfile(String response) {
 
+        // Reset before loading current photo.
+        profilePhotoLoaded = false;
+
         try {
 
             JSONArray array =
@@ -305,25 +333,47 @@ public class MyProfileActivity extends AppCompatActivity {
                 bio = "Apni Sanskriti • Apna Gaurav";
             }
 
-            profileName.setText(name);
+            if (profileName != null) {
+                profileName.setText(name);
+            }
 
-            profileUsername.setText(
-                    "@" + username.replace("@", "")
-            );
+            if (profileUsername != null) {
 
-            profileBio.setText(bio);
+                profileUsername.setText(
+                        "@" + username.replace("@", "")
+                );
+            }
+
+            if (profileBio != null) {
+                profileBio.setText(bio);
+            }
 
             if (emptyProfileText != null) {
+
                 emptyProfileText.setVisibility(
                         View.GONE
                 );
             }
 
-            // Load profile photo
+            /*
+             * Load actual profile photo.
+             */
             if (!TextUtils.isEmpty(profileImageFileName)) {
+
                 fetchAndDisplayB2Image(
                         profileImageFileName
                 );
+
+            } else {
+
+                profilePhotoLoaded = false;
+
+                if (profileImage != null) {
+
+                    profileImage.setImageResource(
+                            android.R.drawable.ic_menu_myplaces
+                    );
+                }
             }
 
         } catch (Exception e) {
@@ -336,8 +386,10 @@ public class MyProfileActivity extends AppCompatActivity {
      * Loads private B2 profile image through bright-action.
      *
      * Supports:
+     *
      * 1. Direct image response
-     * 2. JSON response with downloadUrl + authorizationToken
+     * 2. JSON response containing:
+     *    downloadUrl + authorizationToken
      */
     private void fetchAndDisplayB2Image(
             String photoFileName
@@ -386,6 +438,7 @@ public class MyProfileActivity extends AppCompatActivity {
                                 url.openConnection();
 
                 connection.setRequestMethod("POST");
+
                 connection.setDoOutput(true);
                 connection.setUseCaches(false);
 
@@ -437,6 +490,9 @@ public class MyProfileActivity extends AppCompatActivity {
                                 "Content-Type"
                         );
 
+                /*
+                 * Error response.
+                 */
                 if (responseCode < 200
                         || responseCode >= 300) {
 
@@ -456,7 +512,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
                 /*
                  * CASE 1:
-                 * Edge Function directly returns image bytes.
+                 * Direct image response.
                  */
                 if (contentType != null
                         && contentType
@@ -474,6 +530,7 @@ public class MyProfileActivity extends AppCompatActivity {
                     input.close();
 
                     if (bitmap == null) {
+
                         throw new Exception(
                                 "Image decode failed"
                         );
@@ -491,6 +548,8 @@ public class MyProfileActivity extends AppCompatActivity {
                             profileImage.setImageBitmap(
                                     finalBitmap
                             );
+
+                            profilePhotoLoaded = true;
                         }
                     });
 
@@ -499,7 +558,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
                 /*
                  * CASE 2:
-                 * Edge Function returns JSON.
+                 * JSON response.
                  */
                 String jsonResponse =
                         readResponse(
@@ -571,8 +630,7 @@ public class MyProfileActivity extends AppCompatActivity {
                 );
 
                 int imageResponseCode =
-                        imageConnection
-                                .getResponseCode();
+                        imageConnection.getResponseCode();
 
                 if (imageResponseCode < 200
                         || imageResponseCode >= 300) {
@@ -584,8 +642,7 @@ public class MyProfileActivity extends AppCompatActivity {
                 }
 
                 InputStream imageInput =
-                        imageConnection
-                                .getInputStream();
+                        imageConnection.getInputStream();
 
                 Bitmap bitmap =
                         BitmapFactory.decodeStream(
@@ -595,6 +652,7 @@ public class MyProfileActivity extends AppCompatActivity {
                 imageInput.close();
 
                 if (bitmap == null) {
+
                     throw new Exception(
                             "B2 image decode failed"
                     );
@@ -612,13 +670,14 @@ public class MyProfileActivity extends AppCompatActivity {
                         profileImage.setImageBitmap(
                                 finalBitmap
                         );
+
+                        profilePhotoLoaded = true;
                     }
                 });
 
             } catch (Exception e) {
 
-                // Photo failure should not break profile screen.
-                // Keep default profile image.
+                profilePhotoLoaded = false;
 
             } finally {
 
@@ -635,15 +694,17 @@ public class MyProfileActivity extends AppCompatActivity {
     }
 
     /**
-     * Full-screen profile photo viewer.
+     * Instagram-style profile photo viewer.
+     *
+     * No extra Java networking.
+     * Uses the already loaded profile image.
      */
     private void showProfilePhotoViewer() {
 
-        if (profileImage == null) {
-            return;
-        }
+        if (profileImage == null
+                || !profilePhotoLoaded
+                || profileImage.getDrawable() == null) {
 
-        if (profileImage.getDrawable() == null) {
             Toast.makeText(
                     this,
                     "Profile photo available nahi hai",
@@ -663,24 +724,10 @@ public class MyProfileActivity extends AppCompatActivity {
                 R.layout.dialog_profile_photo
         );
 
-        Window window =
-                dialog.getWindow();
-
-        if (window != null) {
-
-            window.setBackgroundDrawableResource(
-                    android.R.color.black
-            );
-
-            window.setLayout(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.MATCH_PARENT
-            );
-
-            window.addFlags(
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN
-            );
-        }
+        ImageView backgroundImage =
+                dialog.findViewById(
+                        R.id.backgroundImage
+                );
 
         ImageView viewerImage =
                 dialog.findViewById(
@@ -692,6 +739,58 @@ public class MyProfileActivity extends AppCompatActivity {
                         R.id.closeButton
                 );
 
+        View followingAction =
+                dialog.findViewById(
+                        R.id.followingAction
+                );
+
+        View shareAction =
+                dialog.findViewById(
+                        R.id.shareAction
+                );
+
+        View copyAction =
+                dialog.findViewById(
+                        R.id.copyAction
+                );
+
+        View qrAction =
+                dialog.findViewById(
+                        R.id.qrAction
+                );
+
+        /*
+         * Background profile image.
+         */
+        if (backgroundImage != null) {
+
+            backgroundImage.setImageDrawable(
+                    profileImage.getDrawable()
+            );
+
+            backgroundImage.setScaleType(
+                    ImageView.ScaleType.CENTER_CROP
+            );
+
+            /*
+             * Real blur on Android 12+.
+             */
+            if (android.os.Build.VERSION.SDK_INT >= 31) {
+
+                backgroundImage.setRenderEffect(
+                        android.graphics.RenderEffect
+                                .createBlurEffect(
+                                        28f,
+                                        28f,
+                                        android.graphics.Shader.TileMode.CLAMP
+                                )
+                );
+            }
+        }
+
+        /*
+         * Large circular photo.
+         */
         if (viewerImage != null) {
 
             viewerImage.setImageDrawable(
@@ -699,10 +798,41 @@ public class MyProfileActivity extends AppCompatActivity {
             );
 
             viewerImage.setScaleType(
-                    ImageView.ScaleType.FIT_CENTER
+                    ImageView.ScaleType.CENTER_CROP
+            );
+
+            viewerImage.setClipToOutline(true);
+
+            if (android.os.Build.VERSION.SDK_INT >= 21) {
+
+                viewerImage.setOutlineProvider(
+                        new ViewOutlineProvider() {
+
+                            @Override
+                            public void getOutline(
+                                    View view,
+                                    Outline outline
+                            ) {
+
+                                outline.setOval(
+                                        0,
+                                        0,
+                                        view.getWidth(),
+                                        view.getHeight()
+                                );
+                            }
+                        }
+                );
+            }
+
+            viewerImage.setOnClickListener(v ->
+                    dialog.dismiss()
             );
         }
 
+        /*
+         * Close.
+         */
         if (closeButton != null) {
 
             closeButton.setOnClickListener(v ->
@@ -710,49 +840,146 @@ public class MyProfileActivity extends AppCompatActivity {
             );
         }
 
-        if (viewerImage != null) {
+        /*
+         * Following.
+         */
+        if (followingAction != null) {
 
-            viewerImage.setOnClickListener(v ->
-                    dialog.dismiss()
+            followingAction.setOnClickListener(v -> {
+
+                Toast.makeText(
+                        MyProfileActivity.this,
+                        "Following",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
+        }
+
+        /*
+         * Share profile.
+         */
+        if (shareAction != null) {
+
+            shareAction.setOnClickListener(v ->
+                    shareProfile()
             );
         }
 
+        /*
+         * Copy profile link.
+         */
+        if (copyAction != null) {
+
+            copyAction.setOnClickListener(v -> {
+
+                String username =
+                        profileUsername != null
+                                ? profileUsername
+                                .getText()
+                                .toString()
+                                .replace("@", "")
+                                .trim()
+                                : "username";
+
+                String profileLink =
+                        "https://sanskritisathi.app/"
+                                + username;
+
+                ClipboardManager clipboard =
+                        (ClipboardManager)
+                                getSystemService(
+                                        CLIPBOARD_SERVICE
+                                );
+
+                if (clipboard != null) {
+
+                    clipboard.setPrimaryClip(
+                            ClipData.newPlainText(
+                                    "Profile link",
+                                    profileLink
+                            )
+                    );
+
+                    Toast.makeText(
+                            MyProfileActivity.this,
+                            "Profile link copied",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+            });
+        }
+
+        /*
+         * QR code.
+         */
+        if (qrAction != null) {
+
+            qrAction.setOnClickListener(v -> {
+
+                Toast.makeText(
+                        MyProfileActivity.this,
+                        "QR code",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
+        }
+
+        /*
+         * Show.
+         */
         dialog.show();
 
-        // Window size must be set after show().
-        Window dialogWindow =
+        Window window =
                 dialog.getWindow();
 
-        if (dialogWindow != null) {
+        if (window != null) {
 
-            dialogWindow.setLayout(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.MATCH_PARENT
+            window.setBackgroundDrawableResource(
+                    android.R.color.transparent
             );
 
-            dialogWindow.setBackgroundDrawableResource(
-                    android.R.color.black
+            window.setDimAmount(0.20f);
+
+            window.addFlags(
+                    WindowManager.LayoutParams.FLAG_DIM_BEHIND
+            );
+
+            window.setLayout(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT
             );
         }
     }
 
     private void showEmptyProfile() {
 
+        profilePhotoLoaded = false;
+
         if (profileName != null) {
+
             profileName.setText(
                     "Complete Your Profile"
             );
         }
 
         if (profileUsername != null) {
+
             profileUsername.setText(
                     "@username"
             );
         }
 
         if (profileBio != null) {
+
             profileBio.setText(
                     "Apni Sanskriti • Apna Gaurav"
+            );
+        }
+
+        if (profileImage != null) {
+
+            profileImage.setImageResource(
+                    android.R.drawable.ic_menu_myplaces
             );
         }
 
@@ -772,12 +999,16 @@ public class MyProfileActivity extends AppCompatActivity {
 
         String name =
                 profileName != null
-                        ? profileName.getText().toString()
+                        ? profileName
+                        .getText()
+                        .toString()
                         : "Sanskriti Sathi User";
 
         String username =
                 profileUsername != null
-                        ? profileUsername.getText().toString()
+                        ? profileUsername
+                        .getText()
+                        .toString()
                         : "@username";
 
         String shareText =
@@ -866,6 +1097,7 @@ public class MyProfileActivity extends AppCompatActivity {
             String line;
 
             while ((line = reader.readLine()) != null) {
+
                 result.append(line);
             }
 
