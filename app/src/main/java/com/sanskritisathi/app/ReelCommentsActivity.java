@@ -1,222 +1,131 @@
 package com.sanskritisathi.app;
 
-import android.os.Bundle;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.Toast;
+public class Reel {
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+    private String id;
+    private String userId;
+    private String username;
+    private String videoUrl;
+    private String caption;
+    private String visibility;
 
-import java.util.ArrayList;
-import java.util.List;
+    private int likes;
+    private int comments;
+    private int views;
 
-public class ReelCommentsActivity extends AppCompatActivity {
+    private boolean ownReel;
+    private boolean liked;
 
-    private RecyclerView commentsRecyclerView;
-    private EditText commentInput;
-    private ImageButton sendButton;
+    public Reel(
+            String id,
+            String userId,
+            String username,
+            String videoUrl,
+            String caption,
+            String visibility,
+            int likes,
+            int comments,
+            int views,
+            boolean ownReel) {
 
-    private final List<ReelComment> commentList =
-            new ArrayList<>();
-
-    private ReelCommentsAdapter adapter;
-
-    private String reelId;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_reel_comments);
-
-        reelId = getIntent().getStringExtra("reel_id");
-
-        if (reelId == null || reelId.trim().isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "Invalid Reel.",
-                    Toast.LENGTH_SHORT
-            ).show();
-            finish();
-            return;
-        }
-
-        commentsRecyclerView =
-                findViewById(R.id.commentsRecyclerView);
-
-        commentInput =
-                findViewById(R.id.commentInput);
-
-        sendButton =
-                findViewById(R.id.sendButton);
-
-        commentsRecyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
-        );
-
-        adapter = new ReelCommentsAdapter(
-                this,
-                commentList,
-                new ReelCommentsAdapter.CommentActionListener() {
-
-                    @Override
-                    public void onDelete(
-                            ReelComment comment,
-                            int position) {
-
-                        deleteComment(comment, position);
-                    }
-
-                    @Override
-                    public void onError(String message) {
-
-                        Toast.makeText(
-                                ReelCommentsActivity.this,
-                                message,
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                }
-        );
-
-        commentsRecyclerView.setAdapter(adapter);
-
-        sendButton.setOnClickListener(v ->
-                addComment()
-        );
-
-        loadComments();
+        this.id = id;
+        this.userId = userId;
+        this.username = username;
+        this.videoUrl = videoUrl;
+        this.caption = caption;
+        this.visibility = visibility;
+        this.likes = likes;
+        this.comments = comments;
+        this.views = views;
+        this.ownReel = ownReel;
+        this.liked = false;
     }
 
-    private void loadComments() {
-
-        ReelCommentFirebaseHelper.getComments(
-                reelId,
-                new ReelCommentFirebaseHelper.CommentsCallback() {
-
-                    @Override
-                    public void onSuccess(
-                            List<ReelComment> comments) {
-
-                        commentList.clear();
-                        commentList.addAll(comments);
-
-                        adapter.notifyDataSetChanged();
-
-                        if (!commentList.isEmpty()) {
-                            commentsRecyclerView.scrollToPosition(
-                                    commentList.size() - 1
-                            );
-                        }
-                    }
-
-                    @Override
-                    public void onError(String message) {
-
-                        Toast.makeText(
-                                ReelCommentsActivity.this,
-                                message,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                }
-        );
+    public String getId() {
+        return id;
     }
 
-    private void addComment() {
-
-        String text =
-                commentInput.getText()
-                        .toString()
-                        .trim();
-
-        if (text.isEmpty()) {
-            Toast.makeText(
-                    this,
-                    "Comment likho.",
-                    Toast.LENGTH_SHORT
-            ).show();
-            return;
-        }
-
-        sendButton.setEnabled(false);
-
-        ReelCommentFirebaseHelper.addComment(
-                reelId,
-                text,
-                new ReelCommentFirebaseHelper.ActionCallback() {
-
-                    @Override
-                    public void onSuccess() {
-
-                        runOnUiThread(() -> {
-
-                            commentInput.setText("");
-
-                            sendButton.setEnabled(true);
-
-                            loadComments();
-                        });
-                    }
-
-                    @Override
-                    public void onError(String message) {
-
-                        runOnUiThread(() -> {
-
-                            sendButton.setEnabled(true);
-
-                            Toast.makeText(
-                                    ReelCommentsActivity.this,
-                                    message,
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        });
-                    }
-                }
-        );
+    public String getUserId() {
+        return userId;
     }
 
-    private void deleteComment(
-            ReelComment comment,
-            int position) {
+    public String getUsername() {
+        return username;
+    }
 
-        ReelCommentFirebaseHelper.deleteComment(
-                reelId,
-                comment.getId(),
-                new ReelCommentFirebaseHelper.ActionCallback() {
+    public String getVideoUrl() {
+        return videoUrl;
+    }
 
-                    @Override
-                    public void onSuccess() {
+    public String getCaption() {
+        return caption;
+    }
 
-                        if (position >= 0 &&
-                                position < commentList.size()) {
+    public String getVisibility() {
+        return visibility;
+    }
 
-                            commentList.remove(position);
+    public int getLikes() {
+        return likes;
+    }
 
-                            adapter.notifyItemRemoved(
-                                    position
-                            );
-                        }
+    public int getComments() {
+        return comments;
+    }
 
-                        Toast.makeText(
-                                ReelCommentsActivity.this,
-                                "Comment deleted.",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
+    public int getViews() {
+        return views;
+    }
 
-                    @Override
-                    public void onError(String message) {
+    public boolean isOwnReel() {
+        return ownReel;
+    }
 
-                        Toast.makeText(
-                                ReelCommentsActivity.this,
-                                message,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                }
-        );
+    public boolean isLiked() {
+        return liked;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
+    }
+
+    public void setLikes(int likes) {
+        this.likes = Math.max(0, likes);
+    }
+
+    public void setComments(int comments) {
+        this.comments = Math.max(0, comments);
+    }
+
+    public void setViews(int views) {
+        this.views = Math.max(0, views);
+    }
+
+    public void setOwnReel(boolean ownReel) {
+        this.ownReel = ownReel;
+    }
+
+    public void setLiked(boolean liked) {
+        this.liked = liked;
     }
 }
