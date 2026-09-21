@@ -26,10 +26,29 @@ public class ReelActivity extends AppCompatActivity {
                 R.layout.activity_reel
         );
 
+        bindViews();
+        setupRecyclerView();
+
+        loadReels();
+    }
+
+    // ============================================================
+    // BIND VIEWS
+    // ============================================================
+
+    private void bindViews() {
+
         reelRecyclerView =
                 findViewById(
                         R.id.reelRecyclerView
                 );
+    }
+
+    // ============================================================
+    // RECYCLER VIEW
+    // ============================================================
+
+    private void setupRecyclerView() {
 
         LinearLayoutManager layoutManager =
                 new LinearLayoutManager(this);
@@ -49,175 +68,104 @@ public class ReelActivity extends AppCompatActivity {
         reelAdapter =
                 new ReelAdapter(
                         this,
-                        reelList,
-                        new ReelAdapter.ReelActionListener() {
-
-                            @Override
-                            public void onDelete(
-                                    Reel reel,
-                                    int position) {
-
-                                deleteReel(
-                                        reel,
-                                        position
-                                );
-                            }
-
-                            @Override
-                            public void onError(
-                                    String message) {
-
-                                Toast.makeText(
-                                        ReelActivity.this,
-                                        message,
-                                        Toast.LENGTH_SHORT
-                                ).show();
-                            }
-                        }
+                        reelList
                 );
 
         reelRecyclerView.setAdapter(
                 reelAdapter
         );
-
-        loadReels();
     }
 
-
-    // =========================
+    // ============================================================
     // LOAD REELS
-    // =========================
+    // ============================================================
 
     private void loadReels() {
 
-        reelList.clear();
-
-        reelAdapter.notifyDataSetChanged();
-
-        ReelFirebaseHelper.getActiveReels(
-                new ReelFirebaseHelper.ReelsCallback() {
+        ReelSupabaseHelper.getActiveReels(
+                this,
+                new ReelSupabaseHelper.ReelsCallback() {
 
                     @Override
                     public void onSuccess(
                             List<Reel> reels) {
 
-                        reelList.clear();
+                        runOnUiThread(() -> {
 
-                        if (reels != null) {
-                            reelList.addAll(
-                                    reels
+                            reelList.clear();
+
+                            if (reels != null) {
+                                reelList.addAll(
+                                        reels
+                                );
+                            }
+
+                            reelAdapter.setReels(
+                                    reelList
                             );
-                        }
 
-                        reelAdapter.notifyDataSetChanged();
+                            if (reelList.isEmpty()) {
 
-                        if (reelList.isEmpty()) {
-
-                            Toast.makeText(
-                                    ReelActivity.this,
-                                    "Abhi koi Reel available nahi hai.",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
+                                Toast.makeText(
+                                        ReelActivity.this,
+                                        "Abhi koi Reel available nahi hai.",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                            }
+                        });
                     }
 
                     @Override
                     public void onError(
                             String message) {
 
-                        Toast.makeText(
-                                ReelActivity.this,
-                                message,
-                                Toast.LENGTH_LONG
-                        ).show();
+                        runOnUiThread(() ->
+                                Toast.makeText(
+                                        ReelActivity.this,
+                                        message,
+                                        Toast.LENGTH_LONG
+                                ).show()
+                        );
                     }
                 }
         );
     }
 
+    // ============================================================
+    // REFRESH WHEN ACTIVITY RETURNS
+    // ============================================================
 
-    // =========================
-    // DELETE REEL
-    // =========================
+    @Override
+    protected void onResume() {
 
-    private void deleteReel(
-            Reel reel,
-            int position) {
+        super.onResume();
 
-        if (reel == null) {
-            return;
+        if (reelAdapter != null) {
+            loadReels();
         }
-
-        ReelFirebaseHelper.deleteReel(
-                reel.getId(),
-                new ReelFirebaseHelper.ActionCallback() {
-
-                    @Override
-                    public void onSuccess() {
-
-                        if (position >= 0 &&
-                                position < reelList.size()) {
-
-                            reelList.remove(
-                                    position
-                            );
-
-                            reelAdapter
-                                    .notifyItemRemoved(
-                                            position
-                                    );
-                        }
-
-                        Toast.makeText(
-                                ReelActivity.this,
-                                "Reel deleted.",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-
-                    @Override
-                    public void onError(
-                            String message) {
-
-                        Toast.makeText(
-                                ReelActivity.this,
-                                message,
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                }
-        );
     }
 
+    // ============================================================
+    // PAUSE / RELEASE
+    // ============================================================
 
-    // =========================
-    // PAUSE VIDEOS
-    // =========================
+    /*
+     * Current ReelAdapter individual ViewHolder ke
+     * ExoPlayer ko recycle hone par release karta hai.
+     *
+     * Isliye purane Firebase adapter ke:
+     *
+     * pauseAllVideos()
+     * releaseAllVideos()
+     *
+     * yahan intentionally use nahi kiye gaye.
+     */
 
     @Override
     protected void onPause() {
 
         super.onPause();
 
-        if (reelAdapter != null) {
-
-            reelAdapter.pauseAllVideos();
-        }
-    }
-
-
-    // =========================
-    // RELEASE VIDEOS
-    // =========================
-
-    @Override
-    protected void onDestroy() {
-
-        if (reelAdapter != null) {
-
-            reelAdapter.releaseAllVideos();
-        }
-
-        super.onDestroy();
+        reelRecyclerView.stopScroll();
     }
 }
