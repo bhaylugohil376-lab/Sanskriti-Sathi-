@@ -3,11 +3,11 @@ package com.sanskritisathi.app;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.RadioButton;
-import android.widget.TextView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -16,109 +16,184 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class ReelUploadActivity extends AppCompatActivity {
 
+    private EditText captionInput;
+    private Spinner visibilitySpinner;
+    private Button selectVideoButton;
+    private Button uploadButton;
+    private ProgressBar uploadProgress;
+
     private Uri selectedVideoUri;
 
-    private TextView videoNameText;
-    private EditText captionInput;
-    private RadioButton publicRadio;
-    private RadioButton followersRadio;
-    private ProgressBar uploadProgress;
-    private Button selectVideoButton;
-    private Button publishButton;
-
-    private final ActivityResultLauncher<String> videoPicker =
-            registerForActivityResult(
-                    new ActivityResultContracts.GetContent(),
-                    uri -> {
-                        if (uri != null) {
-                            selectedVideoUri = uri;
-
-                            String name = uri.getLastPathSegment();
-
-                            if (name == null || name.isEmpty()) {
-                                name = "Video selected";
-                            }
-
-                            videoNameText.setText("🎬 " + name);
-                            publishButton.setEnabled(true);
-                        }
-                    }
-            );
+    private ActivityResultLauncher<String> videoPickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_reel_upload);
 
-        videoNameText = findViewById(R.id.videoNameText);
-        captionInput = findViewById(R.id.captionInput);
-        publicRadio = findViewById(R.id.publicRadio);
-        followersRadio = findViewById(R.id.followersRadio);
-        uploadProgress = findViewById(R.id.uploadProgress);
-        selectVideoButton = findViewById(R.id.selectVideoButton);
-        publishButton = findViewById(R.id.publishButton);
+        bindViews();
+        setupVideoPicker();
+        setupListeners();
 
-        uploadProgress.setVisibility(ProgressBar.GONE);
-        publishButton.setEnabled(false);
+        if (!SupabaseAuthManager.isLoggedIn(this)) {
+            Toast.makeText(
+                    this,
+                    "Login required.",
+                    Toast.LENGTH_SHORT
+            ).show();
 
-        selectVideoButton.setOnClickListener(v ->
-                videoPicker.launch("video/*")
-        );
-
-        publishButton.setOnClickListener(v -> publishReel());
+            finish();
+        }
     }
 
-    private void publishReel() {
+    // ============================================================
+    // BIND VIEWS
+    // ============================================================
+
+    private void bindViews() {
+
+        captionInput =
+                findViewById(R.id.captionInput);
+
+        visibilitySpinner =
+                findViewById(R.id.visibilitySpinner);
+
+        selectVideoButton =
+                findViewById(R.id.selectVideoButton);
+
+        uploadButton =
+                findViewById(R.id.uploadButton);
+
+        uploadProgress =
+                findViewById(R.id.uploadProgress);
+    }
+
+    // ============================================================
+    // VIDEO PICKER
+    // ============================================================
+
+    private void setupVideoPicker() {
+
+        videoPickerLauncher =
+                registerForActivityResult(
+                        new ActivityResultContracts.GetContent(),
+                        uri -> {
+
+                            if (uri == null) {
+                                return;
+                            }
+
+                            selectedVideoUri = uri;
+
+                            selectVideoButton.setText(
+                                    "Video Selected ✓"
+                            );
+
+                            uploadButton.setEnabled(
+                                    true
+                            );
+                        }
+                );
+    }
+
+    // ============================================================
+    // LISTENERS
+    // ============================================================
+
+    private void setupListeners() {
+
+        selectVideoButton.setOnClickListener(
+                v -> openVideoPicker()
+        );
+
+        uploadButton.setOnClickListener(
+                v -> uploadReel()
+        );
+    }
+
+    // ============================================================
+    // OPEN PICKER
+    // ============================================================
+
+    private void openVideoPicker() {
+
+        videoPickerLauncher.launch(
+                "video/*"
+        );
+    }
+
+    // ============================================================
+    // UPLOAD
+    // ============================================================
+
+    private void uploadReel() {
 
         if (selectedVideoUri == null) {
+
             Toast.makeText(
                     this,
                     "Pehle video select karo.",
                     Toast.LENGTH_SHORT
             ).show();
+
             return;
         }
 
-        String caption = captionInput.getText()
-                .toString()
-                .trim();
+        String caption =
+                captionInput
+                        .getText()
+                        .toString()
+                        .trim();
 
-        String visibility;
+        if (caption.length() > 500) {
 
-        if (followersRadio.isChecked()) {
-            visibility = "Followers";
-        } else {
-            visibility = "Public";
+            Toast.makeText(
+                    this,
+                    "Caption maximum 500 characters ka ho sakta hai.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
         }
 
-        publishButton.setEnabled(false);
-        selectVideoButton.setEnabled(false);
-        uploadProgress.setVisibility(ProgressBar.VISIBLE);
-        uploadProgress.setProgress(0);
+        String visibility =
+                getSelectedVisibility();
 
-        ReelFirebaseHelper.uploadReel(
+        setUploadingState(true);
+
+        ReelSupabaseHelper.uploadReel(
+                this,
                 selectedVideoUri,
                 caption,
                 visibility,
-                new ReelFirebaseHelper.UploadCallback() {
+                new ReelSupabaseHelper.UploadCallback() {
 
                     @Override
-                    public void onProgress(int progress) {
+                    public void onProgress(
+                            int progress) {
+
                         runOnUiThread(() -> {
-                            uploadProgress.setProgress(progress);
-                            publishButton.setText(
-                                    "Uploading " + progress + "%"
+
+                            uploadProgress.setProgress(
+                                    progress
                             );
                         });
                     }
 
                     @Override
-                    public void onSuccess(String reelId) {
+                    public void onSuccess(
+                            String videoUrl) {
+
                         runOnUiThread(() -> {
+
+                            setUploadingState(
+                                    false
+                            );
 
                             Toast.makeText(
                                     ReelUploadActivity.this,
-                                    "Reel published successfully 🎉",
+                                    "Reel upload ho gayi.",
                                     Toast.LENGTH_SHORT
                             ).show();
 
@@ -127,16 +202,14 @@ public class ReelUploadActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message) {
+
                         runOnUiThread(() -> {
 
-                            uploadProgress.setVisibility(
-                                    ProgressBar.GONE
+                            setUploadingState(
+                                    false
                             );
-
-                            publishButton.setEnabled(true);
-                            selectVideoButton.setEnabled(true);
-                            publishButton.setText("Publish Reel");
 
                             Toast.makeText(
                                     ReelUploadActivity.this,
@@ -147,5 +220,108 @@ public class ReelUploadActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    // ============================================================
+    // VISIBILITY
+    // ============================================================
+
+    private String getSelectedVisibility() {
+
+        if (visibilitySpinner == null) {
+            return "Public";
+        }
+
+        Object selectedItem =
+                visibilitySpinner
+                        .getSelectedItem();
+
+        if (selectedItem == null) {
+            return "Public";
+        }
+
+        String value =
+                selectedItem
+                        .toString()
+                        .trim();
+
+        if (TextUtils.isEmpty(value)) {
+            return "Public";
+        }
+
+        /*
+         * Existing UI values:
+         *
+         * Followers
+         * Public
+         */
+        return value;
+    }
+
+    // ============================================================
+    // UPLOAD STATE
+    // ============================================================
+
+    private void setUploadingState(
+            boolean uploading) {
+
+        selectVideoButton.setEnabled(
+                !uploading
+        );
+
+        captionInput.setEnabled(
+                !uploading
+        );
+
+        visibilitySpinner.setEnabled(
+                !uploading
+        );
+
+        uploadButton.setEnabled(
+                !uploading
+        );
+
+        if (uploading) {
+
+            uploadProgress.setVisibility(
+                    android.view.View.VISIBLE
+            );
+
+            uploadProgress.setProgress(
+                    0
+            );
+
+            uploadButton.setText(
+                    "Uploading..."
+            );
+
+        } else {
+
+            uploadProgress.setVisibility(
+                    android.view.View.GONE
+            );
+
+            uploadButton.setText(
+                    "Upload Reel"
+            );
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if (uploadButton != null
+                && !uploadButton.isEnabled()) {
+
+            Toast.makeText(
+                    this,
+                    "Upload complete hone do.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        super.onBackPressed();
     }
 }
