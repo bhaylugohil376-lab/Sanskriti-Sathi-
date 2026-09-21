@@ -4,40 +4,42 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReelCommentsAdapter
         extends RecyclerView.Adapter<ReelCommentsAdapter.CommentViewHolder> {
 
-    public interface CommentActionListener {
-        void onDelete(ReelComment comment, int position);
-        void onError(String message);
-    }
-
     private final Context context;
     private final List<ReelComment> comments;
-    private final CommentActionListener listener;
-
-    private final FirebaseAuth auth =
-            FirebaseAuth.getInstance();
 
     public ReelCommentsAdapter(
             Context context,
-            List<ReelComment> comments,
-            CommentActionListener listener) {
+            List<ReelComment> comments) {
 
         this.context = context;
-        this.comments = comments;
-        this.listener = listener;
+
+        this.comments =
+                comments == null
+                        ? new ArrayList<>()
+                        : comments;
+    }
+
+    public void setComments(
+            List<ReelComment> newComments) {
+
+        comments.clear();
+
+        if (newComments != null) {
+            comments.addAll(newComments);
+        }
+
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -46,12 +48,13 @@ public class ReelCommentsAdapter
             @NonNull ViewGroup parent,
             int viewType) {
 
-        View view = LayoutInflater.from(context)
-                .inflate(
-                        R.layout.item_reel_comment,
-                        parent,
-                        false
-                );
+        View view =
+                LayoutInflater.from(context)
+                        .inflate(
+                                R.layout.item_reel_comment,
+                                parent,
+                                false
+                        );
 
         return new CommentViewHolder(view);
     }
@@ -64,62 +67,29 @@ public class ReelCommentsAdapter
         ReelComment comment =
                 comments.get(position);
 
+        String username =
+                comment.getUsername();
+
+        if (username == null ||
+                username.trim().isEmpty()) {
+
+            username = "Sanskriti User";
+        }
+
         holder.usernameText.setText(
-                comment.getUsername()
+                username
         );
+
+        String text =
+                comment.getText();
+
+        if (text == null) {
+            text = "";
+        }
 
         holder.commentText.setText(
-                comment.getText()
+                text
         );
-
-        holder.profileImage.setImageResource(
-                R.drawable.icon_foreground
-        );
-
-        // Only the owner of the comment
-        // can see the delete button.
-        boolean isOwnComment = false;
-
-        if (auth.getCurrentUser() != null) {
-
-            String currentUid =
-                    auth.getCurrentUser().getUid();
-
-            String commentUid =
-                    comment.getUserId();
-
-            isOwnComment =
-                    commentUid != null &&
-                    currentUid.equals(commentUid);
-        }
-
-        if (isOwnComment) {
-
-            holder.deleteButton.setVisibility(
-                    View.VISIBLE
-            );
-
-        } else {
-
-            holder.deleteButton.setVisibility(
-                    View.GONE
-            );
-        }
-
-        holder.deleteButton.setOnClickListener(v -> {
-
-            int adapterPosition =
-                    holder.getBindingAdapterPosition();
-
-            if (adapterPosition !=
-                    RecyclerView.NO_POSITION) {
-
-                listener.onDelete(
-                        comment,
-                        adapterPosition
-                );
-            }
-        });
     }
 
     @Override
@@ -130,9 +100,6 @@ public class ReelCommentsAdapter
     static class CommentViewHolder
             extends RecyclerView.ViewHolder {
 
-        ImageView profileImage;
-        ImageButton deleteButton;
-
         TextView usernameText;
         TextView commentText;
 
@@ -141,19 +108,9 @@ public class ReelCommentsAdapter
 
             super(itemView);
 
-            profileImage =
-                    itemView.findViewById(
-                            R.id.commentProfileImage
-                    );
-
-            deleteButton =
-                    itemView.findViewById(
-                            R.id.commentDeleteButton
-                    );
-
             usernameText =
                     itemView.findViewById(
-                            R.id.commentUsernameText
+                            R.id.commentUsername
                     );
 
             commentText =
