@@ -4,27 +4,173 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#10151D">
 
+    <!-- Background profile photo -->
     <ImageView
-        android:id="@+id/viewerImage"
+        android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:contentDescription="Profile photo"
-        android:scaleType="fitCenter" />
+        android:scaleType="centerCrop"
+        android:alpha="0.35"
+        android:contentDescription="Background" />
 
+    <!-- Dark overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#990C1118" />
+
+    <!-- CLOSE -->
     <ImageButton
         android:id="@+id/closeButton"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="18dp"
-        android:layout_marginEnd="12dp"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="22dp"
         android:background="@android:color/transparent"
-        android:contentDescription="Close"
-        android:padding="10dp"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
-        android:tint="#FFFFFF" />
+        android:tint="#FFFFFF"
+        android:contentDescription="Close" />
+
+    <!-- LARGE CIRCULAR PHOTO -->
+    <ImageView
+        android:id="@+id/viewerImage"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_gravity="center"
+        android:scaleType="centerCrop"
+        android:contentDescription="Profile photo" />
+
+    <!-- BOTTOM ACTIONS -->
+    <LinearLayout
+        android:id="@+id/actionBar"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_gravity="bottom"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp">
+
+        <!-- FOLLOWING -->
+        <LinearLayout
+            android:id="@+id/followingAction"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/followingIcon"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/profile_action_circle"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:tint="#FFFFFF"
+                android:contentDescription="Following" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Following"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+        <!-- SHARE -->
+        <LinearLayout
+            android:id="@+id/shareAction"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/shareIcon"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/profile_action_circle"
+                android:src="@android:drawable/ic_menu_share"
+                android:tint="#FFFFFF"
+                android:contentDescription="Share profile" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Share profile"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+        <!-- COPY LINK -->
+        <LinearLayout
+            android:id="@+id/copyAction"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/copyIcon"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/profile_action_circle"
+                android:src="@android:drawable/ic_menu_send"
+                android:tint="#FFFFFF"
+                android:contentDescription="Copy link" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Copy link"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+        <!-- QR CODE -->
+        <LinearLayout
+            android:id="@+id/qrAction"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/qrIcon"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/profile_action_circle"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:tint="#FFFFFF"
+                android:contentDescription="QR code" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="QR code"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 </FrameLayout>
