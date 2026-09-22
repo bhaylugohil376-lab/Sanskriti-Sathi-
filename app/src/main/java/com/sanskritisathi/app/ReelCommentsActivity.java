@@ -1,16 +1,19 @@
 package com.sanskritisathi.app;
 
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +22,15 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
     private RecyclerView commentsRecyclerView;
     private EditText commentInput;
-    private ImageButton sendButton;
+    private MaterialButton sendButton;
     private ImageButton backButton;
 
     private ReelCommentsAdapter adapter;
 
-    private String reelId;
+    private final List<ReelComment> commentList =
+            new ArrayList<>();
 
-    private boolean sendingComment = false;
+    private String reelId = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,15 +40,13 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 R.layout.activity_reel_comments
         );
 
-        bindViews();
-        setupRecyclerView();
-        setupListeners();
+        reelId =
+                getIntent().getStringExtra(
+                        "reel_id"
+                );
 
-        reelId = getIntent().getStringExtra(
-                "reel_id"
-        );
-
-        if (TextUtils.isEmpty(reelId)) {
+        if (reelId == null ||
+                reelId.trim().isEmpty()) {
 
             Toast.makeText(
                     this,
@@ -56,12 +58,24 @@ public class ReelCommentsActivity extends AppCompatActivity {
             return;
         }
 
+        bindViews();
+        setupRecyclerView();
+        setupListeners();
+
+        if (!SupabaseAuthManager.isLoggedIn(this)) {
+
+            Toast.makeText(
+                    this,
+                    "Please login first.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            finish();
+            return;
+        }
+
         loadComments();
     }
-
-    // ============================================================
-    // BIND VIEWS
-    // ============================================================
 
     private void bindViews() {
 
@@ -86,10 +100,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 );
     }
 
-    // ============================================================
-    // RECYCLER VIEW
-    // ============================================================
-
     private void setupRecyclerView() {
 
         LinearLayoutManager layoutManager =
@@ -104,17 +114,13 @@ public class ReelCommentsActivity extends AppCompatActivity {
         adapter =
                 new ReelCommentsAdapter(
                         this,
-                        new ArrayList<>()
+                        commentList
                 );
 
         commentsRecyclerView.setAdapter(
                 adapter
         );
     }
-
-    // ============================================================
-    // LISTENERS
-    // ============================================================
 
     private void setupListeners() {
 
@@ -127,17 +133,14 @@ public class ReelCommentsActivity extends AppCompatActivity {
         );
     }
 
-    // ============================================================
+    // =========================================================
     // LOAD COMMENTS
-    // ============================================================
+    // =========================================================
 
     private void loadComments() {
 
-        if (TextUtils.isEmpty(reelId)) {
-            return;
-        }
-
         ReelCommentSupabaseHelper.getComments(
+                this,
                 reelId,
                 new ReelCommentSupabaseHelper.CommentsCallback() {
 
@@ -147,17 +150,32 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> {
 
-                            adapter.setComments(
-                                    comments
-                            );
+                            commentList.clear();
 
-                            if (comments != null
-                                    && !comments.isEmpty()) {
-
-                                commentsRecyclerView.scrollToPosition(
-                                        comments.size() - 1
+                            if (comments != null) {
+                                commentList.addAll(
+                                        comments
                                 );
                             }
+
+                            adapter.setComments(
+                                    commentList
+                            );
+
+                            commentsRecyclerView.post(
+                                    () -> {
+
+                                        if (adapter.getItemCount()
+                                                > 0) {
+
+                                            commentsRecyclerView
+                                                    .scrollToPosition(
+                                                            adapter.getItemCount()
+                                                                    - 1
+                                                    );
+                                        }
+                                    }
+                            );
                         });
                     }
 
@@ -169,7 +187,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
                                 Toast.makeText(
                                         ReelCommentsActivity.this,
                                         message == null
-                                                ? "Comments load nahi hue."
+                                                ? "Comments load nahi hui."
                                                 : message,
                                         Toast.LENGTH_LONG
                                 ).show()
@@ -179,62 +197,33 @@ public class ReelCommentsActivity extends AppCompatActivity {
         );
     }
 
-    // ============================================================
+    // =========================================================
     // SEND COMMENT
-    // ============================================================
+    // =========================================================
 
     private void sendComment() {
 
-        if (sendingComment) {
-            return;
-        }
-
         String text =
-                commentInput
-                        .getText()
+                commentInput.getText()
                         .toString()
                         .trim();
 
-        if (TextUtils.isEmpty(text)) {
+        if (text.isEmpty()) {
 
-            Toast.makeText(
-                    this,
-                    "Comment empty nahi ho sakta.",
-                    Toast.LENGTH_SHORT
-            ).show();
+            commentInput.setError(
+                    "Comment likho"
+            );
+
+            commentInput.requestFocus();
 
             return;
         }
 
         if (text.length() > 500) {
 
-            Toast.makeText(
-                    this,
-                    "Comment maximum 500 characters ka ho sakta hai.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            return;
-        }
-
-        if (TextUtils.isEmpty(reelId)) {
-
-            Toast.makeText(
-                    this,
-                    "Invalid Reel.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            return;
-        }
-
-        if (!SupabaseAuthManager.isLoggedIn(this)) {
-
-            Toast.makeText(
-                    this,
-                    "Comment karne ke liye login karein.",
-                    Toast.LENGTH_SHORT
-            ).show();
+            commentInput.setError(
+                    "Maximum 500 characters"
+            );
 
             return;
         }
@@ -242,6 +231,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
         setSendingState(true);
 
         ReelCommentSupabaseHelper.addComment(
+                this,
                 reelId,
                 text,
                 new ReelCommentSupabaseHelper.ActionCallback() {
@@ -258,6 +248,12 @@ public class ReelCommentsActivity extends AppCompatActivity {
                             setSendingState(false);
 
                             loadComments();
+
+                            Toast.makeText(
+                                    ReelCommentsActivity.this,
+                                    "Comment added",
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         });
                     }
 
@@ -282,56 +278,65 @@ public class ReelCommentsActivity extends AppCompatActivity {
         );
     }
 
-    // ============================================================
+    // =========================================================
     // SEND STATE
-    // ============================================================
+    // =========================================================
 
     private void setSendingState(
             boolean sending) {
 
-        sendingComment = sending;
+        sendButton.setEnabled(!sending);
 
-        sendButton.setEnabled(
-                !sending
-        );
+        commentInput.setEnabled(!sending);
 
-        commentInput.setEnabled(
-                !sending
-        );
+        if (sending) {
+
+            sendButton.setText(
+                    "Sending..."
+            );
+
+        } else {
+
+            sendButton.setText(
+                    "Send"
+            );
+        }
     }
 
-    // ============================================================
-    // HIDE KEYBOARD
-    // ============================================================
+    // =========================================================
+    // KEYBOARD
+    // =========================================================
 
     private void hideKeyboard() {
 
-        InputMethodManager imm =
+        InputMethodManager manager =
                 (InputMethodManager)
                         getSystemService(
                                 Context.INPUT_METHOD_SERVICE
                         );
 
-        if (imm != null) {
+        if (manager != null) {
 
-            imm.hideSoftInputFromWindow(
+            manager.hideSoftInputFromWindow(
                     commentInput.getWindowToken(),
                     0
             );
         }
+
+        commentInput.clearFocus();
     }
 
-    // ============================================================
-    // RESUME
-    // ============================================================
+    // =========================================================
+    // REFRESH WHEN RETURNING
+    // =========================================================
 
     @Override
     protected void onResume() {
-
         super.onResume();
 
-        if (!TextUtils.isEmpty(reelId)
-                && adapter != null) {
+        if (reelId != null &&
+                !reelId.trim().isEmpty() &&
+                SupabaseAuthManager.isLoggedIn(this)) {
 
             loadComments();
         }
