@@ -1,131 +1,339 @@
 package com.sanskritisathi.app;
 
-public class Reel {
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
-    private String id;
-    private String userId;
-    private String username;
-    private String videoUrl;
-    private String caption;
-    private String visibility;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-    private int likes;
-    private int comments;
-    private int views;
+import java.util.ArrayList;
+import java.util.List;
 
-    private boolean ownReel;
-    private boolean liked;
+public class ReelCommentsActivity extends AppCompatActivity {
 
-    public Reel(
-            String id,
-            String userId,
-            String username,
-            String videoUrl,
-            String caption,
-            String visibility,
-            int likes,
-            int comments,
-            int views,
-            boolean ownReel) {
+    private RecyclerView commentsRecyclerView;
+    private EditText commentInput;
+    private ImageButton sendButton;
+    private ImageButton backButton;
 
-        this.id = id;
-        this.userId = userId;
-        this.username = username;
-        this.videoUrl = videoUrl;
-        this.caption = caption;
-        this.visibility = visibility;
-        this.likes = likes;
-        this.comments = comments;
-        this.views = views;
-        this.ownReel = ownReel;
-        this.liked = false;
+    private ReelCommentsAdapter adapter;
+
+    private String reelId;
+
+    private boolean sendingComment = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setContentView(
+                R.layout.activity_reel_comments
+        );
+
+        bindViews();
+        setupRecyclerView();
+        setupListeners();
+
+        reelId = getIntent().getStringExtra(
+                "reel_id"
+        );
+
+        if (TextUtils.isEmpty(reelId)) {
+
+            Toast.makeText(
+                    this,
+                    "Invalid Reel.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            finish();
+            return;
+        }
+
+        loadComments();
     }
 
-    public String getId() {
-        return id;
+    // ============================================================
+    // BIND VIEWS
+    // ============================================================
+
+    private void bindViews() {
+
+        commentsRecyclerView =
+                findViewById(
+                        R.id.commentsRecyclerView
+                );
+
+        commentInput =
+                findViewById(
+                        R.id.commentInput
+                );
+
+        sendButton =
+                findViewById(
+                        R.id.sendButton
+                );
+
+        backButton =
+                findViewById(
+                        R.id.backButton
+                );
     }
 
-    public String getUserId() {
-        return userId;
+    // ============================================================
+    // RECYCLER VIEW
+    // ============================================================
+
+    private void setupRecyclerView() {
+
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(this);
+
+        layoutManager.setStackFromEnd(true);
+
+        commentsRecyclerView.setLayoutManager(
+                layoutManager
+        );
+
+        adapter =
+                new ReelCommentsAdapter(
+                        this,
+                        new ArrayList<>()
+                );
+
+        commentsRecyclerView.setAdapter(
+                adapter
+        );
     }
 
-    public String getUsername() {
-        return username;
+    // ============================================================
+    // LISTENERS
+    // ============================================================
+
+    private void setupListeners() {
+
+        backButton.setOnClickListener(
+                v -> finish()
+        );
+
+        sendButton.setOnClickListener(
+                v -> sendComment()
+        );
     }
 
-    public String getVideoUrl() {
-        return videoUrl;
+    // ============================================================
+    // LOAD COMMENTS
+    // ============================================================
+
+    private void loadComments() {
+
+        if (TextUtils.isEmpty(reelId)) {
+            return;
+        }
+
+        ReelCommentSupabaseHelper.getComments(
+                reelId,
+                new ReelCommentSupabaseHelper.CommentsCallback() {
+
+                    @Override
+                    public void onSuccess(
+                            List<ReelComment> comments) {
+
+                        runOnUiThread(() -> {
+
+                            adapter.setComments(
+                                    comments
+                            );
+
+                            if (comments != null
+                                    && !comments.isEmpty()) {
+
+                                commentsRecyclerView.scrollToPosition(
+                                        comments.size() - 1
+                                );
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        runOnUiThread(() ->
+                                Toast.makeText(
+                                        ReelCommentsActivity.this,
+                                        message == null
+                                                ? "Comments load nahi hue."
+                                                : message,
+                                        Toast.LENGTH_LONG
+                                ).show()
+                        );
+                    }
+                }
+        );
     }
 
-    public String getCaption() {
-        return caption;
+    // ============================================================
+    // SEND COMMENT
+    // ============================================================
+
+    private void sendComment() {
+
+        if (sendingComment) {
+            return;
+        }
+
+        String text =
+                commentInput
+                        .getText()
+                        .toString()
+                        .trim();
+
+        if (TextUtils.isEmpty(text)) {
+
+            Toast.makeText(
+                    this,
+                    "Comment empty nahi ho sakta.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        if (text.length() > 500) {
+
+            Toast.makeText(
+                    this,
+                    "Comment maximum 500 characters ka ho sakta hai.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        if (TextUtils.isEmpty(reelId)) {
+
+            Toast.makeText(
+                    this,
+                    "Invalid Reel.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        if (!SupabaseAuthManager.isLoggedIn(this)) {
+
+            Toast.makeText(
+                    this,
+                    "Comment karne ke liye login karein.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        setSendingState(true);
+
+        ReelCommentSupabaseHelper.addComment(
+                reelId,
+                text,
+                new ReelCommentSupabaseHelper.ActionCallback() {
+
+                    @Override
+                    public void onSuccess() {
+
+                        runOnUiThread(() -> {
+
+                            commentInput.setText("");
+
+                            hideKeyboard();
+
+                            setSendingState(false);
+
+                            loadComments();
+                        });
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        runOnUiThread(() -> {
+
+                            setSendingState(false);
+
+                            Toast.makeText(
+                                    ReelCommentsActivity.this,
+                                    message == null
+                                            ? "Comment send nahi hua."
+                                            : message,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        });
+                    }
+                }
+        );
     }
 
-    public String getVisibility() {
-        return visibility;
+    // ============================================================
+    // SEND STATE
+    // ============================================================
+
+    private void setSendingState(
+            boolean sending) {
+
+        sendingComment = sending;
+
+        sendButton.setEnabled(
+                !sending
+        );
+
+        commentInput.setEnabled(
+                !sending
+        );
     }
 
-    public int getLikes() {
-        return likes;
+    // ============================================================
+    // HIDE KEYBOARD
+    // ============================================================
+
+    private void hideKeyboard() {
+
+        InputMethodManager imm =
+                (InputMethodManager)
+                        getSystemService(
+                                Context.INPUT_METHOD_SERVICE
+                        );
+
+        if (imm != null) {
+
+            imm.hideSoftInputFromWindow(
+                    commentInput.getWindowToken(),
+                    0
+            );
+        }
     }
 
-    public int getComments() {
-        return comments;
-    }
+    // ============================================================
+    // RESUME
+    // ============================================================
 
-    public int getViews() {
-        return views;
-    }
+    @Override
+    protected void onResume() {
 
-    public boolean isOwnReel() {
-        return ownReel;
-    }
+        super.onResume();
 
-    public boolean isLiked() {
-        return liked;
-    }
+        if (!TextUtils.isEmpty(reelId)
+                && adapter != null) {
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setVideoUrl(String videoUrl) {
-        this.videoUrl = videoUrl;
-    }
-
-    public void setCaption(String caption) {
-        this.caption = caption;
-    }
-
-    public void setVisibility(String visibility) {
-        this.visibility = visibility;
-    }
-
-    public void setLikes(int likes) {
-        this.likes = Math.max(0, likes);
-    }
-
-    public void setComments(int comments) {
-        this.comments = Math.max(0, comments);
-    }
-
-    public void setViews(int views) {
-        this.views = Math.max(0, views);
-    }
-
-    public void setOwnReel(boolean ownReel) {
-        this.ownReel = ownReel;
-    }
-
-    public void setLiked(boolean liked) {
-        this.liked = liked;
+            loadComments();
+        }
     }
 }
