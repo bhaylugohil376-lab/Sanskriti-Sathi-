@@ -1,8 +1,6 @@
 package com.sanskritisathi.app;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,7 +11,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,354 +19,85 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public final class ReelCommentSupabaseHelper {
+public class ReelCommentSupabaseHelper {
+
+    private static final ExecutorService EXECUTOR =
+            Executors.newCachedThreadPool();
+
+    private static final String TABLE =
+            "/rest/v1/reel_comments";
 
     public interface CommentsCallback {
         void onSuccess(List<ReelComment> comments);
-
-        void onError(String message);
+        void onError(String error);
     }
 
     public interface ActionCallback {
         void onSuccess();
-
-        void onError(String message);
+        void onError(String error);
     }
-
-    private ReelCommentSupabaseHelper() {
-    }
-
-    // =========================================================
-    // ADD COMMENT
-    // =========================================================
-
-    public static void addComment(
-            Context context,
-            String reelId,
-            String text,
-            ActionCallback callback) {
-
-        if (callback == null) {
-            return;
-        }
-
-        if (context == null) {
-            callback.onError("App context nahi mila.");
-            return;
-        }
-
-        Context appContext =
-                context.getApplicationContext();
-
-        if (!SupabaseAuthManager.isLoggedIn(appContext)) {
-            callback.onError("Please login first.");
-            return;
-        }
-
-        if (reelId == null ||
-                reelId.trim().isEmpty()) {
-
-            callback.onError("Invalid Reel.");
-            return;
-        }
-
-        if (text == null ||
-                text.trim().isEmpty()) {
-
-            callback.onError(
-                    "Comment empty nahi ho sakta."
-            );
-            return;
-        }
-
-        final String cleanReelId =
-                reelId.trim();
-
-        final String cleanText =
-                text.trim();
-
-        if (cleanText.length() > 500) {
-
-            callback.onError(
-                    "Comment maximum 500 characters ka ho sakta hai."
-            );
-
-            return;
-        }
-
-        final String userId =
-                SupabaseAuthManager.getUserId(
-                        appContext
-                );
-
-        if (userId == null ||
-                userId.trim().isEmpty()) {
-
-            callback.onError(
-                    "User session nahi mili."
-            );
-
-            return;
-        }
-
-        new Thread(() -> {
-
-            HttpURLConnection connection = null;
-
-            try {
-
-                String username =
-                        getCurrentUsername(
-                                appContext,
-                                userId
-                        );
-
-                if (username == null ||
-                        username.trim().isEmpty()) {
-
-                    username = "Sanskriti User";
-                }
-
-                JSONObject comment =
-                        new JSONObject();
-
-                comment.put(
-                        "id",
-                        UUID.randomUUID().toString()
-                );
-
-                comment.put(
-                        "reel_id",
-                        cleanReelId
-                );
-
-                comment.put(
-                        "user_id",
-                        userId
-                );
-
-                comment.put(
-                        "username",
-                        username
-                );
-
-                comment.put(
-                        "text",
-                        cleanText
-                );
-
-                /*
-                 * Supabase timestamptz ke liye ISO-8601
-                 * UTC timestamp use kar rahe hain.
-                 */
-                comment.put(
-                        "created_at",
-                        getCurrentUtcTime()
-                );
-
-                URL url =
-                        new URL(
-                                SupabaseConfig.PROJECT_URL
-                                        + "/rest/v1/reel_comments"
-                        );
-
-                connection =
-                        (HttpURLConnection)
-                                url.openConnection();
-
-                connection.setRequestMethod("POST");
-
-                connection.setConnectTimeout(30000);
-
-                connection.setReadTimeout(30000);
-
-                connection.setDoOutput(true);
-
-                setHeaders(
-                        connection,
-                        appContext
-                );
-
-                connection.setRequestProperty(
-                        "Prefer",
-                        "return=minimal"
-                );
-
-                byte[] body =
-                        comment.toString()
-                                .getBytes(
-                                        StandardCharsets.UTF_8
-                                );
-
-                connection.setFixedLengthStreamingMode(
-                        body.length
-                );
-
-                try (OutputStream output =
-                             connection.getOutputStream()) {
-
-                    output.write(body);
-                    output.flush();
-                }
-
-                int responseCode =
-                        connection.getResponseCode();
-
-                if (responseCode >= 200 &&
-                        responseCode < 300) {
-
-                    updateReelCommentCount(
-                            appContext,
-                            cleanReelId
-                    );
-
-                    postSuccess(callback);
-
-                } else {
-
-                    String error =
-                            readError(connection);
-
-                    postError(
-                            callback,
-                            "Comment save failed: "
-                                    + error
-                    );
-                }
-
-            } catch (Exception e) {
-
-                postError(
-                        callback,
-                        "Comment save failed: "
-                                + safeMessage(e)
-                );
-
-            } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-
-        }).start();
-    }
-
-    // =========================================================
-    // LOAD COMMENTS
-    // =========================================================
 
     public static void getComments(
             Context context,
             String reelId,
             CommentsCallback callback) {
 
-        if (callback == null) {
-            return;
-        }
-
-        if (context == null) {
-            callback.onError("App context nahi mila.");
-            return;
-        }
-
-        Context appContext =
-                context.getApplicationContext();
-
-        if (!SupabaseAuthManager.isLoggedIn(appContext)) {
-            callback.onError("Please login first.");
-            return;
-        }
-
-        if (reelId == null ||
-                reelId.trim().isEmpty()) {
-
-            callback.onError("Invalid Reel.");
-            return;
-        }
-
-        final String cleanReelId =
-                reelId.trim();
-
-        new Thread(() -> {
+        EXECUTOR.execute(() -> {
 
             HttpURLConnection connection = null;
 
             try {
 
-                String encodedReelId =
-                        URLEncoder.encode(
-                                cleanReelId,
-                                "UTF-8"
-                        );
-
-                String urlString =
+                String url =
                         SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/reel_comments"
+                                + TABLE
                                 + "?reel_id=eq."
-                                + encodedReelId
+                                + encode(reelId)
                                 + "&order=created_at.asc";
 
-                URL url =
-                        new URL(urlString);
-
                 connection =
-                        (HttpURLConnection)
-                                url.openConnection();
+                        openConnection(
+                                context,
+                                url,
+                                "GET"
+                        );
 
-                connection.setRequestMethod("GET");
-
-                connection.setConnectTimeout(30000);
-
-                connection.setReadTimeout(30000);
-
-                setHeaders(
-                        connection,
-                        appContext
-                );
-
-                int responseCode =
+                int code =
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(connection);
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                if (responseCode < 200 ||
-                        responseCode >= 300) {
-
-                    postCommentsError(
-                            callback,
-                            "Comments load failed: "
-                                    + response
+                if (code < 200 || code >= 300) {
+                    throw new Exception(
+                            extractError(response, code)
                     );
-
-                    return;
                 }
 
                 JSONArray array =
                         new JSONArray(response);
 
-                List<ReelComment> comments =
+                List<ReelComment> result =
                         new ArrayList<>();
 
-                for (int i = 0;
-                     i < array.length();
-                     i++) {
+                for (int i = 0; i < array.length(); i++) {
 
                     JSONObject object =
                             array.getJSONObject(i);
 
                     String id =
-                            object.optString(
-                                    "id",
-                                    ""
-                            );
+                            object.optString("id", "");
 
                     String returnedReelId =
                             object.optString(
                                     "reel_id",
-                                    cleanReelId
+                                    reelId
                             );
 
                     String userId =
@@ -381,41 +109,43 @@ public final class ReelCommentSupabaseHelper {
                     String username =
                             object.optString(
                                     "username",
-                                    "Sanskriti User"
+                                    "User"
                             );
 
-                    String commentText =
+                    String text =
                             object.optString(
                                     "text",
                                     ""
                             );
 
                     long createdAt =
-                            parseCreatedAt(object);
+                            parseDate(
+                                    object.optString(
+                                            "created_at",
+                                            ""
+                                    )
+                            );
 
-                    comments.add(
+                    result.add(
                             new ReelComment(
                                     id,
                                     returnedReelId,
                                     userId,
                                     username,
-                                    commentText,
+                                    text,
                                     createdAt
                             )
                     );
                 }
 
-                postCommentsSuccess(
-                        callback,
-                        comments
-                );
+                callback.onSuccess(result);
 
             } catch (Exception e) {
 
-                postCommentsError(
-                        callback,
-                        "Comments load failed: "
-                                + safeMessage(e)
+                callback.onError(
+                        e.getMessage() == null
+                                ? "Comments load failed"
+                                : e.getMessage()
                 );
 
             } finally {
@@ -424,239 +154,123 @@ public final class ReelCommentSupabaseHelper {
                     connection.disconnect();
                 }
             }
-
-        }).start();
+        });
     }
 
-    // =========================================================
-    // DELETE COMMENT
-    // =========================================================
-
-    public static void deleteComment(
+    public static void addComment(
             Context context,
             String reelId,
-            String commentId,
+            String text,
             ActionCallback callback) {
 
-        if (callback == null) {
-            return;
-        }
-
-        if (context == null) {
-            callback.onError("App context nahi mila.");
-            return;
-        }
-
-        Context appContext =
-                context.getApplicationContext();
-
-        if (!SupabaseAuthManager.isLoggedIn(appContext)) {
-            callback.onError("Please login first.");
-            return;
-        }
-
-        if (reelId == null ||
-                reelId.trim().isEmpty()) {
-
-            callback.onError("Invalid Reel.");
-            return;
-        }
-
-        if (commentId == null ||
-                commentId.trim().isEmpty()) {
-
-            callback.onError("Invalid comment.");
-            return;
-        }
-
-        final String cleanReelId =
-                reelId.trim();
-
-        final String cleanCommentId =
-                commentId.trim();
-
-        final String userId =
-                SupabaseAuthManager.getUserId(
-                        appContext
-                );
-
-        if (userId == null ||
-                userId.trim().isEmpty()) {
-
-            callback.onError(
-                    "User session nahi mili."
-            );
-
-            return;
-        }
-
-        new Thread(() -> {
+        EXECUTOR.execute(() -> {
 
             HttpURLConnection connection = null;
 
             try {
 
-                String encodedCommentId =
-                        URLEncoder.encode(
-                                cleanCommentId,
-                                "UTF-8"
+                String userId =
+                        SupabaseAuthManager.getUserId(
+                                context
                         );
 
-                URL checkUrl =
-                        new URL(
-                                SupabaseConfig.PROJECT_URL
-                                        + "/rest/v1/reel_comments"
-                                        + "?id=eq."
-                                        + encodedCommentId
-                                        + "&select=id,user_id,reel_id"
+                String accessToken =
+                        SupabaseAuthManager.getAccessToken(
+                                context
                         );
 
-                HttpURLConnection checkConnection =
-                        (HttpURLConnection)
-                                checkUrl.openConnection();
+                if (userId == null ||
+                        userId.trim().isEmpty() ||
+                        accessToken == null ||
+                        accessToken.trim().isEmpty()) {
 
-                checkConnection.setRequestMethod("GET");
+                    throw new Exception(
+                            "Login session nahi mili"
+                    );
+                }
 
-                checkConnection.setConnectTimeout(30000);
+                String username =
+                        "User";
 
-                checkConnection.setReadTimeout(30000);
+                String id =
+                        UUID.randomUUID().toString();
 
-                setHeaders(
-                        checkConnection,
-                        appContext
+                JSONObject body =
+                        new JSONObject();
+
+                body.put("id", id);
+                body.put("reel_id", reelId);
+                body.put("user_id", userId);
+                body.put("username", username);
+                body.put("text", text);
+                body.put(
+                        "created_at",
+                        getCurrentUtcTime()
                 );
 
-                int checkCode =
-                        checkConnection.getResponseCode();
-
-                String checkResponse =
-                        readResponse(
-                                checkConnection
-                        );
-
-                checkConnection.disconnect();
-
-                if (checkCode < 200 ||
-                        checkCode >= 300) {
-
-                    postError(
-                            callback,
-                            "Comment verify failed: "
-                                    + checkResponse
-                    );
-
-                    return;
-                }
-
-                JSONArray result =
-                        new JSONArray(checkResponse);
-
-                if (result.length() == 0) {
-
-                    postError(
-                            callback,
-                            "Comment not found."
-                    );
-
-                    return;
-                }
-
-                JSONObject comment =
-                        result.getJSONObject(0);
-
-                String ownerId =
-                        comment.optString(
-                                "user_id",
-                                ""
-                        );
-
-                String storedReelId =
-                        comment.optString(
-                                "reel_id",
-                                ""
-                        );
-
-                if (!userId.equals(ownerId)) {
-
-                    postError(
-                            callback,
-                            "Aap sirf apna comment delete kar sakte ho."
-                    );
-
-                    return;
-                }
-
-                if (!cleanReelId.equals(
-                        storedReelId
-                )) {
-
-                    postError(
-                            callback,
-                            "Invalid Reel."
-                    );
-
-                    return;
-                }
-
-                URL deleteUrl =
-                        new URL(
-                                SupabaseConfig.PROJECT_URL
-                                        + "/rest/v1/reel_comments"
-                                        + "?id=eq."
-                                        + encodedCommentId
-                        );
+                String url =
+                        SupabaseConfig.PROJECT_URL
+                                + TABLE;
 
                 connection =
-                        (HttpURLConnection)
-                                deleteUrl.openConnection();
-
-                connection.setRequestMethod("DELETE");
-
-                connection.setConnectTimeout(30000);
-
-                connection.setReadTimeout(30000);
-
-                setHeaders(
-                        connection,
-                        appContext
-                );
+                        openConnection(
+                                context,
+                                url,
+                                "POST"
+                        );
 
                 connection.setRequestProperty(
                         "Prefer",
                         "return=minimal"
                 );
 
-                int deleteCode =
+                connection.setDoOutput(true);
+
+                byte[] bytes =
+                        body.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
+
+                try (OutputStream output =
+                             connection.getOutputStream()) {
+
+                    output.write(bytes);
+                }
+
+                int code =
                         connection.getResponseCode();
 
-                if (deleteCode >= 200 &&
-                        deleteCode < 300) {
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                    updateReelCommentCount(
-                            appContext,
-                            cleanReelId
-                    );
+                if (code < 200 || code >= 300) {
 
-                    postSuccess(callback);
-
-                } else {
-
-                    String error =
-                            readError(connection);
-
-                    postError(
-                            callback,
-                            "Comment delete failed: "
-                                    + error
+                    throw new Exception(
+                            extractError(
+                                    response,
+                                    code
+                            )
                     );
                 }
 
+                updateReelCommentCount(
+                        context,
+                        reelId,
+                        accessToken
+                );
+
+                callback.onSuccess();
+
             } catch (Exception e) {
 
-                postError(
-                        callback,
-                        "Comment delete failed: "
-                                + safeMessage(e)
+                callback.onError(
+                        e.getMessage() == null
+                                ? "Comment send failed"
+                                : e.getMessage()
                 );
 
             } finally {
@@ -665,238 +279,139 @@ public final class ReelCommentSupabaseHelper {
                     connection.disconnect();
                 }
             }
-
-        }).start();
+        });
     }
-
-    // =========================================================
-    // UPDATE REEL COMMENT COUNT
-    // =========================================================
 
     private static void updateReelCommentCount(
             Context context,
-            String reelId) {
+            String reelId,
+            String accessToken) {
 
-        HttpURLConnection connection = null;
+        HttpURLConnection getConnection = null;
+        HttpURLConnection patchConnection = null;
 
         try {
 
-            String encodedReelId =
-                    URLEncoder.encode(
-                            reelId,
-                            "UTF-8"
+            String getUrl =
+                    SupabaseConfig.PROJECT_URL
+                            + "/rest/v1/reel_comments"
+                            + "?reel_id=eq."
+                            + encode(reelId);
+
+            getConnection =
+                    openConnection(
+                            context,
+                            getUrl,
+                            "GET"
                     );
 
-            URL countUrl =
-                    new URL(
-                            SupabaseConfig.PROJECT_URL
-                                    + "/rest/v1/reel_comments"
-                                    + "?reel_id=eq."
-                                    + encodedReelId
-                                    + "&select=id"
+            int getCode =
+                    getConnection.getResponseCode();
+
+            String getResponse =
+                    readResponse(
+                            getConnection,
+                            getCode
                     );
 
-            HttpURLConnection countConnection =
-                    (HttpURLConnection)
-                            countUrl.openConnection();
-
-            countConnection.setRequestMethod("GET");
-
-            countConnection.setConnectTimeout(30000);
-
-            countConnection.setReadTimeout(30000);
-
-            setHeaders(
-                    countConnection,
-                    context
-            );
-
-            int code =
-                    countConnection.getResponseCode();
-
-            String response =
-                    readResponse(countConnection);
-
-            countConnection.disconnect();
-
-            if (code < 200 ||
-                    code >= 300) {
+            if (getCode < 200 ||
+                    getCode >= 300) {
                 return;
             }
 
             JSONArray comments =
-                    new JSONArray(response);
+                    new JSONArray(getResponse);
 
             int count =
                     comments.length();
 
-            URL updateUrl =
-                    new URL(
-                            SupabaseConfig.PROJECT_URL
-                                    + "/rest/v1/reels"
-                                    + "?id=eq."
-                                    + encodedReelId
+            JSONObject update =
+                    new JSONObject();
+
+            update.put("comments", count);
+
+            String patchUrl =
+                    SupabaseConfig.PROJECT_URL
+                            + "/rest/v1/reels"
+                            + "?id=eq."
+                            + encode(reelId);
+
+            patchConnection =
+                    openConnection(
+                            context,
+                            patchUrl,
+                            "PATCH"
                     );
 
-            connection =
-                    (HttpURLConnection)
-                            updateUrl.openConnection();
-
-            connection.setRequestMethod("PATCH");
-
-            connection.setConnectTimeout(30000);
-
-            connection.setReadTimeout(30000);
-
-            connection.setDoOutput(true);
-
-            setHeaders(
-                    connection,
-                    context
-            );
-
-            connection.setRequestProperty(
+            patchConnection.setRequestProperty(
                     "Prefer",
                     "return=minimal"
             );
 
-            JSONObject update =
-                    new JSONObject();
+            patchConnection.setDoOutput(true);
 
-            update.put(
-                    "comments",
-                    count
-            );
-
-            byte[] body =
+            byte[] bytes =
                     update.toString()
                             .getBytes(
                                     StandardCharsets.UTF_8
                             );
 
-            connection.setFixedLengthStreamingMode(
-                    body.length
-            );
-
             try (OutputStream output =
-                         connection.getOutputStream()) {
+                         patchConnection.getOutputStream()) {
 
-                output.write(body);
-                output.flush();
+                output.write(bytes);
             }
 
-            connection.getResponseCode();
+            patchConnection.getResponseCode();
 
         } catch (Exception ignored) {
 
         } finally {
 
-            if (connection != null) {
-                connection.disconnect();
+            if (getConnection != null) {
+                getConnection.disconnect();
+            }
+
+            if (patchConnection != null) {
+                patchConnection.disconnect();
             }
         }
     }
 
-    // =========================================================
-    // GET CURRENT USERNAME
-    // =========================================================
-
-    private static String getCurrentUsername(
+    private static HttpURLConnection openConnection(
             Context context,
-            String userId) {
+            String urlString,
+            String method) throws Exception {
 
-        HttpURLConnection connection = null;
+        URL url =
+                new URL(urlString);
 
-        try {
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
 
-            String encodedUserId =
-                    URLEncoder.encode(
-                            userId,
-                            "UTF-8"
-                    );
+        connection.setRequestMethod(method);
 
-            URL url =
-                    new URL(
-                            SupabaseConfig.PROJECT_URL
-                                    + "/rest/v1/profiles"
-                                    + "?id=eq."
-                                    + encodedUserId
-                                    + "&select=username"
-                    );
-
-            connection =
-                    (HttpURLConnection)
-                            url.openConnection();
-
-            connection.setRequestMethod("GET");
-
-            connection.setConnectTimeout(30000);
-
-            connection.setReadTimeout(30000);
-
-            setHeaders(
-                    connection,
-                    context
-            );
-
-            int code =
-                    connection.getResponseCode();
-
-            if (code < 200 ||
-                    code >= 300) {
-
-                return "Sanskriti User";
-            }
-
-            String response =
-                    readResponse(connection);
-
-            JSONArray array =
-                    new JSONArray(response);
-
-            if (array.length() == 0) {
-                return "Sanskriti User";
-            }
-
-            String username =
-                    array.getJSONObject(0)
-                            .optString(
-                                    "username",
-                                    "Sanskriti User"
-                            );
-
-            if (username == null ||
-                    username.trim().isEmpty()) {
-
-                return "Sanskriti User";
-            }
-
-            return username.trim();
-
-        } catch (Exception e) {
-
-            return "Sanskriti User";
-
-        } finally {
-
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    }
-
-    // =========================================================
-    // AUTH HEADERS
-    // =========================================================
-
-    private static void setHeaders(
-            HttpURLConnection connection,
-            Context context) {
+        connection.setConnectTimeout(30000);
+        connection.setReadTimeout(30000);
 
         connection.setRequestProperty(
-                "Content-Type",
-                "application/json"
+                "apikey",
+                SupabaseConfig.PUBLISHABLE_KEY
         );
+
+        String token =
+                SupabaseAuthManager.getAccessToken(
+                        context
+                );
+
+        if (token != null &&
+                !token.trim().isEmpty()) {
+
+            connection.setRequestProperty(
+                    "Authorization",
+                    "Bearer " + token
+            );
+        }
 
         connection.setRequestProperty(
                 "Accept",
@@ -904,28 +419,142 @@ public final class ReelCommentSupabaseHelper {
         );
 
         connection.setRequestProperty(
-                "apikey",
-                SupabaseConfig.PUBLISHABLE_KEY
+                "Content-Type",
+                "application/json"
         );
 
-        String accessToken =
-                SupabaseAuthManager.getAccessToken(
-                        context
-                );
+        return connection;
+    }
 
-        if (accessToken != null &&
-                !accessToken.trim().isEmpty()) {
+    private static String readResponse(
+            HttpURLConnection connection,
+            int code) throws Exception {
 
-            connection.setRequestProperty(
-                    "Authorization",
-                    "Bearer " + accessToken
-            );
+        InputStream stream;
+
+        if (code >= 200 && code < 300) {
+            stream = connection.getInputStream();
+        } else {
+            stream = connection.getErrorStream();
+        }
+
+        if (stream == null) {
+            return "";
+        }
+
+        StringBuilder builder =
+                new StringBuilder();
+
+        try (BufferedReader reader =
+                     new BufferedReader(
+                             new InputStreamReader(
+                                     stream,
+                                     StandardCharsets.UTF_8
+                             )
+                     )) {
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
+        }
+
+        return builder.toString();
+    }
+
+    private static String extractError(
+            String response,
+            int code) {
+
+        if (response == null ||
+                response.trim().isEmpty()) {
+
+            return "HTTP " + code;
+        }
+
+        try {
+
+            JSONObject object =
+                    new JSONObject(response);
+
+            String message =
+                    object.optString(
+                            "message",
+                            ""
+                    );
+
+            if (!message.isEmpty()) {
+                return message;
+            }
+
+            String error =
+                    object.optString(
+                            "error",
+                            ""
+                    );
+
+            if (!error.isEmpty()) {
+                return error;
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        return response;
+    }
+
+    private static String encode(
+            String value) {
+
+        try {
+
+            return java.net.URLEncoder
+                    .encode(
+                            value == null ? "" : value,
+                            "UTF-8"
+                    );
+
+        } catch (Exception e) {
+
+            return value == null
+                    ? ""
+                    : value;
         }
     }
 
-    // =========================================================
-    // CURRENT UTC TIME
-    // =========================================================
+    private static long parseDate(
+            String value) {
+
+        if (value == null ||
+                value.trim().isEmpty()) {
+            return 0L;
+        }
+
+        try {
+
+            SimpleDateFormat format =
+                    new SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                            Locale.US
+                    );
+
+            format.setTimeZone(
+                    TimeZone.getTimeZone("UTC")
+            );
+
+            Date date =
+                    format.parse(value);
+
+            return date == null
+                    ? 0L
+                    : date.getTime();
+
+        } catch (Exception ignored) {
+
+            return 0L;
+        }
+    }
 
     private static String getCurrentUtcTime() {
 
@@ -941,253 +570,6 @@ public final class ReelCommentSupabaseHelper {
 
         return format.format(
                 new Date()
-        );
-    }
-
-    // =========================================================
-    // PARSE CREATED AT
-    // =========================================================
-
-    private static long parseCreatedAt(
-            JSONObject object) {
-
-        try {
-
-            Object value =
-                    object.opt("created_at");
-
-            if (value instanceof Number) {
-
-                return ((Number) value).longValue();
-            }
-
-            if (value != null) {
-
-                String text =
-                        String.valueOf(value).trim();
-
-                if (text.isEmpty()) {
-                    return 0L;
-                }
-
-                try {
-
-                    return Long.parseLong(text);
-
-                } catch (Exception ignored) {
-                }
-
-                String normalized =
-                        text.replace(
-                                "Z",
-                                "+0000"
-                        );
-
-                if (normalized.length() >= 6) {
-
-                    int plusIndex =
-                            normalized.lastIndexOf('+');
-
-                    int minusIndex =
-                            normalized.lastIndexOf('-');
-
-                    int index =
-                            Math.max(
-                                    plusIndex,
-                                    minusIndex
-                            );
-
-                    if (index > 10 &&
-                            normalized.length()
-                                    - index == 5) {
-
-                        try {
-
-                            SimpleDateFormat format =
-                                    new SimpleDateFormat(
-                                            "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
-                                            Locale.US
-                                    );
-
-                            return format.parse(
-                                    normalized
-                            ).getTime();
-
-                        } catch (Exception ignored) {
-                        }
-                    }
-                }
-
-                try {
-
-                    SimpleDateFormat format =
-                            new SimpleDateFormat(
-                                    "yyyy-MM-dd'T'HH:mm:ssZ",
-                                    Locale.US
-                            );
-
-                    return format.parse(
-                            normalized
-                    ).getTime();
-
-                } catch (Exception ignored) {
-                }
-            }
-
-        } catch (Exception ignored) {
-        }
-
-        return 0L;
-    }
-
-    // =========================================================
-    // RESPONSE HELPERS
-    // =========================================================
-
-    private static String readResponse(
-            HttpURLConnection connection) {
-
-        try {
-
-            InputStream stream;
-
-            if (connection.getResponseCode() >= 400) {
-
-                stream =
-                        connection.getErrorStream();
-
-            } else {
-
-                stream =
-                        connection.getInputStream();
-            }
-
-            if (stream == null) {
-                return "";
-            }
-
-            StringBuilder result =
-                    new StringBuilder();
-
-            try (BufferedReader reader =
-                         new BufferedReader(
-                                 new InputStreamReader(
-                                         stream,
-                                         StandardCharsets.UTF_8
-                                 )
-                         )) {
-
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    result.append(line);
-                }
-            }
-
-            return result.toString();
-
-        } catch (Exception e) {
-
-            return "";
-        }
-    }
-
-    private static String readError(
-            HttpURLConnection connection) {
-
-        String error =
-                readResponse(connection);
-
-        if (error == null ||
-                error.trim().isEmpty()) {
-
-            try {
-
-                return "Server error "
-                        + connection.getResponseCode();
-
-            } catch (Exception ignored) {
-
-                return "Server error";
-            }
-        }
-
-        return error;
-    }
-
-    private static String safeMessage(
-            Exception e) {
-
-        if (e == null ||
-                e.getMessage() == null ||
-                e.getMessage().trim().isEmpty()) {
-
-            return "Unknown error";
-        }
-
-        return e.getMessage();
-    }
-
-    // =========================================================
-    // CALLBACK HELPERS
-    // =========================================================
-
-    private static void postSuccess(
-            ActionCallback callback) {
-
-        if (callback == null) {
-            return;
-        }
-
-        new Handler(
-                Looper.getMainLooper()
-        ).post(
-                callback::onSuccess
-        );
-    }
-
-    private static void postError(
-            ActionCallback callback,
-            String message) {
-
-        if (callback == null) {
-            return;
-        }
-
-        new Handler(
-                Looper.getMainLooper()
-        ).post(
-                () -> callback.onError(message)
-        );
-    }
-
-    private static void postCommentsSuccess(
-            CommentsCallback callback,
-            List<ReelComment> comments) {
-
-        if (callback == null) {
-            return;
-        }
-
-        new Handler(
-                Looper.getMainLooper()
-        ).post(
-                () -> callback.onSuccess(comments)
-        );
-    }
-
-    private static void postCommentsError(
-            CommentsCallback callback,
-            String message) {
-
-        if (callback == null) {
-            return;
-        }
-
-        new Handler(
-                Looper.getMainLooper()
-        ).post(
-                () -> callback.onError(message)
         );
     }
 }
