@@ -668,8 +668,3 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
         }
     }
 }
-
-Filename: "ReelAdapter.java"
-Path: "app/src/main/java/com/sanskritisathi/app/ReelAdapter.java"
-
-Isko current "ReelAdapter.java" ke saath fully replace karo.
