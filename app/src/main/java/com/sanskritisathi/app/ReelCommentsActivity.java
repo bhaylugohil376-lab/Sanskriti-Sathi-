@@ -23,7 +23,9 @@ public class ReelCommentsActivity extends AppCompatActivity {
     private ImageButton backButton;
 
     private ReelCommentsAdapter adapter;
-    private final List<ReelComment> comments = new ArrayList<>();
+
+    private final List<ReelComment> comments =
+            new ArrayList<>();
 
     private String reelId = "";
     private boolean sendingComment = false;
@@ -31,12 +33,18 @@ public class ReelCommentsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_reel_comments);
 
         reelId = getIntent().getStringExtra("reel_id");
 
         if (reelId == null || reelId.trim().isEmpty()) {
-            Toast.makeText(this, "Reel ID missing", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    this,
+                    "Reel ID missing",
+                    Toast.LENGTH_SHORT
+            ).show();
+
             finish();
             return;
         }
@@ -46,7 +54,13 @@ public class ReelCommentsActivity extends AppCompatActivity {
         setupListeners();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
-            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(
+                    this,
+                    "Please login first",
+                    Toast.LENGTH_SHORT
+            ).show();
+
             finish();
             return;
         }
@@ -55,24 +69,42 @@ public class ReelCommentsActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-        commentsRecyclerView = findViewById(R.id.commentsRecyclerView);
-        commentInput = findViewById(R.id.commentInput);
-        sendButton = findViewById(R.id.sendButton);
-        backButton = findViewById(R.id.backButton);
+
+        commentsRecyclerView =
+                findViewById(R.id.commentsRecyclerView);
+
+        commentInput =
+                findViewById(R.id.commentInput);
+
+        sendButton =
+                findViewById(R.id.sendButton);
+
+        backButton =
+                findViewById(R.id.backButton);
     }
 
     private void setupRecyclerView() {
-        adapter = new ReelCommentsAdapter(this, comments);
+
+        adapter =
+                new ReelCommentsAdapter(
+                        this,
+                        comments
+                );
+
         commentsRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this)
         );
+
         commentsRecyclerView.setAdapter(adapter);
+
         commentsRecyclerView.setHasFixedSize(false);
     }
 
     private void setupListeners() {
 
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(
+                v -> finish()
+        );
 
         sendButton.setOnClickListener(v -> {
 
@@ -80,20 +112,23 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 return;
             }
 
-            String text = commentInput.getText()
-                    .toString()
-                    .trim();
+            String text =
+                    commentInput.getText()
+                            .toString()
+                            .trim();
 
             if (text.isEmpty()) {
                 return;
             }
 
             if (text.length() > 500) {
+
                 Toast.makeText(
                         this,
                         "Comment maximum 500 characters ka ho sakta hai",
                         Toast.LENGTH_SHORT
                 ).show();
+
                 return;
             }
 
@@ -109,7 +144,8 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 new ReelCommentSupabaseHelper.CommentsCallback() {
 
                     @Override
-                    public void onSuccess(List<ReelComment> result) {
+                    public void onSuccess(
+                            List<ReelComment> result) {
 
                         runOnUiThread(() -> {
 
@@ -122,6 +158,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
                             adapter.notifyDataSetChanged();
 
                             if (!comments.isEmpty()) {
+
                                 commentsRecyclerView.scrollToPosition(
                                         comments.size() - 1
                                 );
@@ -149,6 +186,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
     private void addComment(String text) {
 
         sendingComment = true;
+
         sendButton.setEnabled(false);
         commentInput.setEnabled(false);
 
@@ -164,6 +202,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
 
                             sendingComment = false;
+
                             sendButton.setEnabled(true);
                             commentInput.setEnabled(true);
 
@@ -181,6 +220,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
 
                             sendingComment = false;
+
                             sendButton.setEnabled(true);
                             commentInput.setEnabled(true);
 
@@ -199,18 +239,21 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
     private void hideKeyboard() {
 
-        View currentFocus = getCurrentFocus();
+        View currentFocus =
+                getCurrentFocus();
 
         if (currentFocus == null) {
             return;
         }
 
         InputMethodManager imm =
-                (InputMethodManager) getSystemService(
-                        Context.INPUT_METHOD_SERVICE
-                );
+                (InputMethodManager)
+                        getSystemService(
+                                Context.INPUT_METHOD_SERVICE
+                        );
 
         if (imm != null) {
+
             imm.hideSoftInputFromWindow(
                     currentFocus.getWindowToken(),
                     0
@@ -218,5 +261,3 @@ public class ReelCommentsActivity extends AppCompatActivity {
         }
     }
 }
-
-Important: XML mein "sendButton" agar "ImageButton" hai, to upar wala "ImageButton sendButton" hi rakho. "MaterialButton" mat karna.
