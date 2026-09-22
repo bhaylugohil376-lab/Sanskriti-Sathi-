@@ -1,5 +1,9 @@
 package com.sanskritisathi.app;
 
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -9,9 +13,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.UUID;
 
 public final class ReelCommentSupabaseHelper {
@@ -36,6 +45,7 @@ public final class ReelCommentSupabaseHelper {
     // =========================================================
 
     public static void addComment(
+            Context context,
             String reelId,
             String text,
             ActionCallback callback) {
@@ -44,7 +54,15 @@ public final class ReelCommentSupabaseHelper {
             return;
         }
 
-        if (!isLoggedIn()) {
+        if (context == null) {
+            callback.onError("App context nahi mila.");
+            return;
+        }
+
+        Context appContext =
+                context.getApplicationContext();
+
+        if (!SupabaseAuthManager.isLoggedIn(appContext)) {
             callback.onError("Please login first.");
             return;
         }
@@ -81,7 +99,9 @@ public final class ReelCommentSupabaseHelper {
         }
 
         final String userId =
-                SupabaseAuthManager.getUserId();
+                SupabaseAuthManager.getUserId(
+                        appContext
+                );
 
         if (userId == null ||
                 userId.trim().isEmpty()) {
@@ -101,6 +121,7 @@ public final class ReelCommentSupabaseHelper {
 
                 String username =
                         getCurrentUsername(
+                                appContext,
                                 userId
                         );
 
@@ -138,9 +159,13 @@ public final class ReelCommentSupabaseHelper {
                         cleanText
                 );
 
+                /*
+                 * Supabase timestamptz ke liye ISO-8601
+                 * UTC timestamp use kar rahe hain.
+                 */
                 comment.put(
                         "created_at",
-                        System.currentTimeMillis()
+                        getCurrentUtcTime()
                 );
 
                 URL url =
@@ -153,21 +178,18 @@ public final class ReelCommentSupabaseHelper {
                         (HttpURLConnection)
                                 url.openConnection();
 
-                connection.setRequestMethod(
-                        "POST"
-                );
+                connection.setRequestMethod("POST");
 
-                connection.setConnectTimeout(
-                        30000
-                );
+                connection.setConnectTimeout(30000);
 
-                connection.setReadTimeout(
-                        30000
-                );
+                connection.setReadTimeout(30000);
 
                 connection.setDoOutput(true);
 
-                setHeaders(connection);
+                setHeaders(
+                        connection,
+                        appContext
+                );
 
                 connection.setRequestProperty(
                         "Prefer",
@@ -198,12 +220,11 @@ public final class ReelCommentSupabaseHelper {
                         responseCode < 300) {
 
                     updateReelCommentCount(
+                            appContext,
                             cleanReelId
                     );
 
-                    postSuccess(
-                            callback
-                    );
+                    postSuccess(callback);
 
                 } else {
 
@@ -240,6 +261,7 @@ public final class ReelCommentSupabaseHelper {
     // =========================================================
 
     public static void getComments(
+            Context context,
             String reelId,
             CommentsCallback callback) {
 
@@ -247,19 +269,23 @@ public final class ReelCommentSupabaseHelper {
             return;
         }
 
-        if (!isLoggedIn()) {
-            callback.onError(
-                    "Please login first."
-            );
+        if (context == null) {
+            callback.onError("App context nahi mila.");
+            return;
+        }
+
+        Context appContext =
+                context.getApplicationContext();
+
+        if (!SupabaseAuthManager.isLoggedIn(appContext)) {
+            callback.onError("Please login first.");
             return;
         }
 
         if (reelId == null ||
                 reelId.trim().isEmpty()) {
 
-            callback.onError(
-                    "Invalid Reel."
-            );
+            callback.onError("Invalid Reel.");
             return;
         }
 
@@ -273,7 +299,7 @@ public final class ReelCommentSupabaseHelper {
             try {
 
                 String encodedReelId =
-                        java.net.URLEncoder.encode(
+                        URLEncoder.encode(
                                 cleanReelId,
                                 "UTF-8"
                         );
@@ -292,27 +318,22 @@ public final class ReelCommentSupabaseHelper {
                         (HttpURLConnection)
                                 url.openConnection();
 
-                connection.setRequestMethod(
-                        "GET"
-                );
+                connection.setRequestMethod("GET");
 
-                connection.setConnectTimeout(
-                        30000
-                );
+                connection.setConnectTimeout(30000);
 
-                connection.setReadTimeout(
-                        30000
-                );
+                connection.setReadTimeout(30000);
 
-                setHeaders(connection);
+                setHeaders(
+                        connection,
+                        appContext
+                );
 
                 int responseCode =
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(
-                                connection
-                        );
+                        readResponse(connection);
 
                 if (responseCode < 200 ||
                         responseCode >= 300) {
@@ -363,16 +384,14 @@ public final class ReelCommentSupabaseHelper {
                                     "Sanskriti User"
                             );
 
-                    String text =
+                    String commentText =
                             object.optString(
                                     "text",
                                     ""
                             );
 
                     long createdAt =
-                            parseCreatedAt(
-                                    object
-                            );
+                            parseCreatedAt(object);
 
                     comments.add(
                             new ReelComment(
@@ -380,7 +399,7 @@ public final class ReelCommentSupabaseHelper {
                                     returnedReelId,
                                     userId,
                                     username,
-                                    text,
+                                    commentText,
                                     createdAt
                             )
                     );
@@ -414,6 +433,7 @@ public final class ReelCommentSupabaseHelper {
     // =========================================================
 
     public static void deleteComment(
+            Context context,
             String reelId,
             String commentId,
             ActionCallback callback) {
@@ -422,28 +442,30 @@ public final class ReelCommentSupabaseHelper {
             return;
         }
 
-        if (!isLoggedIn()) {
-            callback.onError(
-                    "Please login first."
-            );
+        if (context == null) {
+            callback.onError("App context nahi mila.");
+            return;
+        }
+
+        Context appContext =
+                context.getApplicationContext();
+
+        if (!SupabaseAuthManager.isLoggedIn(appContext)) {
+            callback.onError("Please login first.");
             return;
         }
 
         if (reelId == null ||
                 reelId.trim().isEmpty()) {
 
-            callback.onError(
-                    "Invalid Reel."
-            );
+            callback.onError("Invalid Reel.");
             return;
         }
 
         if (commentId == null ||
                 commentId.trim().isEmpty()) {
 
-            callback.onError(
-                    "Invalid comment."
-            );
+            callback.onError("Invalid comment.");
             return;
         }
 
@@ -454,7 +476,9 @@ public final class ReelCommentSupabaseHelper {
                 commentId.trim();
 
         final String userId =
-                SupabaseAuthManager.getUserId();
+                SupabaseAuthManager.getUserId(
+                        appContext
+                );
 
         if (userId == null ||
                 userId.trim().isEmpty()) {
@@ -462,6 +486,7 @@ public final class ReelCommentSupabaseHelper {
             callback.onError(
                     "User session nahi mili."
             );
+
             return;
         }
 
@@ -471,13 +496,8 @@ public final class ReelCommentSupabaseHelper {
 
             try {
 
-                /*
-                 * First verify that this comment belongs
-                 * to the currently logged-in user.
-                 */
-
                 String encodedCommentId =
-                        java.net.URLEncoder.encode(
+                        URLEncoder.encode(
                                 cleanCommentId,
                                 "UTF-8"
                         );
@@ -495,20 +515,15 @@ public final class ReelCommentSupabaseHelper {
                         (HttpURLConnection)
                                 checkUrl.openConnection();
 
-                checkConnection.setRequestMethod(
-                        "GET"
-                );
+                checkConnection.setRequestMethod("GET");
 
-                checkConnection.setConnectTimeout(
-                        30000
-                );
+                checkConnection.setConnectTimeout(30000);
 
-                checkConnection.setReadTimeout(
-                        30000
-                );
+                checkConnection.setReadTimeout(30000);
 
                 setHeaders(
-                        checkConnection
+                        checkConnection,
+                        appContext
                 );
 
                 int checkCode =
@@ -534,9 +549,7 @@ public final class ReelCommentSupabaseHelper {
                 }
 
                 JSONArray result =
-                        new JSONArray(
-                                checkResponse
-                        );
+                        new JSONArray(checkResponse);
 
                 if (result.length() == 0) {
 
@@ -597,19 +610,16 @@ public final class ReelCommentSupabaseHelper {
                         (HttpURLConnection)
                                 deleteUrl.openConnection();
 
-                connection.setRequestMethod(
-                        "DELETE"
-                );
+                connection.setRequestMethod("DELETE");
 
-                connection.setConnectTimeout(
-                        30000
-                );
+                connection.setConnectTimeout(30000);
 
-                connection.setReadTimeout(
-                        30000
-                );
+                connection.setReadTimeout(30000);
 
-                setHeaders(connection);
+                setHeaders(
+                        connection,
+                        appContext
+                );
 
                 connection.setRequestProperty(
                         "Prefer",
@@ -623,12 +633,11 @@ public final class ReelCommentSupabaseHelper {
                         deleteCode < 300) {
 
                     updateReelCommentCount(
+                            appContext,
                             cleanReelId
                     );
 
-                    postSuccess(
-                            callback
-                    );
+                    postSuccess(callback);
 
                 } else {
 
@@ -665,6 +674,7 @@ public final class ReelCommentSupabaseHelper {
     // =========================================================
 
     private static void updateReelCommentCount(
+            Context context,
             String reelId) {
 
         HttpURLConnection connection = null;
@@ -672,16 +682,10 @@ public final class ReelCommentSupabaseHelper {
         try {
 
             String encodedReelId =
-                    java.net.URLEncoder.encode(
+                    URLEncoder.encode(
                             reelId,
                             "UTF-8"
                     );
-
-            /*
-             * Count actual comments instead of blindly
-             * incrementing/decrementing. This prevents
-             * duplicate count drift.
-             */
 
             URL countUrl =
                     new URL(
@@ -696,29 +700,22 @@ public final class ReelCommentSupabaseHelper {
                     (HttpURLConnection)
                             countUrl.openConnection();
 
-            countConnection.setRequestMethod(
-                    "GET"
-            );
+            countConnection.setRequestMethod("GET");
 
-            countConnection.setConnectTimeout(
-                    30000
-            );
+            countConnection.setConnectTimeout(30000);
 
-            countConnection.setReadTimeout(
-                    30000
-            );
+            countConnection.setReadTimeout(30000);
 
             setHeaders(
-                    countConnection
+                    countConnection,
+                    context
             );
 
             int code =
                     countConnection.getResponseCode();
 
             String response =
-                    readResponse(
-                            countConnection
-                    );
+                    readResponse(countConnection);
 
             countConnection.disconnect();
 
@@ -745,21 +742,18 @@ public final class ReelCommentSupabaseHelper {
                     (HttpURLConnection)
                             updateUrl.openConnection();
 
-            connection.setRequestMethod(
-                    "PATCH"
-            );
+            connection.setRequestMethod("PATCH");
 
-            connection.setConnectTimeout(
-                    30000
-            );
+            connection.setConnectTimeout(30000);
 
-            connection.setReadTimeout(
-                    30000
-            );
+            connection.setReadTimeout(30000);
 
             connection.setDoOutput(true);
 
-            setHeaders(connection);
+            setHeaders(
+                    connection,
+                    context
+            );
 
             connection.setRequestProperty(
                     "Prefer",
@@ -795,11 +789,6 @@ public final class ReelCommentSupabaseHelper {
 
         } catch (Exception ignored) {
 
-            /*
-             * Comment itself has already been saved/deleted.
-             * Count failure should not crash the app.
-             */
-
         } finally {
 
             if (connection != null) {
@@ -813,6 +802,7 @@ public final class ReelCommentSupabaseHelper {
     // =========================================================
 
     private static String getCurrentUsername(
+            Context context,
             String userId) {
 
         HttpURLConnection connection = null;
@@ -820,7 +810,7 @@ public final class ReelCommentSupabaseHelper {
         try {
 
             String encodedUserId =
-                    java.net.URLEncoder.encode(
+                    URLEncoder.encode(
                             userId,
                             "UTF-8"
                     );
@@ -838,19 +828,16 @@ public final class ReelCommentSupabaseHelper {
                     (HttpURLConnection)
                             url.openConnection();
 
-            connection.setRequestMethod(
-                    "GET"
-            );
+            connection.setRequestMethod("GET");
 
-            connection.setConnectTimeout(
-                    30000
-            );
+            connection.setConnectTimeout(30000);
 
-            connection.setReadTimeout(
-                    30000
-            );
+            connection.setReadTimeout(30000);
 
-            setHeaders(connection);
+            setHeaders(
+                    connection,
+                    context
+            );
 
             int code =
                     connection.getResponseCode();
@@ -899,29 +886,12 @@ public final class ReelCommentSupabaseHelper {
     }
 
     // =========================================================
-    // AUTH
-    // =========================================================
-
-    private static boolean isLoggedIn() {
-
-        String userId =
-                SupabaseAuthManager.getUserId();
-
-        String accessToken =
-                SupabaseAuthManager.getAccessToken();
-
-        return userId != null &&
-                !userId.trim().isEmpty() &&
-                accessToken != null &&
-                !accessToken.trim().isEmpty();
-    }
-
-    // =========================================================
-    // HEADERS
+    // AUTH HEADERS
     // =========================================================
 
     private static void setHeaders(
-            HttpURLConnection connection) {
+            HttpURLConnection connection,
+            Context context) {
 
         connection.setRequestProperty(
                 "Content-Type",
@@ -939,7 +909,9 @@ public final class ReelCommentSupabaseHelper {
         );
 
         String accessToken =
-                SupabaseAuthManager.getAccessToken();
+                SupabaseAuthManager.getAccessToken(
+                        context
+                );
 
         if (accessToken != null &&
                 !accessToken.trim().isEmpty()) {
@@ -949,6 +921,123 @@ public final class ReelCommentSupabaseHelper {
                     "Bearer " + accessToken
             );
         }
+    }
+
+    // =========================================================
+    // CURRENT UTC TIME
+    // =========================================================
+
+    private static String getCurrentUtcTime() {
+
+        SimpleDateFormat format =
+                new SimpleDateFormat(
+                        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                        Locale.US
+                );
+
+        format.setTimeZone(
+                TimeZone.getTimeZone("UTC")
+        );
+
+        return format.format(
+                new Date()
+        );
+    }
+
+    // =========================================================
+    // PARSE CREATED AT
+    // =========================================================
+
+    private static long parseCreatedAt(
+            JSONObject object) {
+
+        try {
+
+            Object value =
+                    object.opt("created_at");
+
+            if (value instanceof Number) {
+
+                return ((Number) value).longValue();
+            }
+
+            if (value != null) {
+
+                String text =
+                        String.valueOf(value).trim();
+
+                if (text.isEmpty()) {
+                    return 0L;
+                }
+
+                try {
+
+                    return Long.parseLong(text);
+
+                } catch (Exception ignored) {
+                }
+
+                String normalized =
+                        text.replace(
+                                "Z",
+                                "+0000"
+                        );
+
+                if (normalized.length() >= 6) {
+
+                    int plusIndex =
+                            normalized.lastIndexOf('+');
+
+                    int minusIndex =
+                            normalized.lastIndexOf('-');
+
+                    int index =
+                            Math.max(
+                                    plusIndex,
+                                    minusIndex
+                            );
+
+                    if (index > 10 &&
+                            normalized.length()
+                                    - index == 5) {
+
+                        try {
+
+                            SimpleDateFormat format =
+                                    new SimpleDateFormat(
+                                            "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+                                            Locale.US
+                                    );
+
+                            return format.parse(
+                                    normalized
+                            ).getTime();
+
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+
+                try {
+
+                    SimpleDateFormat format =
+                            new SimpleDateFormat(
+                                    "yyyy-MM-dd'T'HH:mm:ssZ",
+                                    Locale.US
+                            );
+
+                    return format.parse(
+                            normalized
+                    ).getTime();
+
+                } catch (Exception ignored) {
+                }
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        return 0L;
     }
 
     // =========================================================
@@ -963,9 +1052,12 @@ public final class ReelCommentSupabaseHelper {
             InputStream stream;
 
             if (connection.getResponseCode() >= 400) {
+
                 stream =
                         connection.getErrorStream();
+
             } else {
+
                 stream =
                         connection.getInputStream();
             }
@@ -1009,49 +1101,25 @@ public final class ReelCommentSupabaseHelper {
         if (error == null ||
                 error.trim().isEmpty()) {
 
-            return "Server error "
-                    + connection.getResponseCode();
+            try {
+
+                return "Server error "
+                        + connection.getResponseCode();
+
+            } catch (Exception ignored) {
+
+                return "Server error";
+            }
         }
 
         return error;
     }
 
-    private static long parseCreatedAt(
-            JSONObject object) {
-
-        try {
-
-            Object value =
-                    object.opt("created_at");
-
-            if (value instanceof Number) {
-
-                return ((Number) value).longValue();
-            }
-
-            if (value != null) {
-
-                String text =
-                        String.valueOf(value);
-
-                try {
-
-                    return Long.parseLong(text);
-
-                } catch (Exception ignored) {
-                }
-            }
-
-        } catch (Exception ignored) {
-        }
-
-        return 0L;
-    }
-
     private static String safeMessage(
             Exception e) {
 
-        if (e.getMessage() == null ||
+        if (e == null ||
+                e.getMessage() == null ||
                 e.getMessage().trim().isEmpty()) {
 
             return "Unknown error";
@@ -1071,8 +1139,8 @@ public final class ReelCommentSupabaseHelper {
             return;
         }
 
-        new android.os.Handler(
-                android.os.Looper.getMainLooper()
+        new Handler(
+                Looper.getMainLooper()
         ).post(
                 callback::onSuccess
         );
@@ -1086,8 +1154,8 @@ public final class ReelCommentSupabaseHelper {
             return;
         }
 
-        new android.os.Handler(
-                android.os.Looper.getMainLooper()
+        new Handler(
+                Looper.getMainLooper()
         ).post(
                 () -> callback.onError(message)
         );
@@ -1101,8 +1169,8 @@ public final class ReelCommentSupabaseHelper {
             return;
         }
 
-        new android.os.Handler(
-                android.os.Looper.getMainLooper()
+        new Handler(
+                Looper.getMainLooper()
         ).post(
                 () -> callback.onSuccess(comments)
         );
@@ -1116,8 +1184,8 @@ public final class ReelCommentSupabaseHelper {
             return;
         }
 
-        new android.os.Handler(
-                android.os.Looper.getMainLooper()
+        new Handler(
+                Looper.getMainLooper()
         ).post(
                 () -> callback.onError(message)
         );
