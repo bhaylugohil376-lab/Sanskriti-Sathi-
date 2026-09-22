@@ -1,13 +1,13 @@
 package com.sanskritisathi.app;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
+import android.widget.RadioButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -17,14 +17,21 @@ import androidx.appcompat.app.AppCompatActivity;
 public class ReelUploadActivity extends AppCompatActivity {
 
     private EditText captionInput;
-    private Spinner visibilitySpinner;
+
+    private RadioButton publicRadio;
+    private RadioButton followersRadio;
+
     private Button selectVideoButton;
-    private Button uploadButton;
+    private Button publishButton;
+
+    private TextView videoNameText;
     private ProgressBar uploadProgress;
 
     private Uri selectedVideoUri;
 
     private ActivityResultLauncher<String> videoPickerLauncher;
+
+    private boolean uploading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +44,7 @@ public class ReelUploadActivity extends AppCompatActivity {
         setupListeners();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
+
             Toast.makeText(
                     this,
                     "Login required.",
@@ -44,7 +52,14 @@ public class ReelUploadActivity extends AppCompatActivity {
             ).show();
 
             finish();
+            return;
         }
+
+        publishButton.setEnabled(false);
+
+        uploadProgress.setVisibility(
+                View.GONE
+        );
     }
 
     // ============================================================
@@ -56,14 +71,20 @@ public class ReelUploadActivity extends AppCompatActivity {
         captionInput =
                 findViewById(R.id.captionInput);
 
-        visibilitySpinner =
-                findViewById(R.id.visibilitySpinner);
+        publicRadio =
+                findViewById(R.id.publicRadio);
+
+        followersRadio =
+                findViewById(R.id.followersRadio);
 
         selectVideoButton =
                 findViewById(R.id.selectVideoButton);
 
-        uploadButton =
-                findViewById(R.id.uploadButton);
+        publishButton =
+                findViewById(R.id.publishButton);
+
+        videoNameText =
+                findViewById(R.id.videoNameText);
 
         uploadProgress =
                 findViewById(R.id.uploadProgress);
@@ -86,11 +107,11 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                             selectedVideoUri = uri;
 
-                            selectVideoButton.setText(
-                                    "Video Selected ✓"
+                            videoNameText.setText(
+                                    "Video selected ✓"
                             );
 
-                            uploadButton.setEnabled(
+                            publishButton.setEnabled(
                                     true
                             );
                         }
@@ -107,16 +128,20 @@ public class ReelUploadActivity extends AppCompatActivity {
                 v -> openVideoPicker()
         );
 
-        uploadButton.setOnClickListener(
+        publishButton.setOnClickListener(
                 v -> uploadReel()
         );
     }
 
     // ============================================================
-    // OPEN PICKER
+    // PICK VIDEO
     // ============================================================
 
     private void openVideoPicker() {
+
+        if (uploading) {
+            return;
+        }
 
         videoPickerLauncher.launch(
                 "video/*"
@@ -124,10 +149,14 @@ public class ReelUploadActivity extends AppCompatActivity {
     }
 
     // ============================================================
-    // UPLOAD
+    // UPLOAD REEL
     // ============================================================
 
     private void uploadReel() {
+
+        if (uploading) {
+            return;
+        }
 
         if (selectedVideoUri == null) {
 
@@ -146,11 +175,11 @@ public class ReelUploadActivity extends AppCompatActivity {
                         .toString()
                         .trim();
 
-        if (caption.length() > 500) {
+        if (caption.length() > 1000) {
 
             Toast.makeText(
                     this,
-                    "Caption maximum 500 characters ka ho sakta hai.",
+                    "Caption maximum 1000 characters ka ho sakta hai.",
                     Toast.LENGTH_SHORT
             ).show();
 
@@ -175,9 +204,18 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> {
 
-                            uploadProgress.setProgress(
-                                    progress
-                            );
+                            if (uploadProgress != null) {
+
+                                uploadProgress.setProgress(
+                                        Math.max(
+                                                0,
+                                                Math.min(
+                                                        100,
+                                                        progress
+                                                )
+                                        )
+                                );
+                            }
                         });
                     }
 
@@ -187,9 +225,7 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> {
 
-                            setUploadingState(
-                                    false
-                            );
+                            setUploadingState(false);
 
                             Toast.makeText(
                                     ReelUploadActivity.this,
@@ -207,13 +243,13 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> {
 
-                            setUploadingState(
-                                    false
-                            );
+                            setUploadingState(false);
 
                             Toast.makeText(
                                     ReelUploadActivity.this,
-                                    message,
+                                    message == null
+                                            ? "Reel upload failed."
+                                            : message,
                                     Toast.LENGTH_LONG
                             ).show();
                         });
@@ -228,90 +264,81 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private String getSelectedVisibility() {
 
-        if (visibilitySpinner == null) {
-            return "Public";
+        if (followersRadio != null
+                && followersRadio.isChecked()) {
+
+            return "Followers";
         }
 
-        Object selectedItem =
-                visibilitySpinner
-                        .getSelectedItem();
-
-        if (selectedItem == null) {
-            return "Public";
-        }
-
-        String value =
-                selectedItem
-                        .toString()
-                        .trim();
-
-        if (TextUtils.isEmpty(value)) {
-            return "Public";
-        }
-
-        /*
-         * Existing UI values:
-         *
-         * Followers
-         * Public
-         */
-        return value;
+        return "Public";
     }
 
     // ============================================================
-    // UPLOAD STATE
+    // UPLOADING STATE
     // ============================================================
 
     private void setUploadingState(
-            boolean uploading) {
+            boolean isUploading) {
+
+        uploading = isUploading;
 
         selectVideoButton.setEnabled(
-                !uploading
+                !isUploading
         );
 
         captionInput.setEnabled(
-                !uploading
+                !isUploading
         );
 
-        visibilitySpinner.setEnabled(
-                !uploading
+        publicRadio.setEnabled(
+                !isUploading
         );
 
-        uploadButton.setEnabled(
-                !uploading
+        followersRadio.setEnabled(
+                !isUploading
         );
 
-        if (uploading) {
+        if (isUploading) {
+
+            publishButton.setEnabled(false);
 
             uploadProgress.setVisibility(
-                    android.view.View.VISIBLE
+                    View.VISIBLE
             );
 
-            uploadProgress.setProgress(
-                    0
-            );
+            uploadProgress.setProgress(0);
 
-            uploadButton.setText(
+            publishButton.setText(
                     "Uploading..."
             );
 
         } else {
 
             uploadProgress.setVisibility(
-                    android.view.View.GONE
+                    View.GONE
             );
 
-            uploadButton.setText(
-                    "Upload Reel"
+            publishButton.setText(
+                    "Publish Reel"
+            );
+
+            /*
+             * Video selected hai to button dobara enable.
+             */
+            publishButton.setEnabled(
+                    selectedVideoUri != null
             );
         }
     }
 
+    // ============================================================
+    // BACK PRESS
+    // ============================================================
+
     @Override
     public void onBackPressed() {
 
-        if (uploadButton != null
-                && !uploadButton.isEnabled()) {
+        if (uploading) {
 
             Toast.makeText(
                     this,
