@@ -1245,6 +1245,145 @@ public final class ReelSupabaseHelper {
     }
 
     // =========================================================
+    // EDIT REEL
+    // =========================================================
+
+public static void updateReel(
+        Context context,
+        String reelId,
+        String caption,
+        String visibility,
+        ActionCallback callback) {
+
+    if (context == null || TextUtils.isEmpty(reelId)) {
+        postActionError(callback, "Invalid Reel.");
+        return;
+    }
+
+    EXECUTOR.execute(() -> {
+
+        HttpURLConnection connection = null;
+
+        try {
+
+            String userId =
+                    SupabaseAuthManager.getUserId(context);
+
+            String token =
+                    SupabaseAuthManager.getAccessToken(context);
+
+            if (TextUtils.isEmpty(userId)
+                    || TextUtils.isEmpty(token)) {
+
+                postActionError(
+                        callback,
+                        "Login session nahi mili."
+                );
+                return;
+            }
+
+            JSONObject update =
+                    new JSONObject();
+
+            update.put(
+                    "caption",
+                    caption == null ? "" : caption
+            );
+
+            update.put(
+                    "visibility",
+                    TextUtils.isEmpty(visibility)
+                            ? "Public"
+                            : visibility
+            );
+
+            String url =
+                    SupabaseConfig.PROJECT_URL
+                            + "/rest/v1/"
+                            + REELS_TABLE
+                            + "?id=eq."
+                            + URLEncoder.encode(
+                                    reelId,
+                                    "UTF-8"
+                            )
+                            + "&user_id=eq."
+                            + URLEncoder.encode(
+                                    userId,
+                                    "UTF-8"
+                            );
+
+            connection =
+                    openConnection(
+                            url,
+                            "PATCH",
+                            token
+                    );
+
+            connection.setDoOutput(true);
+
+            connection.setRequestProperty(
+                    "Content-Type",
+                    "application/json"
+            );
+
+            connection.setRequestProperty(
+                    "Prefer",
+                    "return=minimal"
+            );
+
+            OutputStream output =
+                    connection.getOutputStream();
+
+            output.write(
+                    update.toString()
+                            .getBytes("UTF-8")
+            );
+
+            output.flush();
+            output.close();
+
+            int code =
+                    connection.getResponseCode();
+
+            if (code < 200 || code >= 300) {
+
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
+
+                postActionError(
+                        callback,
+                        "Reel update failed: "
+                                + response
+                );
+
+                return;
+            }
+
+            postActionSuccess(callback);
+
+        } catch (Exception e) {
+
+            postActionError(
+                    callback,
+                    safeMessage(
+                            e,
+                            "Reel update failed."
+                    )
+            );
+
+        } finally {
+
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    });
+}
+    
+    // =========================================================
     // GET REEL
     // =========================================================
 
