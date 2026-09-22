@@ -178,6 +178,10 @@
             android:name=".ReelCommentsActivity"
             android:exported="false" />
 
+        <activity
+             android:name=".ReelEditActivity"
+             android:exported="false" />
+        
         <!-- Chat -->
         <activity
             android:name=".ChatActivity"
