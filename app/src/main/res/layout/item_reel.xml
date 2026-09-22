@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Full-screen Reel Video -->
+    <!-- Reel Video -->
     <androidx.media3.ui.PlayerView
         android:id="@+id/reelPlayerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#000000"
         android:keepScreenOn="true"
-        android:use_controller="false"
-        android:resize_mode="zoom" />
+        app:use_controller="false"
+        app:resize_mode="zoom" />
 
     <!-- Video Error -->
     <TextView
@@ -28,13 +29,13 @@
         android:textSize="15sp"
         android:visibility="gone" />
 
-    <!-- Top Gradient -->
+    <!-- Top Gradient / Overlay -->
     <View
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:background="#66000000" />
 
-    <!-- Top User Row -->
+    <!-- Top User Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -80,7 +81,7 @@
 
     </LinearLayout>
 
-    <!-- Right Action Bar -->
+    <!-- Right Side Actions -->
     <LinearLayout
         android:layout_width="68dp"
         android:layout_height="wrap_content"
@@ -143,6 +144,7 @@
             android:src="@android:drawable/ic_menu_share"
             android:tint="#FFFFFF" />
 
+        <!-- Views -->
         <TextView
             android:id="@+id/reelViewsText"
             android:layout_width="wrap_content"
@@ -155,14 +157,14 @@
 
     </LinearLayout>
 
-    <!-- Bottom Gradient -->
+    <!-- Bottom Overlay -->
     <View
         android:layout_width="match_parent"
         android:layout_height="210dp"
         android:layout_gravity="bottom"
         android:background="#88000000" />
 
-    <!-- Bottom Reel Information -->
+    <!-- Bottom Reel Info -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -173,7 +175,6 @@
         android:paddingEnd="86dp"
         android:paddingBottom="28dp">
 
-        <!-- Username -->
         <TextView
             android:id="@+id/reelBottomUsername"
             android:layout_width="match_parent"
@@ -187,7 +188,6 @@
             android:textStyle="bold"
             android:visibility="gone" />
 
-        <!-- Caption -->
         <TextView
             android:id="@+id/reelCaptionText"
             android:layout_width="match_parent"
