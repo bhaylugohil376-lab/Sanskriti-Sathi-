@@ -1,19 +1,16 @@
 package com.sanskritisathi.app;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.content.Context;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,38 +19,24 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
     private RecyclerView commentsRecyclerView;
     private EditText commentInput;
-    private MaterialButton sendButton;
+    private ImageButton sendButton;
     private ImageButton backButton;
 
     private ReelCommentsAdapter adapter;
-
-    private final List<ReelComment> commentList =
-            new ArrayList<>();
+    private final List<ReelComment> comments = new ArrayList<>();
 
     private String reelId = "";
+    private boolean sendingComment = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_reel_comments);
 
-        setContentView(
-                R.layout.activity_reel_comments
-        );
+        reelId = getIntent().getStringExtra("reel_id");
 
-        reelId =
-                getIntent().getStringExtra(
-                        "reel_id"
-                );
-
-        if (reelId == null ||
-                reelId.trim().isEmpty()) {
-
-            Toast.makeText(
-                    this,
-                    "Invalid Reel.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+        if (reelId == null || reelId.trim().isEmpty()) {
+            Toast.makeText(this, "Reel ID missing", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -63,13 +46,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
         setupListeners();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
-
-            Toast.makeText(
-                    this,
-                    "Please login first.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -78,64 +55,51 @@ public class ReelCommentsActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-
-        commentsRecyclerView =
-                findViewById(
-                        R.id.commentsRecyclerView
-                );
-
-        commentInput =
-                findViewById(
-                        R.id.commentInput
-                );
-
-        sendButton =
-                findViewById(
-                        R.id.sendButton
-                );
-
-        backButton =
-                findViewById(
-                        R.id.backButton
-                );
+        commentsRecyclerView = findViewById(R.id.commentsRecyclerView);
+        commentInput = findViewById(R.id.commentInput);
+        sendButton = findViewById(R.id.sendButton);
+        backButton = findViewById(R.id.backButton);
     }
 
     private void setupRecyclerView() {
-
-        LinearLayoutManager layoutManager =
-                new LinearLayoutManager(this);
-
-        layoutManager.setStackFromEnd(true);
-
+        adapter = new ReelCommentsAdapter(this, comments);
         commentsRecyclerView.setLayoutManager(
-                layoutManager
+                new LinearLayoutManager(this)
         );
-
-        adapter =
-                new ReelCommentsAdapter(
-                        this,
-                        commentList
-                );
-
-        commentsRecyclerView.setAdapter(
-                adapter
-        );
+        commentsRecyclerView.setAdapter(adapter);
+        commentsRecyclerView.setHasFixedSize(false);
     }
 
     private void setupListeners() {
 
-        backButton.setOnClickListener(
-                v -> finish()
-        );
+        backButton.setOnClickListener(v -> finish());
 
-        sendButton.setOnClickListener(
-                v -> sendComment()
-        );
+        sendButton.setOnClickListener(v -> {
+
+            if (sendingComment) {
+                return;
+            }
+
+            String text = commentInput.getText()
+                    .toString()
+                    .trim();
+
+            if (text.isEmpty()) {
+                return;
+            }
+
+            if (text.length() > 500) {
+                Toast.makeText(
+                        this,
+                        "Comment maximum 500 characters ka ho sakta hai",
+                        Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            addComment(text);
+        });
     }
-
-    // =========================================================
-    // LOAD COMMENTS
-    // =========================================================
 
     private void loadComments() {
 
@@ -145,51 +109,36 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 new ReelCommentSupabaseHelper.CommentsCallback() {
 
                     @Override
-                    public void onSuccess(
-                            List<ReelComment> comments) {
+                    public void onSuccess(List<ReelComment> result) {
 
                         runOnUiThread(() -> {
 
-                            commentList.clear();
+                            comments.clear();
 
-                            if (comments != null) {
-                                commentList.addAll(
-                                        comments
-                                );
+                            if (result != null) {
+                                comments.addAll(result);
                             }
 
-                            adapter.setComments(
-                                    commentList
-                            );
+                            adapter.notifyDataSetChanged();
 
-                            commentsRecyclerView.post(
-                                    () -> {
-
-                                        if (adapter.getItemCount()
-                                                > 0) {
-
-                                            commentsRecyclerView
-                                                    .scrollToPosition(
-                                                            adapter.getItemCount()
-                                                                    - 1
-                                                    );
-                                        }
-                                    }
-                            );
+                            if (!comments.isEmpty()) {
+                                commentsRecyclerView.scrollToPosition(
+                                        comments.size() - 1
+                                );
+                            }
                         });
                     }
 
                     @Override
-                    public void onError(
-                            String message) {
+                    public void onError(String error) {
 
                         runOnUiThread(() ->
                                 Toast.makeText(
                                         ReelCommentsActivity.this,
-                                        message == null
-                                                ? "Comments load nahi hui."
-                                                : message,
-                                        Toast.LENGTH_LONG
+                                        error == null
+                                                ? "Comments load nahi ho paaye"
+                                                : error,
+                                        Toast.LENGTH_SHORT
                                 ).show()
                         );
                     }
@@ -197,38 +146,11 @@ public class ReelCommentsActivity extends AppCompatActivity {
         );
     }
 
-    // =========================================================
-    // SEND COMMENT
-    // =========================================================
+    private void addComment(String text) {
 
-    private void sendComment() {
-
-        String text =
-                commentInput.getText()
-                        .toString()
-                        .trim();
-
-        if (text.isEmpty()) {
-
-            commentInput.setError(
-                    "Comment likho"
-            );
-
-            commentInput.requestFocus();
-
-            return;
-        }
-
-        if (text.length() > 500) {
-
-            commentInput.setError(
-                    "Maximum 500 characters"
-            );
-
-            return;
-        }
-
-        setSendingState(true);
+        sendingComment = true;
+        sendButton.setEnabled(false);
+        commentInput.setEnabled(false);
 
         ReelCommentSupabaseHelper.addComment(
                 this,
@@ -241,36 +163,33 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> {
 
+                            sendingComment = false;
+                            sendButton.setEnabled(true);
+                            commentInput.setEnabled(true);
+
                             commentInput.setText("");
 
                             hideKeyboard();
 
-                            setSendingState(false);
-
                             loadComments();
-
-                            Toast.makeText(
-                                    ReelCommentsActivity.this,
-                                    "Comment added",
-                                    Toast.LENGTH_SHORT
-                            ).show();
                         });
                     }
 
                     @Override
-                    public void onError(
-                            String message) {
+                    public void onError(String error) {
 
                         runOnUiThread(() -> {
 
-                            setSendingState(false);
+                            sendingComment = false;
+                            sendButton.setEnabled(true);
+                            commentInput.setEnabled(true);
 
                             Toast.makeText(
                                     ReelCommentsActivity.this,
-                                    message == null
-                                            ? "Comment send nahi hua."
-                                            : message,
-                                    Toast.LENGTH_LONG
+                                    error == null
+                                            ? "Comment send nahi ho paaya"
+                                            : error,
+                                    Toast.LENGTH_SHORT
                             ).show();
                         });
                     }
@@ -278,67 +197,26 @@ public class ReelCommentsActivity extends AppCompatActivity {
         );
     }
 
-    // =========================================================
-    // SEND STATE
-    // =========================================================
-
-    private void setSendingState(
-            boolean sending) {
-
-        sendButton.setEnabled(!sending);
-
-        commentInput.setEnabled(!sending);
-
-        if (sending) {
-
-            sendButton.setText(
-                    "Sending..."
-            );
-
-        } else {
-
-            sendButton.setText(
-                    "Send"
-            );
-        }
-    }
-
-    // =========================================================
-    // KEYBOARD
-    // =========================================================
-
     private void hideKeyboard() {
 
-        InputMethodManager manager =
-                (InputMethodManager)
-                        getSystemService(
-                                Context.INPUT_METHOD_SERVICE
-                        );
+        View currentFocus = getCurrentFocus();
 
-        if (manager != null) {
+        if (currentFocus == null) {
+            return;
+        }
 
-            manager.hideSoftInputFromWindow(
-                    commentInput.getWindowToken(),
+        InputMethodManager imm =
+                (InputMethodManager) getSystemService(
+                        Context.INPUT_METHOD_SERVICE
+                );
+
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(
+                    currentFocus.getWindowToken(),
                     0
             );
         }
-
-        commentInput.clearFocus();
-    }
-
-    // =========================================================
-    // REFRESH WHEN RETURNING
-    // =========================================================
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (reelId != null &&
-                !reelId.trim().isEmpty() &&
-                SupabaseAuthManager.isLoggedIn(this)) {
-
-            loadComments();
-        }
     }
 }
+
+Important: XML mein "sendButton" agar "ImageButton" hai, to upar wala "ImageButton sendButton" hi rakho. "MaterialButton" mat karna.
