@@ -7,44 +7,74 @@
     android:background="#0F111A"
     android:fitsSystemWindows="true">
 
-    <!-- TOP HEADER BAR -->
-    <LinearLayout
+    <!-- =========================
+         TOP BAR
+         ========================= -->
+
+    <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="58dp"
         android:layout_alignParentTop="true"
-        android:background="#1A1D2B"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp">
+        android:background="#0F111A"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp">
+
+        <!-- CREATE -->
 
         <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:id="@+id/createTopButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="4dp"
+            android:paddingEnd="12dp"
+            android:text="+"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="normal" />
+
+        <!-- APP NAME -->
+
+        <TextView
+            android:id="@+id/appTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:gravity="center"
             android:text="Sanskriti Sathi"
             android:textColor="#E5A93C"
             android:textSize="20sp"
             android:textStyle="bold" />
 
+        <!-- NOTIFICATION -->
+
         <TextView
             android:id="@+id/notificationButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"
-            android:padding="8dp"
-            android:text="Alerts"
-            android:textColor="#E5A93C"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="4dp"
+            android:text="♡"
+            android:textColor="#FFFFFF"
+            android:textSize="30sp" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
 
-    <!-- CONTENT -->
+    <!-- =========================
+         CONTENT
+         ========================= -->
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/mainScrollView"
         android:layout_width="match_parent"
@@ -58,26 +88,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:paddingTop="4dp"
+            android:paddingBottom="12dp">
 
 
-            <!-- STORIES BAR -->
+            <!-- =========================
+                 STORIES
+                 ========================= -->
+
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:overScrollMode="never">
+                android:overScrollMode="never"
+                android:scrollbars="none">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp">
 
 
                     <!-- YOUR STORY -->
+
                     <LinearLayout
                         android:id="@+id/yourStoryButton"
-                        android:layout_width="70dp"
+                        android:layout_width="74dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="4dp"
                         android:background="?attr/selectableItemBackground"
@@ -87,16 +124,55 @@
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="#2A2D3D">
+                            android:layout_width="62dp"
+                            android:layout_height="62dp"
+                            android:background="#292D3A">
 
                             <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
                                 android:text="+"
                                 android:textColor="#FFFFFF"
+                                android:textSize="25sp" />
+
+                        </FrameLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="5dp"
+                            android:text="Your Story"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp" />
+
+                    </LinearLayout>
+
+
+                    <!-- TEMPLES -->
+
+                    <LinearLayout
+                        android:id="@+id/templeStoryButton"
+                        android:layout_width="74dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <FrameLayout
+                            android:layout_width="62dp"
+                            android:layout_height="62dp"
+                            android:background="#292D3A">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
+                                android:text="T"
+                                android:textColor="#E5A93C"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
 
@@ -105,57 +181,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Your Story"
-                            android:textColor="#A0A5B5"
-                            android:textSize="11sp" />
-
-                    </LinearLayout>
-
-
-                    <!-- TEMPLE -->
-                    <LinearLayout
-                        android:id="@+id/templeStoryButton"
-                        android:layout_width="70dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="#2A2D3D">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:text="T"
-                                android:textColor="#E5A93C"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-
-                        </FrameLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="5dp"
                             android:text="Temples"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#FFFFFF"
                             android:textSize="11sp" />
 
                     </LinearLayout>
 
 
                     <!-- RAJA -->
+
                     <LinearLayout
                         android:id="@+id/rajaStoryButton"
-                        android:layout_width="70dp"
+                        android:layout_width="74dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="4dp"
                         android:background="?attr/selectableItemBackground"
@@ -165,17 +203,17 @@
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="#2A2D3D">
+                            android:layout_width="62dp"
+                            android:layout_height="62dp"
+                            android:background="#292D3A">
 
                             <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
                                 android:text="R"
                                 android:textColor="#E5A93C"
-                                android:textSize="18sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold" />
 
                         </FrameLayout>
@@ -183,18 +221,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="5dp"
                             android:text="Raja"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#FFFFFF"
                             android:textSize="11sp" />
 
                     </LinearLayout>
 
 
                     <!-- DEVI DEVTA -->
+
                     <LinearLayout
                         android:id="@+id/deviStoryButton"
-                        android:layout_width="70dp"
+                        android:layout_width="74dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="4dp"
                         android:background="?attr/selectableItemBackground"
@@ -204,17 +243,17 @@
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="#2A2D3D">
+                            android:layout_width="62dp"
+                            android:layout_height="62dp"
+                            android:background="#292D3A">
 
                             <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
                                 android:text="D"
                                 android:textColor="#E5A93C"
-                                android:textSize="18sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold" />
 
                         </FrameLayout>
@@ -222,18 +261,19 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="5dp"
                             android:text="Devi Devta"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#FFFFFF"
                             android:textSize="11sp" />
 
                     </LinearLayout>
 
 
                     <!-- GITA -->
+
                     <LinearLayout
                         android:id="@+id/gitaStoryButton"
-                        android:layout_width="70dp"
+                        android:layout_width="74dp"
                         android:layout_height="wrap_content"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true"
@@ -242,17 +282,17 @@
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            android:background="#2A2D3D">
+                            android:layout_width="62dp"
+                            android:layout_height="62dp"
+                            android:background="#292D3A">
 
                             <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:gravity="center"
                                 android:text="G"
                                 android:textColor="#E5A93C"
-                                android:textSize="18sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold" />
 
                         </FrameLayout>
@@ -260,9 +300,9 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="5dp"
                             android:text="Gita"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#FFFFFF"
                             android:textSize="11sp" />
 
                     </LinearLayout>
@@ -272,12 +312,15 @@
             </HorizontalScrollView>
 
 
-            <!-- HOME FEED -->
+            <!-- =========================
+                 HOME FEED
+                 ========================= -->
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/homeFeedRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never" />
 
@@ -286,18 +329,24 @@
     </androidx.core.widget.NestedScrollView>
 
 
-    <!-- BOTTOM NAVIGATION -->
+    <!-- =========================
+         BOTTOM NAVIGATION
+         ========================= -->
+
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="62dp"
         android:layout_alignParentBottom="true"
-        android:background="#1A1D2B"
+        android:background="#151824"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp">
 
 
         <!-- HOME -->
+
         <ImageView
             android:id="@+id/homeNavButton"
             android:layout_width="0dp"
@@ -307,11 +356,12 @@
             android:clickable="true"
             android:contentDescription="Home"
             android:focusable="true"
-            android:padding="14dp"
+            android:padding="15dp"
             android:src="@drawable/ic_home" />
 
 
-        <!-- EXPLORE -->
+        <!-- SEARCH -->
+
         <ImageView
             android:id="@+id/exploreNavButton"
             android:layout_width="0dp"
@@ -319,27 +369,29 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="Explore"
+            android:contentDescription="Search"
             android:focusable="true"
-            android:padding="14dp"
+            android:padding="15dp"
             android:src="@drawable/ic_explore" />
 
 
-        <!-- CREATE -->
+        <!-- REELS -->
+
         <ImageView
-            android:id="@+id/createNavButton"
+            android:id="@+id/reelsNavButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="Create"
+            android:contentDescription="Reels"
             android:focusable="true"
-            android:padding="12dp"
-            android:src="@drawable/ic_add_circle" />
+            android:padding="15dp"
+            android:src="@drawable/ic_reels" />
 
 
         <!-- CHAT -->
+
         <ImageView
             android:id="@+id/chatNavButton"
             android:layout_width="0dp"
@@ -349,11 +401,12 @@
             android:clickable="true"
             android:contentDescription="Chat"
             android:focusable="true"
-            android:padding="14dp"
+            android:padding="15dp"
             android:src="@drawable/ic_chat" />
 
 
         <!-- PROFILE -->
+
         <ImageView
             android:id="@+id/profileNavButton"
             android:layout_width="0dp"
@@ -363,7 +416,7 @@
             android:clickable="true"
             android:contentDescription="Profile"
             android:focusable="true"
-            android:padding="14dp"
+            android:padding="15dp"
             android:src="@drawable/ic_profile" />
 
     </LinearLayout>
