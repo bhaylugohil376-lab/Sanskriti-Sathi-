@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         setupHomeFeed();
         setupStoryButtons();
         setupNotificationButton();
+        setupTopCreateButton();
         setupBottomNavigation();
     }
 
@@ -100,7 +101,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // NOTIFICATIONS
+    // TOP CREATE BUTTON
+    // =========================================================
+
+    private void setupTopCreateButton() {
+
+        if (findViewById(R.id.createTopButton) == null) {
+            return;
+        }
+
+        findViewById(R.id.createTopButton)
+                .setOnClickListener(v -> showCreateMenu());
+    }
+
+    // =========================================================
+    // TOP NOTIFICATION
     // =========================================================
 
     private void setupNotificationButton() {
@@ -146,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // -----------------------------------------------------
-        // EXPLORE / SEARCH
+        // SEARCH
         // -----------------------------------------------------
 
         if (findViewById(R.id.exploreNavButton) != null) {
@@ -165,15 +180,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // -----------------------------------------------------
-        // CREATE
+        // REELS
         // -----------------------------------------------------
 
-        if (findViewById(R.id.createNavButton) != null) {
+        if (findViewById(R.id.reelsNavButton) != null) {
 
-            findViewById(R.id.createNavButton)
-                    .setOnClickListener(
-                            v -> showCreateMenu()
-                    );
+            findViewById(R.id.reelsNavButton)
+                    .setOnClickListener(v -> {
+
+                        Intent intent =
+                                new Intent(
+                                        MainActivity.this,
+                                        ReelActivity.class
+                                );
+
+                        startActivity(intent);
+                    });
         }
 
         // -----------------------------------------------------
@@ -195,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.profileNavButton)
                     .setOnClickListener(v -> {
 
-                        // User logged in nahi hai
                         if (!SupabaseAuthManager
                                 .isLoggedIn(this)) {
 
@@ -209,8 +230,6 @@ public class MainActivity extends AppCompatActivity {
                             return;
                         }
 
-                        // User logged in hai
-                        // Ab professional profile open hoga
                         Intent intent =
                                 new Intent(
                                         MainActivity.this,
