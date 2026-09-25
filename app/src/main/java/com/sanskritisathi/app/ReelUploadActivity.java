@@ -200,67 +200,27 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                     @Override
                     public void onSuccess(
-                            String videoUrl,
-                            String fileName) {
+                            String videoUrl) {
 
-                        /*
-                         * B2 upload successful.
-                         *
-                         * Ab Supabase reels table mein
-                         * actual Reel record save karenge.
-                         */
+                        // ReelSupabaseHelper.uploadReel() already:
+                        // 1) uploads the video to B2
+                        // 2) saves the Reel row in Supabase
+                        // So no second insertReel() call is needed here.
 
-                        ReelSupabaseHelper.insertReel(
-                                ReelUploadActivity.this,
-                                videoUrl,
-                                caption,
-                                visibility,
-                                fileName,
-                                new ReelSupabaseHelper.ActionCallback() {
+                        runOnUiThread(() -> {
 
-                                    @Override
-                                    public void onSuccess() {
+                            setUploadingState(
+                                    false
+                            );
 
-                                        runOnUiThread(() -> {
+                            Toast.makeText(
+                                    ReelUploadActivity.this,
+                                    "Reel publish ho gayi ✓",
+                                    Toast.LENGTH_SHORT
+                            ).show();
 
-                                            setUploadingState(
-                                                    false
-                                            );
-
-                                            Toast.makeText(
-                                                    ReelUploadActivity.this,
-                                                    "Reel publish ho gayi ✓",
-                                                    Toast.LENGTH_SHORT
-                                            ).show();
-
-                                            finish();
-                                        });
-                                    }
-
-                                    @Override
-                                    public void onError(
-                                            String error) {
-
-                                        runOnUiThread(() -> {
-
-                                            setUploadingState(
-                                                    false
-                                            );
-
-                                            Toast.makeText(
-                                                    ReelUploadActivity.this,
-                                                    "Video upload ho gayi, lekin Reel save nahi hui: "
-                                                            + (
-                                                            error == null
-                                                                    ? "Unknown error"
-                                                                    : error
-                                                    ),
-                                                    Toast.LENGTH_LONG
-                                            ).show();
-                                        });
-                                    }
-                                }
-                        );
+                            finish();
+                        });
                     }
 
                     @Override
