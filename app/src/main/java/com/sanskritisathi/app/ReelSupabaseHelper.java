@@ -12,11 +12,11 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -34,6 +34,7 @@ public final class ReelSupabaseHelper {
 
     private static final String REELS_TABLE = "reels";
     private static final String LIKES_TABLE = "reel_likes";
+
     private static final String STORAGE_FOLDER = "reels";
 
     private ReelSupabaseHelper() {
@@ -44,23 +45,32 @@ public final class ReelSupabaseHelper {
     // =========================================================
 
     public interface ReelsCallback {
+
         void onSuccess(List<Reel> reels);
+
         void onError(String message);
     }
 
     public interface ActionCallback {
+
         void onSuccess();
+
         void onError(String message);
     }
 
     public interface LikeCheckCallback {
+
         void onResult(boolean liked);
+
         void onError(String message);
     }
 
     public interface UploadCallback {
+
         void onProgress(int progress);
+
         void onSuccess(String videoUrl);
+
         void onError(String message);
     }
 
@@ -73,7 +83,10 @@ public final class ReelSupabaseHelper {
             ReelsCallback callback) {
 
         if (context == null) {
-            postError(callback, "Context missing.");
+            postError(
+                    callback,
+                    "Context missing."
+            );
             return;
         }
 
@@ -105,16 +118,20 @@ public final class ReelSupabaseHelper {
                                 "UTF-8"
                         );
 
+                String filter =
+                        "or=("
+                                + "visibility.eq.Public,"
+                                + "user_id.eq."
+                                + encodedUserId
+                                + ")";
+
                 String url =
                         SupabaseConfig.PROJECT_URL
                                 + "/rest/v1/"
                                 + REELS_TABLE
                                 + "?select=*"
-                                + "&or=("
-                                + "visibility.eq.Public,"
-                                + "user_id.eq."
-                                + encodedUserId
-                                + ")"
+                                + "&"
+                                + filter
                                 + "&order=created_at.desc";
 
                 connection =
@@ -175,12 +192,6 @@ public final class ReelSupabaseHelper {
                                     ""
                             );
 
-                    String thumbnailUrl =
-                            json.optString(
-                                    "thumbnail_url",
-                                    ""
-                            );
-
                     String caption =
                             json.optString(
                                     "caption",
@@ -211,6 +222,11 @@ public final class ReelSupabaseHelper {
                                     0
                             );
 
+                    boolean ownReel =
+                            userId.equals(
+                                    reelUserId
+                            );
+
                     String username =
                             json.optString(
                                     "username",
@@ -226,48 +242,30 @@ public final class ReelSupabaseHelper {
                                 );
                     }
 
-                    boolean ownReel =
-                            userId.equals(
-                                    reelUserId
-                            );
-
-                    long createdAt =
-                            parseCreatedAt(
-                                    json.optString(
-                                            "created_at",
-                                            ""
-                                    )
-                            );
-
-                    boolean liked =
-                            isReelLiked(
-                                    reelId,
-                                    userId,
-                                    accessToken
-                            );
-
                     Reel reel =
                             new Reel(
                                     reelId,
                                     reelUserId,
                                     username,
                                     videoUrl,
-                                    thumbnailUrl,
                                     caption,
                                     visibility,
-                                    createdAt,
                                     likes,
                                     comments,
                                     views,
-                                    liked,
                                     ownReel
                             );
 
                     result.add(reel);
                 }
 
+                final List<Reel> finalResult =
+                        result;
+
                 MAIN_HANDLER.post(() ->
-                        callback.onSuccess(result)
+                        callback.onSuccess(
+                                finalResult
+                        )
                 );
 
             } catch (Exception e) {
@@ -338,7 +336,10 @@ public final class ReelSupabaseHelper {
                     return;
                 }
 
-                postProgress(callback, 5);
+                postProgress(
+                        callback,
+                        5
+                );
 
                 byte[] videoBytes =
                         readUriBytes(
@@ -356,7 +357,10 @@ public final class ReelSupabaseHelper {
                     return;
                 }
 
-                postProgress(callback, 15);
+                postProgress(
+                        callback,
+                        15
+                );
 
                 String fileName =
                         "reel_"
@@ -394,38 +398,38 @@ public final class ReelSupabaseHelper {
                         "video/mp4"
                 );
 
-                String functionUrl =
-                        SupabaseConfig.PROJECT_URL
-                                + "/functions/v1/bright-action";
-
                 connection =
                         openConnection(
-                                functionUrl,
+                                SupabaseConfig.PROJECT_URL
+                                        + "/functions/v1/bright-action",
                                 "POST",
                                 accessToken
                         );
 
                 connection.setDoOutput(true);
-
                 connection.setRequestProperty(
                         "Content-Type",
                         "application/json"
                 );
 
+                byte[] body =
+                        uploadJson
+                                .toString()
+                                .getBytes(
+                                        "UTF-8"
+                                );
+
                 OutputStream output =
                         connection.getOutputStream();
 
-                output.write(
-                        uploadJson.toString()
-                                .getBytes(
-                                        StandardCharsets.UTF_8
-                                )
-                );
-
+                output.write(body);
                 output.flush();
                 output.close();
 
-                postProgress(callback, 60);
+                postProgress(
+                        callback,
+                        70
+                );
 
                 int code =
                         connection.getResponseCode();
@@ -453,7 +457,7 @@ public final class ReelSupabaseHelper {
                 boolean success =
                         result.optBoolean(
                                 "success",
-                                false
+                                true
                         );
 
                 if (!success) {
@@ -468,7 +472,7 @@ public final class ReelSupabaseHelper {
                     return;
                 }
 
-                String uploadedFileName =
+                String returnedFileName =
                         result.optString(
                                 "fileName",
                                 fileName
@@ -480,30 +484,55 @@ public final class ReelSupabaseHelper {
                                 ""
                         );
 
-                postProgress(callback, 80);
+                if (TextUtils.isEmpty(videoUrl)) {
 
-                if (!insertReel(
-                        userId,
-                        caption,
-                        visibility,
-                        videoUrl.isEmpty()
-                                ? uploadedFileName
-                                : videoUrl,
-                        accessToken)) {
+                    videoUrl =
+                            result.optString(
+                                    "publicUrl",
+                                    ""
+                            );
+                }
 
+                if (TextUtils.isEmpty(videoUrl)) {
+
+                    videoUrl =
+                            SupabaseConfig.PROJECT_URL
+                                    + "/storage/v1/object/public/"
+                                    + STORAGE_FOLDER
+                                    + "/"
+                                    + returnedFileName;
+                }
+
+                postProgress(
+                        callback,
+                        85
+                );
+
+                try {
+                    insertReel(
+                            userId,
+                            caption,
+                            visibility,
+                            videoUrl,
+                            accessToken
+                    );
+                } catch (Exception dbError) {
                     postUploadError(
                             callback,
-                            "Reel database me save nahi hui."
+                            dbError.getMessage() == null
+                                    ? "Reel database me save nahi hui."
+                                    : dbError.getMessage()
                     );
                     return;
                 }
 
-                postProgress(callback, 100);
+                postProgress(
+                        callback,
+                        100
+                );
 
                 final String finalVideoUrl =
-                        videoUrl.isEmpty()
-                                ? uploadedFileName
-                                : videoUrl;
+                        videoUrl;
 
                 MAIN_HANDLER.post(() ->
                         callback.onSuccess(
@@ -534,7 +563,7 @@ public final class ReelSupabaseHelper {
     // INSERT REEL
     // =========================================================
 
-    private static boolean insertReel(
+    private static void insertReel(
             String userId,
             String caption,
             String visibility,
@@ -545,104 +574,44 @@ public final class ReelSupabaseHelper {
         HttpURLConnection connection = null;
 
         try {
+            JSONObject json = new JSONObject();
 
-            String username =
-                    getUsername(
-                            userId,
-                            accessToken
-                    );
-
-            JSONObject json =
-                    new JSONObject();
-
-            json.put(
-                    "id",
-                    UUID.randomUUID().toString()
-            );
-
-            json.put(
-                    "user_id",
-                    userId
-            );
-
-            json.put(
-                    "video_url",
-                    videoUrl
-            );
-
-            json.put(
-                    "caption",
-                    caption == null
-                            ? ""
-                            : caption
-            );
-
-            json.put(
-                    "visibility",
-                    TextUtils.isEmpty(visibility)
-                            ? "Public"
-                            : visibility
-            );
-
+            json.put("id", UUID.randomUUID().toString());
+            json.put("user_id", userId);
+            json.put("video_url", videoUrl);
+            json.put("caption", caption == null ? "" : caption);
+            json.put("visibility", TextUtils.isEmpty(visibility) ? "Public" : visibility);
             json.put("likes", 0);
             json.put("comments", 0);
             json.put("views", 0);
 
-            if (!TextUtils.isEmpty(username)) {
-                json.put(
-                        "username",
-                        username
-                );
-            }
+            // Username intentionally omitted. Feed can read it from profiles.
 
-            String url =
-                    SupabaseConfig.PROJECT_URL
-                            + "/rest/v1/"
-                            + REELS_TABLE;
+            String url = SupabaseConfig.PROJECT_URL
+                    + "/rest/v1/" + REELS_TABLE;
 
-            connection =
-                    openConnection(
-                            url,
-                            "POST",
-                            accessToken
-                    );
-
+            connection = openConnection(url, "POST", accessToken);
             connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Prefer", "return=minimal");
 
-            connection.setRequestProperty(
-                    "Content-Type",
-                    "application/json"
-            );
-
-            connection.setRequestProperty(
-                    "Prefer",
-                    "return=minimal"
-            );
-
-            OutputStream output =
-                    connection.getOutputStream();
-
-            output.write(
-                    json.toString()
-                            .getBytes(
-                                    StandardCharsets.UTF_8
-                            )
-            );
-
+            OutputStream output = connection.getOutputStream();
+            output.write(json.toString().getBytes(StandardCharsets.UTF_8));
             output.flush();
             output.close();
 
-            int code =
-                    connection.getResponseCode();
+            int code = connection.getResponseCode();
+            String response = readResponse(connection, code);
 
-            return code >= 200
-                    && code < 300;
+            if (code < 200 || code >= 300) {
+                throw new Exception(
+                        "Reel database save failed.\nHTTP "
+                                + code + "\n" + response
+                );
+            }
 
         } finally {
-
-            if (connection != null) {
-                connection.disconnect();
-            }
+            if (connection != null) connection.disconnect();
         }
     }
 
@@ -676,7 +645,6 @@ public final class ReelSupabaseHelper {
                                 .getAccessToken(context);
 
                 if (TextUtils.isEmpty(token)) {
-
                     postActionError(
                             callback,
                             "Login session nahi mili."
@@ -691,7 +659,6 @@ public final class ReelSupabaseHelper {
                         );
 
                 if (current == null) {
-
                     postActionError(
                             callback,
                             "Reel nahi mili."
@@ -742,9 +709,7 @@ public final class ReelSupabaseHelper {
 
                 output.write(
                         update.toString()
-                                .getBytes(
-                                        StandardCharsets.UTF_8
-                                )
+                                .getBytes("UTF-8")
                 );
 
                 output.flush();
@@ -763,7 +728,9 @@ public final class ReelSupabaseHelper {
                     return;
                 }
 
-                postActionSuccess(callback);
+                postActionSuccess(
+                        callback
+                );
 
             } catch (Exception e) {
 
@@ -772,6 +739,122 @@ public final class ReelSupabaseHelper {
                         safeMessage(
                                 e,
                                 "View update failed."
+                        )
+                );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
+    // =========================================================
+    // CHECK LIKE
+    // =========================================================
+
+    public static void checkReelLike(
+            Context context,
+            String reelId,
+            LikeCheckCallback callback) {
+
+        if (context == null
+                || TextUtils.isEmpty(reelId)) {
+
+            postLikeError(
+                    callback,
+                    "Invalid Reel."
+            );
+            return;
+        }
+
+        EXECUTOR.execute(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+
+                String userId =
+                        SupabaseAuthManager
+                                .getUserId(context);
+
+                String token =
+                        SupabaseAuthManager
+                                .getAccessToken(context);
+
+                if (TextUtils.isEmpty(userId)
+                        || TextUtils.isEmpty(token)) {
+
+                    postLikeError(
+                            callback,
+                            "Login session nahi mili."
+                    );
+                    return;
+                }
+
+                String url =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + LIKES_TABLE
+                                + "?select=id"
+                                + "&reel_id=eq."
+                                + URLEncoder.encode(
+                                        reelId,
+                                        "UTF-8"
+                                )
+                                + "&user_id=eq."
+                                + URLEncoder.encode(
+                                        userId,
+                                        "UTF-8"
+                                );
+
+                connection =
+                        openConnection(
+                                url,
+                                "GET",
+                                token
+                        );
+
+                int code =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
+
+                if (code < 200
+                        || code >= 300) {
+
+                    postLikeError(
+                            callback,
+                            "Like check failed."
+                    );
+                    return;
+                }
+
+                JSONArray array =
+                        new JSONArray(response);
+
+                final boolean liked =
+                        array.length() > 0;
+
+                MAIN_HANDLER.post(() ->
+                        callback.onResult(
+                                liked
+                        )
+                );
+
+            } catch (Exception e) {
+
+                postLikeError(
+                        callback,
+                        safeMessage(
+                                e,
+                                "Like check failed."
                         )
                 );
 
@@ -902,9 +985,7 @@ public final class ReelSupabaseHelper {
 
                     output.write(
                             json.toString()
-                                    .getBytes(
-                                            StandardCharsets.UTF_8
-                                    )
+                                    .getBytes("UTF-8")
                     );
 
                     output.flush();
@@ -936,7 +1017,9 @@ public final class ReelSupabaseHelper {
                         token
                 );
 
-                postActionSuccess(callback);
+                postActionSuccess(
+                        callback
+                );
 
             } catch (Exception e) {
 
@@ -989,7 +1072,8 @@ public final class ReelSupabaseHelper {
                     );
 
             int countCode =
-                    countConnection.getResponseCode();
+                    countConnection
+                            .getResponseCode();
 
             String countResponse =
                     readResponse(
@@ -1002,20 +1086,17 @@ public final class ReelSupabaseHelper {
                 return;
             }
 
-            JSONArray array =
+            JSONArray likes =
                     new JSONArray(
                             countResponse
                     );
-
-            int likeCount =
-                    array.length();
 
             JSONObject update =
                     new JSONObject();
 
             update.put(
                     "likes",
-                    likeCount
+                    likes.length()
             );
 
             String patchUrl =
@@ -1035,7 +1116,9 @@ public final class ReelSupabaseHelper {
                             token
                     );
 
-            patchConnection.setDoOutput(true);
+            patchConnection.setDoOutput(
+                    true
+            );
 
             patchConnection.setRequestProperty(
                     "Content-Type",
@@ -1043,13 +1126,12 @@ public final class ReelSupabaseHelper {
             );
 
             OutputStream output =
-                    patchConnection.getOutputStream();
+                    patchConnection
+                            .getOutputStream();
 
             output.write(
                     update.toString()
-                            .getBytes(
-                                    StandardCharsets.UTF_8
-                            )
+                            .getBytes("UTF-8")
             );
 
             output.flush();
@@ -1069,73 +1151,6 @@ public final class ReelSupabaseHelper {
                 patchConnection.disconnect();
             }
         }
-    }
-
-    // =========================================================
-    // CHECK LIKE
-    // =========================================================
-
-    public static void checkReelLike(
-            Context context,
-            String reelId,
-            LikeCheckCallback callback) {
-
-        if (context == null
-                || TextUtils.isEmpty(reelId)) {
-
-            postLikeError(
-                    callback,
-                    "Invalid Reel."
-            );
-            return;
-        }
-
-        EXECUTOR.execute(() -> {
-
-            try {
-
-                String userId =
-                        SupabaseAuthManager
-                                .getUserId(context);
-
-                String token =
-                        SupabaseAuthManager
-                                .getAccessToken(context);
-
-                if (TextUtils.isEmpty(userId)
-                        || TextUtils.isEmpty(token)) {
-
-                    postLikeError(
-                            callback,
-                            "Login session nahi mili."
-                    );
-                    return;
-                }
-
-                boolean liked =
-                        isReelLiked(
-                                reelId,
-                                userId,
-                                token
-                        );
-
-                MAIN_HANDLER.post(() ->
-                        callback.onResult(
-                                liked
-                        )
-                );
-
-            } catch (Exception e) {
-
-                postLikeError(
-                        callback,
-                        safeMessage(
-                                e,
-                                "Like check failed."
-                        )
-                );
-            }
-        });
     }
 
     // =========================================================
@@ -1223,7 +1238,9 @@ public final class ReelSupabaseHelper {
                     return;
                 }
 
-                postActionSuccess(callback);
+                postActionSuccess(
+                        callback
+                );
 
             } catch (Exception e) {
 
@@ -1248,143 +1265,69 @@ public final class ReelSupabaseHelper {
     // EDIT REEL
     // =========================================================
 
-public static void updateReel(
-        Context context,
-        String reelId,
-        String caption,
-        String visibility,
-        ActionCallback callback) {
+    public static void updateReel(
+            Context context,
+            String reelId,
+            String caption,
+            String visibility,
+            ActionCallback callback) {
 
-    if (context == null || TextUtils.isEmpty(reelId)) {
-        postActionError(callback, "Invalid Reel.");
-        return;
+        if (context == null || TextUtils.isEmpty(reelId)) {
+            postActionError(callback, "Invalid Reel.");
+            return;
+        }
+
+        EXECUTOR.execute(() -> {
+            HttpURLConnection connection = null;
+
+            try {
+                String userId = SupabaseAuthManager.getUserId(context);
+                String token = SupabaseAuthManager.getAccessToken(context);
+
+                if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(token)) {
+                    postActionError(callback, "Login session nahi mili.");
+                    return;
+                }
+
+                JSONObject update = new JSONObject();
+                update.put("caption", caption == null ? "" : caption);
+                update.put("visibility", TextUtils.isEmpty(visibility) ? "Public" : visibility);
+
+                String url = SupabaseConfig.PROJECT_URL
+                        + "/rest/v1/" + REELS_TABLE
+                        + "?id=eq." + URLEncoder.encode(reelId, "UTF-8")
+                        + "&user_id=eq." + URLEncoder.encode(userId, "UTF-8");
+
+                connection = openConnection(url, "PATCH", token);
+                connection.setDoOutput(true);
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Prefer", "return=minimal");
+
+                OutputStream output = connection.getOutputStream();
+                output.write(update.toString().getBytes(StandardCharsets.UTF_8));
+                output.flush();
+                output.close();
+
+                int code = connection.getResponseCode();
+                String response = readResponse(connection, code);
+
+                if (code < 200 || code >= 300) {
+                    postActionError(callback, "Reel update failed: " + response);
+                    return;
+                }
+
+                postActionSuccess(callback);
+
+            } catch (Exception e) {
+                postActionError(callback, safeMessage(e, "Reel update failed."));
+            } finally {
+                if (connection != null) connection.disconnect();
+            }
+        });
     }
 
-    EXECUTOR.execute(() -> {
-
-        HttpURLConnection connection = null;
-
-        try {
-
-            String userId =
-                    SupabaseAuthManager.getUserId(context);
-
-            String token =
-                    SupabaseAuthManager.getAccessToken(context);
-
-            if (TextUtils.isEmpty(userId)
-                    || TextUtils.isEmpty(token)) {
-
-                postActionError(
-                        callback,
-                        "Login session nahi mili."
-                );
-                return;
-            }
-
-            JSONObject update =
-                    new JSONObject();
-
-            update.put(
-                    "caption",
-                    caption == null ? "" : caption
-            );
-
-            update.put(
-                    "visibility",
-                    TextUtils.isEmpty(visibility)
-                            ? "Public"
-                            : visibility
-            );
-
-            String url =
-                    SupabaseConfig.PROJECT_URL
-                            + "/rest/v1/"
-                            + REELS_TABLE
-                            + "?id=eq."
-                            + URLEncoder.encode(
-                                    reelId,
-                                    "UTF-8"
-                            )
-                            + "&user_id=eq."
-                            + URLEncoder.encode(
-                                    userId,
-                                    "UTF-8"
-                            );
-
-            connection =
-                    openConnection(
-                            url,
-                            "PATCH",
-                            token
-                    );
-
-            connection.setDoOutput(true);
-
-            connection.setRequestProperty(
-                    "Content-Type",
-                    "application/json"
-            );
-
-            connection.setRequestProperty(
-                    "Prefer",
-                    "return=minimal"
-            );
-
-            OutputStream output =
-                    connection.getOutputStream();
-
-            output.write(
-                    update.toString()
-                            .getBytes("UTF-8")
-            );
-
-            output.flush();
-            output.close();
-
-            int code =
-                    connection.getResponseCode();
-
-            if (code < 200 || code >= 300) {
-
-                String response =
-                        readResponse(
-                                connection,
-                                code
-                        );
-
-                postActionError(
-                        callback,
-                        "Reel update failed: "
-                                + response
-                );
-
-                return;
-            }
-
-            postActionSuccess(callback);
-
-        } catch (Exception e) {
-
-            postActionError(
-                    callback,
-                    safeMessage(
-                            e,
-                            "Reel update failed."
-                    )
-            );
-
-        } finally {
-
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    });
-}
-    
     // =========================================================
-    // GET REEL
+    // GET SINGLE REEL
     // =========================================================
 
     private static JSONObject getReel(
@@ -1447,79 +1390,6 @@ public static void updateReel(
     }
 
     // =========================================================
-    // IS REEL LIKED
-    // =========================================================
-
-    private static boolean isReelLiked(
-            String reelId,
-            String userId,
-            String token)
-            throws Exception {
-
-        if (TextUtils.isEmpty(reelId)
-                || TextUtils.isEmpty(userId)
-                || TextUtils.isEmpty(token)) {
-
-            return false;
-        }
-
-        HttpURLConnection connection = null;
-
-        try {
-
-            String url =
-                    SupabaseConfig.PROJECT_URL
-                            + "/rest/v1/"
-                            + LIKES_TABLE
-                            + "?select=id"
-                            + "&reel_id=eq."
-                            + URLEncoder.encode(
-                                    reelId,
-                                    "UTF-8"
-                            )
-                            + "&user_id=eq."
-                            + URLEncoder.encode(
-                                    userId,
-                                    "UTF-8"
-                            )
-                            + "&limit=1";
-
-            connection =
-                    openConnection(
-                            url,
-                            "GET",
-                            token
-                    );
-
-            int code =
-                    connection.getResponseCode();
-
-            String response =
-                    readResponse(
-                            connection,
-                            code
-                    );
-
-            if (code < 200
-                    || code >= 300) {
-
-                return false;
-            }
-
-            JSONArray array =
-                    new JSONArray(response);
-
-            return array.length() > 0;
-
-        } finally {
-
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
-    }
-
-    // =========================================================
     // GET USERNAME
     // =========================================================
 
@@ -1529,7 +1399,6 @@ public static void updateReel(
 
         if (TextUtils.isEmpty(userId)
                 || TextUtils.isEmpty(token)) {
-
             return "";
         }
 
@@ -1603,49 +1472,35 @@ public static void updateReel(
             Uri uri)
             throws Exception {
 
-        InputStream inputStream = null;
-        ByteArrayOutputStream outputStream = null;
+        InputStream input =
+                context.getContentResolver()
+                        .openInputStream(uri);
 
-        try {
-
-            inputStream =
-                    context.getContentResolver()
-                            .openInputStream(uri);
-
-            if (inputStream == null) {
-                return null;
-            }
-
-            outputStream =
-                    new ByteArrayOutputStream();
-
-            byte[] buffer =
-                    new byte[8192];
-
-            int length;
-
-            while ((length =
-                    inputStream.read(buffer)) != -1) {
-
-                outputStream.write(
-                        buffer,
-                        0,
-                        length
-                );
-            }
-
-            return outputStream.toByteArray();
-
-        } finally {
-
-            if (inputStream != null) {
-                inputStream.close();
-            }
-
-            if (outputStream != null) {
-                outputStream.close();
-            }
+        if (input == null) {
+            return null;
         }
+
+        ByteArrayOutputStream output =
+                new ByteArrayOutputStream();
+
+        byte[] buffer =
+                new byte[16 * 1024];
+
+        int read;
+
+        while ((read =
+                input.read(buffer)) != -1) {
+
+            output.write(
+                    buffer,
+                    0,
+                    read
+            );
+        }
+
+        input.close();
+
+        return output.toByteArray();
     }
 
     // =========================================================
@@ -1674,7 +1529,7 @@ public static void updateReel(
         );
 
         connection.setReadTimeout(
-                90000
+                120000
         );
 
         connection.setRequestProperty(
@@ -1682,10 +1537,13 @@ public static void updateReel(
                 SupabaseConfig.PUBLISHABLE_KEY
         );
 
-        connection.setRequestProperty(
-                "Authorization",
-                "Bearer " + accessToken
-        );
+        if (!TextUtils.isEmpty(accessToken)) {
+
+            connection.setRequestProperty(
+                    "Authorization",
+                    "Bearer " + accessToken
+            );
+        }
 
         connection.setRequestProperty(
                 "Accept",
@@ -1704,29 +1562,28 @@ public static void updateReel(
             int responseCode)
             throws Exception {
 
-        InputStream inputStream;
+        InputStream input;
 
-        if (responseCode >= 200
-                && responseCode < 300) {
+        if (responseCode >= 400) {
 
-            inputStream =
-                    connection.getInputStream();
+            input =
+                    connection.getErrorStream();
 
         } else {
 
-            inputStream =
-                    connection.getErrorStream();
+            input =
+                    connection.getInputStream();
+        }
 
-            if (inputStream == null) {
-                return "";
-            }
+        if (input == null) {
+            return "";
         }
 
         BufferedReader reader =
                 new BufferedReader(
-                        new java.io.InputStreamReader(
-                                inputStream,
-                                StandardCharsets.UTF_8
+                        new InputStreamReader(
+                                input,
+                                "UTF-8"
                         )
                 );
 
@@ -1747,28 +1604,6 @@ public static void updateReel(
     }
 
     // =========================================================
-    // CREATED AT
-    // =========================================================
-
-    private static long parseCreatedAt(
-            String value) {
-
-        if (TextUtils.isEmpty(value)) {
-            return 0L;
-        }
-
-        try {
-            return java.time.Instant
-                    .parse(value)
-                    .toEpochMilli();
-
-        } catch (Exception ignored) {
-
-            return 0L;
-        }
-    }
-
-    // =========================================================
     // CALLBACK HELPERS
     // =========================================================
 
@@ -1776,21 +1611,51 @@ public static void updateReel(
             ReelsCallback callback,
             String message) {
 
-        if (callback == null) {
-            return;
-        }
+        if (callback == null) return;
 
         MAIN_HANDLER.post(() ->
-                callback.onError(message)
+                callback.onError(
+                        message
+                )
+        );
+    }
+
+    private static void postUploadError(
+            UploadCallback callback,
+            String message) {
+
+        if (callback == null) return;
+
+        MAIN_HANDLER.post(() ->
+                callback.onError(
+                        message
+                )
+        );
+    }
+
+    private static void postProgress(
+            UploadCallback callback,
+            int progress) {
+
+        if (callback == null) return;
+
+        MAIN_HANDLER.post(() ->
+                callback.onProgress(
+                        Math.max(
+                                0,
+                                Math.min(
+                                        100,
+                                        progress
+                                )
+                        )
+                )
         );
     }
 
     private static void postActionSuccess(
             ActionCallback callback) {
 
-        if (callback == null) {
-            return;
-        }
+        if (callback == null) return;
 
         MAIN_HANDLER.post(
                 callback::onSuccess
@@ -1801,12 +1666,12 @@ public static void updateReel(
             ActionCallback callback,
             String message) {
 
-        if (callback == null) {
-            return;
-        }
+        if (callback == null) return;
 
         MAIN_HANDLER.post(() ->
-                callback.onError(message)
+                callback.onError(
+                        message
+                )
         );
     }
 
@@ -1814,47 +1679,25 @@ public static void updateReel(
             LikeCheckCallback callback,
             String message) {
 
-        if (callback == null) {
-            return;
-        }
+        if (callback == null) return;
 
         MAIN_HANDLER.post(() ->
-                callback.onError(message)
-        );
-    }
-
-    private static void postProgress(
-            UploadCallback callback,
-            int progress) {
-
-        if (callback == null) {
-            return;
-        }
-
-        MAIN_HANDLER.post(() ->
-                callback.onProgress(progress)
-        );
-    }
-
-    private static void postUploadError(
-            UploadCallback callback,
-            String message) {
-
-        if (callback == null) {
-            return;
-        }
-
-        MAIN_HANDLER.post(() ->
-                callback.onError(message)
+                callback.onError(
+                        message
+                )
         );
     }
 
     private static String safeMessage(
-            Exception e,
+            Exception exception,
             String fallback) {
 
+        if (exception == null) {
+            return fallback;
+        }
+
         String message =
-                e.getMessage();
+                exception.getMessage();
 
         if (TextUtils.isEmpty(message)) {
             return fallback;
