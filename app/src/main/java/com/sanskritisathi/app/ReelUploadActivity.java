@@ -2,7 +2,6 @@ package com.sanskritisathi.app;
 
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -14,8 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.VideoView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -42,7 +41,6 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private ProgressBar uploadProgress;
 
-    private View bottomPanel;
     private View emptyPreview;
 
     private Uri selectedVideoUri;
@@ -61,7 +59,6 @@ public class ReelUploadActivity extends AppCompatActivity {
         setupVideoPicker();
         setupListeners();
         setupBackHandler();
-
         setupInitialUI();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
@@ -100,7 +97,6 @@ public class ReelUploadActivity extends AppCompatActivity {
 
         uploadProgress = findViewById(R.id.uploadProgress);
 
-        bottomPanel = findViewById(R.id.bottomPanel);
         emptyPreview = findViewById(R.id.emptyPreview);
     }
 
@@ -135,27 +131,48 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private void setupButtonBackgrounds() {
 
-        GradientDrawable publishBg = new GradientDrawable();
+        GradientDrawable publishBackground =
+                new GradientDrawable();
 
-        publishBg.setColor(Color.rgb(210, 165, 70));
-        publishBg.setCornerRadius(dp(28));
-
-        publishButton.setBackground(publishBg);
-
-        publishButton.setTextColor(Color.BLACK);
-
-        GradientDrawable selectBg = new GradientDrawable();
-
-        selectBg.setColor(Color.argb(210, 35, 35, 35));
-        selectBg.setCornerRadius(dp(24));
-        selectBg.setStroke(
-                (int) dp(1),
-                Color.argb(100, 255, 255, 255)
+        publishBackground.setColor(
+                Color.rgb(210, 165, 70)
         );
 
-        selectVideoButton.setBackground(selectBg);
+        publishBackground.setCornerRadius(
+                dp(28)
+        );
 
-        selectVideoButton.setTextColor(Color.WHITE);
+        publishButton.setBackground(
+                publishBackground
+        );
+
+        publishButton.setTextColor(
+                Color.BLACK
+        );
+
+        GradientDrawable selectBackground =
+                new GradientDrawable();
+
+        selectBackground.setColor(
+                Color.rgb(35, 35, 35)
+        );
+
+        selectBackground.setCornerRadius(
+                dp(24)
+        );
+
+        selectBackground.setStroke(
+                (int) dp(1),
+                Color.rgb(80, 80, 80)
+        );
+
+        selectVideoButton.setBackground(
+                selectBackground
+        );
+
+        selectVideoButton.setTextColor(
+                Color.WHITE
+        );
     }
 
     // ============================================================
@@ -191,7 +208,7 @@ public class ReelUploadActivity extends AppCompatActivity {
             if (uploading) {
 
                 Toast.makeText(
-                        this,
+                        ReelUploadActivity.this,
                         "Upload complete hone do.",
                         Toast.LENGTH_SHORT
                 ).show();
@@ -209,6 +226,14 @@ public class ReelUploadActivity extends AppCompatActivity {
         publishButton.setOnClickListener(
                 v -> uploadReel()
         );
+
+        /*
+         * VideoView automatically keeps the video's aspect ratio.
+         *
+         * The XML places it inside a fixed 9:16 FrameLayout.
+         * Therefore the video is scaled proportionally and
+         * black space is left wherever required.
+         */
 
         videoPreview.setOnPreparedListener(
                 mediaPlayer -> {
@@ -278,7 +303,9 @@ public class ReelUploadActivity extends AppCompatActivity {
             return;
         }
 
-        videoPickerLauncher.launch("video/*");
+        videoPickerLauncher.launch(
+                "video/*"
+        );
     }
 
     // ============================================================
@@ -289,15 +316,17 @@ public class ReelUploadActivity extends AppCompatActivity {
 
         selectedVideoUri = uri;
 
-        emptyPreview.setVisibility(View.GONE);
+        emptyPreview.setVisibility(
+                View.GONE
+        );
 
-        videoPreview.setVisibility(View.VISIBLE);
+        videoPreview.setVisibility(
+                View.VISIBLE
+        );
 
-        videoPreview.setVideoURI(uri);
-
-        videoPreview.requestFocus();
-
-        videoNameText.setVisibility(View.VISIBLE);
+        videoNameText.setVisibility(
+                View.VISIBLE
+        );
 
         videoNameText.setText(
                 "Video selected ✓"
@@ -313,11 +342,22 @@ public class ReelUploadActivity extends AppCompatActivity {
                 View.GONE
         );
 
-        if (videoPreview.isPlaying()) {
-            videoPreview.stopPlayback();
-        }
+        /*
+         * Important:
+         *
+         * We DO NOT crop, resize, compress or modify the URI.
+         *
+         * VideoView renders the original video while preserving
+         * its aspect ratio.
+         *
+         * The parent preview container is fixed at 9:16.
+         */
+
+        videoPreview.stopPlayback();
 
         videoPreview.setVideoURI(uri);
+
+        videoPreview.requestFocus();
     }
 
     // ============================================================
@@ -363,6 +403,19 @@ public class ReelUploadActivity extends AppCompatActivity {
 
         setUploadingState(true);
 
+        /*
+         * IMPORTANT:
+         *
+         * selectedVideoUri is passed directly.
+         *
+         * No crop.
+         * No resize.
+         * No preview bitmap.
+         * No conversion.
+         *
+         * Therefore B2 receives the original selected video.
+         */
+
         ReelSupabaseHelper.uploadReel(
                 this,
                 selectedVideoUri,
@@ -390,14 +443,18 @@ public class ReelUploadActivity extends AppCompatActivity {
                                 );
 
                                 uploadStatusText.setText(
-                                        "Uploading " + progress + "%"
+                                        "Uploading "
+                                                + progress
+                                                + "%"
                                 );
                             }
 
                             if (publishButton != null) {
 
                                 publishButton.setText(
-                                        "Uploading " + progress + "%"
+                                        "Uploading "
+                                                + progress
+                                                + "%"
                                 );
                             }
                         });
@@ -556,7 +613,7 @@ public class ReelUploadActivity extends AppCompatActivity {
     }
 
     // ============================================================
-    // DP HELPER
+    // DP
     // ============================================================
 
     private float dp(float value) {
