@@ -199,6 +199,24 @@ public class ReelUploadActivity extends AppCompatActivity {
                 new ReelSupabaseHelper.UploadCallback() {
 
                     @Override
+                    public void onProgress(
+                            int progress) {
+
+                        runOnUiThread(() -> {
+
+                            if (uploadProgress != null) {
+                                uploadProgress.setProgress(progress);
+                            }
+
+                            if (publishButton != null) {
+                                publishButton.setText(
+                                        "Uploading " + progress + "%"
+                                );
+                            }
+                        });
+                    }
+
+                    @Override
                     public void onSuccess(
                             String videoUrl) {
 
