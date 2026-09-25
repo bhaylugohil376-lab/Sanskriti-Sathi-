@@ -68,6 +68,19 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
+        <!-- Edit Reel -->
+        <ImageButton
+            android:id="@+id/reelEditButton"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="Edit Reel"
+            android:padding="10dp"
+            android:src="@android:drawable/ic_menu_edit"
+            android:tint="#FFFFFF"
+            android:visibility="gone" />
+
+        <!-- Delete Reel -->
         <ImageButton
             android:id="@+id/reelDeleteButton"
             android:layout_width="46dp"
