@@ -157,7 +157,7 @@
                 android:background="@android:color/transparent"
                 android:gravity="center_vertical"
                 android:hint="Add a caption..."
-                android:hintTextColor="#9CA0AA"
+                android:textColorHint="#9CA0AA"
                 android:inputType="textMultiLine"
                 android:maxLength="1000"
                 android:padding="0dp"
