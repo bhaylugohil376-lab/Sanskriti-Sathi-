@@ -1,20 +1,32 @@
 package com.sanskritisathi.app;
 
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
+import android.widget.VideoView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ReelUploadActivity extends AppCompatActivity {
+
+    private VideoView videoPreview;
+
+    private ImageButton closeButton;
 
     private EditText captionInput;
 
@@ -25,7 +37,13 @@ public class ReelUploadActivity extends AppCompatActivity {
     private Button publishButton;
 
     private TextView videoNameText;
+    private TextView selectedVideoHint;
+    private TextView uploadStatusText;
+
     private ProgressBar uploadProgress;
+
+    private View bottomPanel;
+    private View emptyPreview;
 
     private Uri selectedVideoUri;
 
@@ -42,6 +60,9 @@ public class ReelUploadActivity extends AppCompatActivity {
         bindViews();
         setupVideoPicker();
         setupListeners();
+        setupBackHandler();
+
+        setupInitialUI();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
 
@@ -52,14 +73,7 @@ public class ReelUploadActivity extends AppCompatActivity {
             ).show();
 
             finish();
-            return;
         }
-
-        publishButton.setEnabled(false);
-
-        uploadProgress.setVisibility(
-                View.GONE
-        );
     }
 
     // ============================================================
@@ -68,26 +82,80 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private void bindViews() {
 
-        captionInput =
-                findViewById(R.id.captionInput);
+        videoPreview = findViewById(R.id.videoPreview);
 
-        publicRadio =
-                findViewById(R.id.publicRadio);
+        closeButton = findViewById(R.id.closeButton);
 
-        followersRadio =
-                findViewById(R.id.followersRadio);
+        captionInput = findViewById(R.id.captionInput);
 
-        selectVideoButton =
-                findViewById(R.id.selectVideoButton);
+        publicRadio = findViewById(R.id.publicRadio);
+        followersRadio = findViewById(R.id.followersRadio);
 
-        publishButton =
-                findViewById(R.id.publishButton);
+        selectVideoButton = findViewById(R.id.selectVideoButton);
+        publishButton = findViewById(R.id.publishButton);
 
-        videoNameText =
-                findViewById(R.id.videoNameText);
+        videoNameText = findViewById(R.id.videoNameText);
+        selectedVideoHint = findViewById(R.id.selectedVideoHint);
+        uploadStatusText = findViewById(R.id.uploadStatusText);
 
-        uploadProgress =
-                findViewById(R.id.uploadProgress);
+        uploadProgress = findViewById(R.id.uploadProgress);
+
+        bottomPanel = findViewById(R.id.bottomPanel);
+        emptyPreview = findViewById(R.id.emptyPreview);
+    }
+
+    // ============================================================
+    // INITIAL UI
+    // ============================================================
+
+    private void setupInitialUI() {
+
+        publicRadio.setChecked(true);
+
+        publishButton.setEnabled(false);
+
+        uploadProgress.setVisibility(View.GONE);
+
+        uploadStatusText.setVisibility(View.GONE);
+
+        videoNameText.setVisibility(View.GONE);
+
+        selectedVideoHint.setVisibility(View.VISIBLE);
+
+        emptyPreview.setVisibility(View.VISIBLE);
+
+        videoPreview.setVisibility(View.GONE);
+
+        setupButtonBackgrounds();
+    }
+
+    // ============================================================
+    // BUTTON STYLING
+    // ============================================================
+
+    private void setupButtonBackgrounds() {
+
+        GradientDrawable publishBg = new GradientDrawable();
+
+        publishBg.setColor(Color.rgb(210, 165, 70));
+        publishBg.setCornerRadius(dp(28));
+
+        publishButton.setBackground(publishBg);
+
+        publishButton.setTextColor(Color.BLACK);
+
+        GradientDrawable selectBg = new GradientDrawable();
+
+        selectBg.setColor(Color.argb(210, 35, 35, 35));
+        selectBg.setCornerRadius(dp(24));
+        selectBg.setStroke(
+                (int) dp(1),
+                Color.argb(100, 255, 255, 255)
+        );
+
+        selectVideoButton.setBackground(selectBg);
+
+        selectVideoButton.setTextColor(Color.WHITE);
     }
 
     // ============================================================
@@ -107,13 +175,7 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                             selectedVideoUri = uri;
 
-                            videoNameText.setText(
-                                    "Video selected ✓"
-                            );
-
-                            publishButton.setEnabled(
-                                    true
-                            );
+                            showVideoPreview(uri);
                         }
                 );
     }
@@ -124,6 +186,22 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private void setupListeners() {
 
+        closeButton.setOnClickListener(v -> {
+
+            if (uploading) {
+
+                Toast.makeText(
+                        this,
+                        "Upload complete hone do.",
+                        Toast.LENGTH_SHORT
+                ).show();
+
+                return;
+            }
+
+            finish();
+        });
+
         selectVideoButton.setOnClickListener(
                 v -> openVideoPicker()
         );
@@ -131,10 +209,67 @@ public class ReelUploadActivity extends AppCompatActivity {
         publishButton.setOnClickListener(
                 v -> uploadReel()
         );
+
+        videoPreview.setOnPreparedListener(
+                mediaPlayer -> {
+
+                    mediaPlayer.setLooping(true);
+
+                    mediaPlayer.setVolume(
+                            1.0f,
+                            1.0f
+                    );
+
+                    videoPreview.start();
+                }
+        );
+
+        videoPreview.setOnErrorListener(
+                (mp, what, extra) -> {
+
+                    Toast.makeText(
+                            ReelUploadActivity.this,
+                            "Video preview load nahi ho paya.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    return true;
+                }
+        );
     }
 
     // ============================================================
-    // PICK VIDEO
+    // BACK HANDLER
+    // ============================================================
+
+    private void setupBackHandler() {
+
+        getOnBackPressedDispatcher().addCallback(
+                this,
+                new OnBackPressedCallback(true) {
+
+                    @Override
+                    public void handleOnBackPressed() {
+
+                        if (uploading) {
+
+                            Toast.makeText(
+                                    ReelUploadActivity.this,
+                                    "Upload complete hone do.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            return;
+                        }
+
+                        finish();
+                    }
+                }
+        );
+    }
+
+    // ============================================================
+    // OPEN VIDEO PICKER
     // ============================================================
 
     private void openVideoPicker() {
@@ -143,9 +278,46 @@ public class ReelUploadActivity extends AppCompatActivity {
             return;
         }
 
-        videoPickerLauncher.launch(
-                "video/*"
+        videoPickerLauncher.launch("video/*");
+    }
+
+    // ============================================================
+    // SHOW VIDEO PREVIEW
+    // ============================================================
+
+    private void showVideoPreview(Uri uri) {
+
+        selectedVideoUri = uri;
+
+        emptyPreview.setVisibility(View.GONE);
+
+        videoPreview.setVisibility(View.VISIBLE);
+
+        videoPreview.setVideoURI(uri);
+
+        videoPreview.requestFocus();
+
+        videoNameText.setVisibility(View.VISIBLE);
+
+        videoNameText.setText(
+                "Video selected ✓"
         );
+
+        selectedVideoHint.setVisibility(
+                View.GONE
+        );
+
+        publishButton.setEnabled(true);
+
+        uploadStatusText.setVisibility(
+                View.GONE
+        );
+
+        if (videoPreview.isPlaying()) {
+            videoPreview.stopPlayback();
+        }
+
+        videoPreview.setVideoURI(uri);
     }
 
     // ============================================================
@@ -205,10 +377,25 @@ public class ReelUploadActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
 
                             if (uploadProgress != null) {
-                                uploadProgress.setProgress(progress);
+
+                                uploadProgress.setProgress(
+                                        progress
+                                );
+                            }
+
+                            if (uploadStatusText != null) {
+
+                                uploadStatusText.setVisibility(
+                                        View.VISIBLE
+                                );
+
+                                uploadStatusText.setText(
+                                        "Uploading " + progress + "%"
+                                );
                             }
 
                             if (publishButton != null) {
+
                                 publishButton.setText(
                                         "Uploading " + progress + "%"
                                 );
@@ -220,16 +407,9 @@ public class ReelUploadActivity extends AppCompatActivity {
                     public void onSuccess(
                             String videoUrl) {
 
-                        // ReelSupabaseHelper.uploadReel() already:
-                        // 1) uploads the video to B2
-                        // 2) saves the Reel row in Supabase
-                        // So no second insertReel() call is needed here.
-
                         runOnUiThread(() -> {
 
-                            setUploadingState(
-                                    false
-                            );
+                            setUploadingState(false);
 
                             Toast.makeText(
                                     ReelUploadActivity.this,
@@ -247,9 +427,7 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> {
 
-                            setUploadingState(
-                                    false
-                            );
+                            setUploadingState(false);
 
                             Toast.makeText(
                                     ReelUploadActivity.this,
@@ -304,6 +482,10 @@ public class ReelUploadActivity extends AppCompatActivity {
                 !isUploading
         );
 
+        closeButton.setEnabled(
+                !isUploading
+        );
+
         if (isUploading) {
 
             publishButton.setEnabled(false);
@@ -314,6 +496,14 @@ public class ReelUploadActivity extends AppCompatActivity {
 
             uploadProgress.setProgress(0);
 
+            uploadStatusText.setVisibility(
+                    View.VISIBLE
+            );
+
+            uploadStatusText.setText(
+                    "Preparing upload..."
+            );
+
             publishButton.setText(
                     "Uploading..."
             );
@@ -321,6 +511,10 @@ public class ReelUploadActivity extends AppCompatActivity {
         } else {
 
             uploadProgress.setVisibility(
+                    View.GONE
+            );
+
+            uploadStatusText.setVisibility(
                     View.GONE
             );
 
@@ -335,23 +529,41 @@ public class ReelUploadActivity extends AppCompatActivity {
     }
 
     // ============================================================
-    // BACK PRESS
+    // LIFECYCLE
     // ============================================================
 
     @Override
-    public void onBackPressed() {
+    protected void onPause() {
+        super.onPause();
 
-        if (uploading) {
+        if (videoPreview != null
+                && videoPreview.isPlaying()) {
 
-            Toast.makeText(
-                    this,
-                    "Upload complete hone do.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            return;
+            videoPreview.pause();
         }
+    }
 
-        super.onBackPressed();
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (videoPreview != null
+                && selectedVideoUri != null
+                && !uploading) {
+
+            videoPreview.start();
+        }
+    }
+
+    // ============================================================
+    // DP HELPER
+    // ============================================================
+
+    private float dp(float value) {
+
+        return value *
+                getResources()
+                        .getDisplayMetrics()
+                        .density;
     }
 }
