@@ -242,17 +242,37 @@ public final class ReelSupabaseHelper {
                                 );
                     }
 
+                    String thumbnailUrl =
+                            json.optString(
+                                    "thumbnail_url",
+                                    ""
+                            );
+
+                    String createdAtText =
+                            json.optString(
+                                    "created_at",
+                                    ""
+                            );
+
+                    long createdAt =
+                            parseCreatedAt(
+                                    createdAtText
+                            );
+
                     Reel reel =
                             new Reel(
                                     reelId,
                                     reelUserId,
                                     username,
                                     videoUrl,
+                                    thumbnailUrl,
                                     caption,
                                     visibility,
+                                    createdAt,
                                     likes,
                                     comments,
                                     views,
+                                    false,
                                     ownReel
                             );
 
@@ -1476,6 +1496,26 @@ public final class ReelSupabaseHelper {
             if (connection != null) {
                 connection.disconnect();
             }
+        }
+    }
+
+    // =========================================================
+    // PARSE CREATED AT
+    // =========================================================
+
+    private static long parseCreatedAt(String value) {
+
+        if (TextUtils.isEmpty(value)) {
+            return 0L;
+        }
+
+        try {
+            return java.time.Instant
+                    .parse(value)
+                    .toEpochMilli();
+
+        } catch (Exception ignored) {
+            return 0L;
         }
     }
 
