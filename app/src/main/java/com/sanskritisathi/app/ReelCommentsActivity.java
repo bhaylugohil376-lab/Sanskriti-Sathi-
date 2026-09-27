@@ -1,118 +1,157 @@
 package com.sanskritisathi.app;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.content.Context;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ReelCommentsActivity extends AppCompatActivity {
 
     private RecyclerView commentsRecyclerView;
     private EditText commentInput;
-    private ImageButton backButton;
     private ImageButton sendButton;
-    private ProgressBar commentsProgress;
-    private TextView commentsTitle;
-    private TextView emptyCommentsText;
+    private ImageButton closeButton;
+    private ProgressBar progressBar;
+    private TextView emptyText;
+    private TextView commentTitle;
 
-    private ReelCommentsAdapter commentsAdapter;
-    private final List<ReelComment> commentList = new ArrayList<>();
+    private final List<ReelComment> commentList =
+            new ArrayList<>();
 
-    private String reelId;
-    private boolean sendingComment = false;
+    private CommentAdapter adapter;
+
+    private final ExecutorService executor =
+            Executors.newSingleThreadExecutor();
+
+    private String reelId = "";
+
+    private static final String COMMENTS_TABLE =
+            "reel_comments";
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_reel_comments);
-
-        reelId = getIntent().getStringExtra("reel_id");
-
-        if (TextUtils.isEmpty(reelId)) {
-            Toast.makeText(
-                    this,
-                    "Invalid Reel.",
-                    Toast.LENGTH_SHORT
-            ).show();
-            finish();
-            return;
-        }
+        setContentView(
+                R.layout.activity_reel_comments
+        );
 
         bindViews();
         setupRecyclerView();
         setupListeners();
 
+        reelId = getIntent().getStringExtra(
+                "reel_id"
+        );
+
+        if (TextUtils.isEmpty(reelId)) {
+
+            Toast.makeText(
+                    this,
+                    "Invalid Reel.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            finish();
+            return;
+        }
+
         loadComments();
     }
 
     // =========================================================
-    // BIND VIEWS
+    // BIND
     // =========================================================
 
     private void bindViews() {
 
         commentsRecyclerView =
-                findViewById(R.id.commentsRecyclerView);
+                findViewById(
+                        R.id.commentsRecyclerView
+                );
 
         commentInput =
-                findViewById(R.id.commentInput);
-
-        backButton =
-                findViewById(R.id.backButton);
+                findViewById(
+                        R.id.commentInput
+                );
 
         sendButton =
-                findViewById(R.id.sendButton);
+                findViewById(
+                        R.id.sendButton
+                );
 
-        commentsProgress =
-                findViewById(R.id.commentsProgress);
+        closeButton =
+                findViewById(
+                        R.id.closeButton
+                );
 
-        commentsTitle =
-                findViewById(R.id.commentsTitle);
+        progressBar =
+                findViewById(
+                        R.id.commentsProgress
+                );
 
-        emptyCommentsText =
-                findViewById(R.id.emptyCommentsText);
+        emptyText =
+                findViewById(
+                        R.id.emptyCommentsText
+                );
+
+        commentTitle =
+                findViewById(
+                        R.id.commentTitle
+                );
     }
 
     // =========================================================
-    // RECYCLER VIEW
+    // RECYCLER
     // =========================================================
 
     private void setupRecyclerView() {
 
-        LinearLayoutManager layoutManager =
-                new LinearLayoutManager(this);
-
-        layoutManager.setStackFromEnd(false);
-
         commentsRecyclerView.setLayoutManager(
-                layoutManager
+                new LinearLayoutManager(this)
         );
 
         commentsRecyclerView.setHasFixedSize(false);
 
-        commentsAdapter =
-                new ReelCommentsAdapter(
+        adapter =
+                new CommentAdapter(
                         this,
                         commentList
                 );
 
         commentsRecyclerView.setAdapter(
-                commentsAdapter
+                adapter
         );
     }
 
@@ -122,25 +161,30 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
     private void setupListeners() {
 
-        backButton.setOnClickListener(
-                v -> finish()
-        );
+        if (closeButton != null) {
 
-        sendButton.setOnClickListener(
-                v -> addComment()
-        );
+            closeButton.setOnClickListener(
+                    v -> finish()
+            );
+        }
 
-        commentInput.setOnEditorActionListener(
-                (v, actionId, event) -> {
+        if (sendButton != null) {
 
-                    if (actionId != 0) {
+            sendButton.setOnClickListener(
+                    v -> addComment()
+            );
+        }
+
+        if (commentInput != null) {
+
+            commentInput.setOnEditorActionListener(
+                    (v, actionId, event) -> {
+
                         addComment();
                         return true;
                     }
-
-                    return false;
-                }
-        );
+            );
+        }
     }
 
     // =========================================================
@@ -151,56 +195,131 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
         showLoading(true);
 
-        ReelSupabaseCommentsHelper.getComments(
-                this,
-                reelId,
-                new ReelSupabaseCommentsHelper.CommentsCallback() {
+        executor.execute(() -> {
 
-                    @Override
-                    public void onSuccess(
-                            List<ReelComment> comments) {
+            HttpURLConnection connection = null;
 
-                        runOnUiThread(() -> {
+            try {
 
-                            showLoading(false);
+                String token =
+                        SupabaseAuthManager
+                                .getAccessToken(this);
 
-                            commentList.clear();
+                if (TextUtils.isEmpty(token)) {
 
-                            if (comments != null) {
-                                commentList.addAll(
-                                        comments
-                                );
-                            }
+                    runOnUiThread(() -> {
 
-                            commentsAdapter.notifyDataSetChanged();
+                        showLoading(false);
 
-                            updateEmptyState();
+                        Toast.makeText(
+                                this,
+                                "Please login first.",
+                                Toast.LENGTH_SHORT
+                        ).show();
 
-                            updateTitle();
-                        });
-                    }
+                        finish();
+                    });
 
-                    @Override
-                    public void onError(
-                            String message) {
+                    return;
+                }
 
-                        runOnUiThread(() -> {
+                String url =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + COMMENTS_TABLE
+                                + "?select=*"
+                                + "&reel_id=eq."
+                                + URLEncoder.encode(
+                                        reelId,
+                                        "UTF-8"
+                                )
+                                + "&order=created_at.asc";
 
-                            showLoading(false);
+                connection =
+                        openConnection(
+                                url,
+                                "GET",
+                                token
+                        );
 
-                            updateEmptyState();
+                int code =
+                        connection.getResponseCode();
 
-                            Toast.makeText(
-                                    ReelCommentsActivity.this,
-                                    message == null
-                                            ? "Comments load failed."
-                                            : message,
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        });
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
+
+                if (code < 200 || code >= 300) {
+
+                    throw new Exception(
+                            "Comments load failed: "
+                                    + response
+                    );
+                }
+
+                JSONArray array =
+                        new JSONArray(response);
+
+                List<ReelComment> result =
+                        new ArrayList<>();
+
+                for (int i = 0;
+                     i < array.length();
+                     i++) {
+
+                    JSONObject json =
+                            array.getJSONObject(i);
+
+                    ReelComment comment =
+                            parseComment(json);
+
+                    if (comment != null) {
+                        result.add(comment);
                     }
                 }
-        );
+
+                runOnUiThread(() -> {
+
+                    commentList.clear();
+
+                    commentList.addAll(result);
+
+                    adapter.notifyDataSetChanged();
+
+                    showLoading(false);
+
+                    updateEmptyState();
+
+                    updateTitle();
+                });
+
+            } catch (Exception e) {
+
+                runOnUiThread(() -> {
+
+                    showLoading(false);
+
+                    Toast.makeText(
+                            this,
+                            safeMessage(
+                                    e,
+                                    "Comments load nahi hui."
+                            ),
+                            Toast.LENGTH_LONG
+                    ).show();
+
+                    updateEmptyState();
+                });
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
     }
 
     // =========================================================
@@ -208,10 +327,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
     // =========================================================
 
     private void addComment() {
-
-        if (sendingComment) {
-            return;
-        }
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
 
@@ -232,12 +347,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
         if (TextUtils.isEmpty(text)) {
 
-            Toast.makeText(
-                    this,
-                    "Comment likho.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
             return;
         }
 
@@ -252,185 +361,604 @@ public class ReelCommentsActivity extends AppCompatActivity {
             return;
         }
 
-        setSendingState(true);
+        setCommentSending(true);
 
-        ReelSupabaseCommentsHelper.addComment(
-                this,
-                reelId,
-                text,
-                new ReelSupabaseCommentsHelper.ActionCallback() {
+        executor.execute(() -> {
 
-                    @Override
-                    public void onSuccess(
-                            ReelComment newComment) {
+            HttpURLConnection connection = null;
 
-                        runOnUiThread(() -> {
+            try {
 
-                            setSendingState(false);
+                String userId =
+                        SupabaseAuthManager
+                                .getUserId(this);
 
-                            commentInput.setText("");
+                String token =
+                        SupabaseAuthManager
+                                .getAccessToken(this);
 
-                            hideKeyboard();
+                if (TextUtils.isEmpty(userId)
+                        || TextUtils.isEmpty(token)) {
 
-                            if (newComment != null) {
+                    throw new Exception(
+                            "Login session nahi mili."
+                    );
+                }
 
-                                commentList.add(
-                                        0,
-                                        newComment
+                String username =
+                        getUsername(
+                                userId,
+                                token
+                        );
+
+                if (TextUtils.isEmpty(username)) {
+                    username = "Sanskriti User";
+                }
+
+                JSONObject json =
+                        new JSONObject();
+
+                String commentId =
+                        UUID.randomUUID()
+                                .toString();
+
+                json.put(
+                        "id",
+                        commentId
+                );
+
+                json.put(
+                        "reel_id",
+                        reelId
+                );
+
+                json.put(
+                        "user_id",
+                        userId
+                );
+
+                json.put(
+                        "username",
+                        username
+                );
+
+                json.put(
+                        "text",
+                        text
+                );
+
+                String url =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + COMMENTS_TABLE;
+
+                connection =
+                        openConnection(
+                                url,
+                                "POST",
+                                token
+                        );
+
+                connection.setDoOutput(true);
+
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "application/json"
+                );
+
+                connection.setRequestProperty(
+                        "Prefer",
+                        "return=representation"
+                );
+
+                OutputStream output =
+                        connection.getOutputStream();
+
+                output.write(
+                        json.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                )
+                );
+
+                output.flush();
+                output.close();
+
+                int code =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
+
+                if (code < 200 || code >= 300) {
+
+                    throw new Exception(
+                            "Comment add failed: "
+                                    + response
+                    );
+                }
+
+                ReelComment newComment =
+                        new ReelComment(
+                                commentId,
+                                reelId,
+                                userId,
+                                username,
+                                text,
+                                System.currentTimeMillis()
+                        );
+
+                final ReelComment finalComment =
+                        newComment;
+
+                runOnUiThread(() -> {
+
+                    commentList.add(
+                            finalComment
+                    );
+
+                    adapter.notifyItemInserted(
+                            commentList.size() - 1
+                    );
+
+                    commentsRecyclerView.scrollToPosition(
+                            commentList.size() - 1
+                    );
+
+                    commentInput.setText("");
+
+                    hideKeyboard();
+
+                    setCommentSending(false);
+
+                    updateEmptyState();
+                    updateTitle();
+                });
+
+            } catch (Exception e) {
+
+                runOnUiThread(() -> {
+
+                    setCommentSending(false);
+
+                    Toast.makeText(
+                            this,
+                            safeMessage(
+                                    e,
+                                    "Comment add nahi hui."
+                            ),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
+    // =========================================================
+    // DELETE COMMENT
+    // =========================================================
+
+    private void deleteComment(
+            ReelComment comment,
+            int position) {
+
+        if (comment == null) {
+            return;
+        }
+
+        String currentUserId =
+                SupabaseAuthManager
+                        .getUserId(this);
+
+        if (TextUtils.isEmpty(currentUserId)
+                || !currentUserId.equals(
+                        comment.getUserId()
+                )) {
+
+            Toast.makeText(
+                    this,
+                    "You can delete only your comment.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        executor.execute(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+
+                String token =
+                        SupabaseAuthManager
+                                .getAccessToken(this);
+
+                if (TextUtils.isEmpty(token)) {
+                    throw new Exception(
+                            "Login session nahi mili."
+                    );
+                }
+
+                String url =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + COMMENTS_TABLE
+                                + "?id=eq."
+                                + URLEncoder.encode(
+                                        comment.getId(),
+                                        "UTF-8"
+                                )
+                                + "&user_id=eq."
+                                + URLEncoder.encode(
+                                        currentUserId,
+                                        "UTF-8"
                                 );
 
-                                commentsAdapter
-                                        .notifyItemInserted(0);
+                connection =
+                        openConnection(
+                                url,
+                                "DELETE",
+                                token
+                        );
 
-                                commentsRecyclerView
-                                        .scrollToPosition(0);
-                            } else {
+                int code =
+                        connection.getResponseCode();
 
-                                loadComments();
-                            }
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                            updateEmptyState();
-                            updateTitle();
+                if (code < 200 || code >= 300) {
 
-                            Toast.makeText(
-                                    ReelCommentsActivity.this,
-                                    "Comment added ✓",
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        });
-                    }
-
-                    @Override
-                    public void onError(
-                            String message) {
-
-                        runOnUiThread(() -> {
-
-                            setSendingState(false);
-
-                            Toast.makeText(
-                                    ReelCommentsActivity.this,
-                                    message == null
-                                            ? "Comment add failed."
-                                            : message,
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        });
-                    }
+                    throw new Exception(
+                            "Comment delete failed: "
+                                    + response
+                    );
                 }
-        );
+
+                runOnUiThread(() -> {
+
+                    if (position >= 0
+                            && position < commentList.size()) {
+
+                        commentList.remove(position);
+
+                        adapter.notifyItemRemoved(
+                                position
+                        );
+
+                        adapter.notifyItemRangeChanged(
+                                position,
+                                commentList.size()
+                                        - position
+                        );
+                    }
+
+                    updateEmptyState();
+                    updateTitle();
+
+                    Toast.makeText(
+                            this,
+                            "Comment deleted.",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                });
+
+            } catch (Exception e) {
+
+                runOnUiThread(() ->
+                        Toast.makeText(
+                                this,
+                                safeMessage(
+                                        e,
+                                        "Comment delete failed."
+                                ),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
     }
 
     // =========================================================
-    // EMPTY STATE
+    // PARSE COMMENT
     // =========================================================
 
-    private void updateEmptyState() {
+    private ReelComment parseComment(
+            JSONObject json) {
 
-        if (emptyCommentsText == null) {
-            return;
+        try {
+
+            String id =
+                    json.optString(
+                            "id",
+                            ""
+                    );
+
+            String reel =
+                    json.optString(
+                            "reel_id",
+                            ""
+                    );
+
+            String user =
+                    json.optString(
+                            "user_id",
+                            ""
+                    );
+
+            String username =
+                    json.optString(
+                            "username",
+                            "Sanskriti User"
+                    );
+
+            String text =
+                    json.optString(
+                            "text",
+                            ""
+                    );
+
+            String created =
+                    json.optString(
+                            "created_at",
+                            ""
+                    );
+
+            long createdAt =
+                    parseCreatedAt(created);
+
+            return new ReelComment(
+                    id,
+                    reel,
+                    user,
+                    username,
+                    text,
+                    createdAt
+            );
+
+        } catch (Exception e) {
+
+            return null;
+        }
+    }
+
+    // =========================================================
+    // USERNAME
+    // =========================================================
+
+    private String getUsername(
+            String userId,
+            String token) {
+
+        HttpURLConnection connection = null;
+
+        try {
+
+            String url =
+                    SupabaseConfig.PROJECT_URL
+                            + "/rest/v1/profiles"
+                            + "?select=username"
+                            + "&id=eq."
+                            + URLEncoder.encode(
+                                    userId,
+                                    "UTF-8"
+                            )
+                            + "&limit=1";
+
+            connection =
+                    openConnection(
+                            url,
+                            "GET",
+                            token
+                    );
+
+            int code =
+                    connection.getResponseCode();
+
+            if (code < 200 || code >= 300) {
+                return "";
+            }
+
+            String response =
+                    readResponse(
+                            connection,
+                            code
+                    );
+
+            JSONArray array =
+                    new JSONArray(response);
+
+            if (array.length() == 0) {
+                return "";
+            }
+
+            return array.getJSONObject(0)
+                    .optString(
+                            "username",
+                            ""
+                    );
+
+        } catch (Exception ignored) {
+
+            return "";
+
+        } finally {
+
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    // =========================================================
+    // CONNECTION
+    // =========================================================
+
+    private HttpURLConnection openConnection(
+            String urlString,
+            String method,
+            String token)
+            throws Exception {
+
+        URL url =
+                new URL(urlString);
+
+        HttpURLConnection connection =
+                (HttpURLConnection)
+                        url.openConnection();
+
+        connection.setRequestMethod(
+                method
+        );
+
+        connection.setConnectTimeout(
+                30000
+        );
+
+        connection.setReadTimeout(
+                60000
+        );
+
+        connection.setRequestProperty(
+                "apikey",
+                SupabaseConfig.PUBLISHABLE_KEY
+        );
+
+        if (!TextUtils.isEmpty(token)) {
+
+            connection.setRequestProperty(
+                    "Authorization",
+                    "Bearer " + token
+            );
         }
 
-        if (commentList.isEmpty()) {
+        connection.setRequestProperty(
+                "Accept",
+                "application/json"
+        );
 
-            emptyCommentsText.setVisibility(
-                    View.VISIBLE
-            );
+        return connection;
+    }
 
-            emptyCommentsText.setText(
-                    "No comments yet.\nBe the first to comment!"
-            );
+    // =========================================================
+    // RESPONSE
+    // =========================================================
 
+    private String readResponse(
+            HttpURLConnection connection,
+            int code)
+            throws Exception {
+
+        InputStream input;
+
+        if (code >= 400) {
+            input =
+                    connection.getErrorStream();
         } else {
-
-            emptyCommentsText.setVisibility(
-                    View.GONE
-            );
+            input =
+                    connection.getInputStream();
         }
+
+        if (input == null) {
+            return "";
+        }
+
+        BufferedReader reader =
+                new BufferedReader(
+                        new InputStreamReader(
+                                input,
+                                StandardCharsets.UTF_8
+                        )
+                );
+
+        StringBuilder builder =
+                new StringBuilder();
+
+        String line;
+
+        while ((line =
+                reader.readLine()) != null) {
+
+            builder.append(line);
+        }
+
+        reader.close();
+
+        return builder.toString();
     }
 
     // =========================================================
-    // TITLE
-    // =========================================================
-
-    private void updateTitle() {
-
-        if (commentsTitle == null) {
-            return;
-        }
-
-        commentsTitle.setText(
-                "Comments ("
-                        + commentList.size()
-                        + ")"
-        );
-    }
-
-    // =========================================================
-    // LOADING
+    // UI
     // =========================================================
 
     private void showLoading(
             boolean loading) {
 
-        if (commentsProgress != null) {
+        if (progressBar != null) {
 
-            commentsProgress.setVisibility(
+            progressBar.setVisibility(
                     loading
                             ? View.VISIBLE
                             : View.GONE
             );
         }
-
-        if (loading) {
-
-            if (commentsRecyclerView != null) {
-                commentsRecyclerView.setVisibility(
-                        View.INVISIBLE
-                );
-            }
-
-        } else {
-
-            if (commentsRecyclerView != null) {
-                commentsRecyclerView.setVisibility(
-                        View.VISIBLE
-                );
-            }
-        }
     }
 
-    // =========================================================
-    // SENDING STATE
-    // =========================================================
-
-    private void setSendingState(
+    private void setCommentSending(
             boolean sending) {
 
-        sendingComment = sending;
-
         if (sendButton != null) {
-
-            sendButton.setEnabled(
-                    !sending
-            );
-
-            sendButton.setAlpha(
-                    sending ? 0.5f : 1.0f
-            );
+            sendButton.setEnabled(!sending);
         }
 
         if (commentInput != null) {
-
-            commentInput.setEnabled(
-                    !sending
-            );
+            commentInput.setEnabled(!sending);
         }
     }
 
-    // =========================================================
-    // KEYBOARD
-    // =========================================================
+    private void updateEmptyState() {
+
+        if (emptyText == null) {
+            return;
+        }
+
+        emptyText.setVisibility(
+                commentList.isEmpty()
+                        ? View.VISIBLE
+                        : View.GONE
+        );
+    }
+
+    private void updateTitle() {
+
+        if (commentTitle != null) {
+
+            commentTitle.setText(
+                    "Comments"
+                            + " "
+                            + commentList.size()
+            );
+        }
+    }
 
     private void hideKeyboard() {
 
@@ -438,37 +966,197 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 getCurrentFocus();
 
         if (view == null) {
-            return;
+            view = commentInput;
         }
 
-        InputMethodManager imm =
-                (InputMethodManager)
-                        getSystemService(
-                                Context.INPUT_METHOD_SERVICE
-                        );
+        if (view != null) {
 
-        if (imm != null) {
+            InputMethodManager manager =
+                    (InputMethodManager)
+                            getSystemService(
+                                    Context.INPUT_METHOD_SERVICE
+                            );
 
-            imm.hideSoftInputFromWindow(
-                    view.getWindowToken(),
-                    0
-            );
+            if (manager != null) {
+
+                manager.hideSoftInputFromWindow(
+                        view.getWindowToken(),
+                        0
+                );
+            }
         }
-
-        view.clearFocus();
     }
 
     // =========================================================
-    // BACK
+    // TIME
+    // =========================================================
+
+    private long parseCreatedAt(
+            String value) {
+
+        if (TextUtils.isEmpty(value)) {
+            return System.currentTimeMillis();
+        }
+
+        try {
+
+            return Instant.parse(
+                    value
+            ).toEpochMilli();
+
+        } catch (Exception ignored) {
+
+            return System.currentTimeMillis();
+        }
+    }
+
+    // =========================================================
+    // ERROR
+    // =========================================================
+
+    private String safeMessage(
+            Exception e,
+            String fallback) {
+
+        if (e == null
+                || TextUtils.isEmpty(
+                        e.getMessage()
+                )) {
+
+            return fallback;
+        }
+
+        return e.getMessage();
+    }
+
+    // =========================================================
+    // ADAPTER
+    // =========================================================
+
+    private class CommentAdapter
+            extends RecyclerView.Adapter<CommentAdapter.CommentHolder> {
+
+        private final Context context;
+        private final List<ReelComment> list;
+
+        CommentAdapter(
+                Context context,
+                List<ReelComment> list) {
+
+            this.context = context;
+            this.list = list;
+        }
+
+        @NonNull
+        @Override
+        public CommentHolder onCreateViewHolder(
+                @NonNull ViewGroup parent,
+                int viewType) {
+
+            View view =
+                    LayoutInflater.from(
+                            parent.getContext()
+                    ).inflate(
+                            R.layout.item_reel_comment,
+                            parent,
+                            false
+                    );
+
+            return new CommentHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(
+                @NonNull CommentHolder holder,
+                int position) {
+
+            ReelComment comment =
+                    list.get(position);
+
+            holder.usernameText.setText(
+                    TextUtils.isEmpty(
+                            comment.getUsername()
+                    )
+                            ? "Sanskriti User"
+                            : comment.getUsername()
+            );
+
+            holder.commentText.setText(
+                    comment.getText()
+            );
+
+            String currentUserId =
+                    SupabaseAuthManager
+                            .getUserId(
+                                    ReelCommentsActivity.this
+                            );
+
+            boolean ownComment =
+                    !TextUtils.isEmpty(
+                            currentUserId
+                    )
+                            && currentUserId.equals(
+                                    comment.getUserId()
+                            );
+
+            holder.deleteButton.setVisibility(
+                    ownComment
+                            ? View.VISIBLE
+                            : View.GONE
+            );
+
+            holder.deleteButton.setOnClickListener(
+                    v -> deleteComment(
+                            comment,
+                            holder.getBindingAdapterPosition()
+                    )
+            );
+        }
+
+        @Override
+        public int getItemCount() {
+            return list.size();
+        }
+
+        class CommentHolder
+                extends RecyclerView.ViewHolder {
+
+            TextView usernameText;
+            TextView commentText;
+            ImageButton deleteButton;
+
+            CommentHolder(
+                    @NonNull View itemView) {
+
+                super(itemView);
+
+                usernameText =
+                        itemView.findViewById(
+                                R.id.commentUsername
+                        );
+
+                commentText =
+                        itemView.findViewById(
+                                R.id.commentText
+                        );
+
+                deleteButton =
+                        itemView.findViewById(
+                                R.id.commentDeleteButton
+                        );
+            }
+        }
+    }
+
+    // =========================================================
+    // DESTROY
     // =========================================================
 
     @Override
-    public void onBackPressed() {
+    protected void onDestroy() {
 
-        if (sendingComment) {
-            return;
-        }
+        super.onDestroy();
 
-        super.onBackPressed();
+        executor.shutdownNow();
     }
 }
