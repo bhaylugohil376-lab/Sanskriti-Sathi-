@@ -6,54 +6,15 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Full-screen vertical Reels -->
+    <!-- Full-screen vertical reels -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/reelRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#000000"
         android:clipToPadding="false"
         android:overScrollMode="never"
         android:scrollbars="none"
-        android:layout_gravity="center" />
-
-    <!-- Small loading indicator -->
-    <ProgressBar
-        android:id="@+id/reelLoadingProgress"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
-        android:layout_gravity="center"
-        android:visibility="gone" />
-
-    <!-- Empty state -->
-    <LinearLayout
-        android:id="@+id/reelEmptyLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="32dp"
         android:background="#000000"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="No Reels Yet"
-            android:textColor="#FFFFFF"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center"
-            android:text="Be the first to share a Reel."
-            android:textColor="#AAAAAA"
-            android:textSize="14sp" />
-
-    </LinearLayout>
+        android:orientation="vertical" />
 
 </FrameLayout>
