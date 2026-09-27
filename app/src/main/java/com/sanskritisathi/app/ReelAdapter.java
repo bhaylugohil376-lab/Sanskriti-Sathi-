@@ -3,6 +3,7 @@ package com.sanskritisathi.app;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,9 @@ public class ReelAdapter
 
     private final Context context;
     private final List<Reel> reelList;
+
+    private int currentPlayingPosition =
+            RecyclerView.NO_POSITION;
 
     public ReelAdapter(
             Context context,
@@ -53,7 +57,7 @@ public class ReelAdapter
         Reel reel = reelList.get(position);
 
         if (reel == null
-                || reel.getId() == null) {
+                || TextUtils.isEmpty(reel.getId())) {
 
             return position;
         }
@@ -62,7 +66,7 @@ public class ReelAdapter
     }
 
     // =========================================================
-    // CREATE VIEW HOLDER
+    // CREATE HOLDER
     // =========================================================
 
     @NonNull
@@ -91,43 +95,47 @@ public class ReelAdapter
             @NonNull ReelViewHolder holder,
             int position) {
 
-        if (position < 0
-                || position >= reelList.size()) {
-
-            return;
-        }
-
         Reel reel = reelList.get(position);
-
-        if (reel == null) {
-            return;
-        }
 
         holder.bind(reel);
     }
 
     // =========================================================
-    // ITEM COUNT
+    // PLAY AT POSITION
     // =========================================================
 
-    @Override
-    public int getItemCount() {
-        return reelList == null
-                ? 0
-                : reelList.size();
-    }
+    public void playVideoAt(int position) {
 
-    // =========================================================
-    // RECYCLE
-    // =========================================================
+        if (position < 0
+                || position >= reelList.size()) {
+            return;
+        }
 
-    @Override
-    public void onViewRecycled(
-            @NonNull ReelViewHolder holder) {
+        RecyclerView recyclerView =
+                findRecyclerView();
 
-        holder.releasePlayer();
+        if (recyclerView == null) {
+            return;
+        }
 
-        super.onViewRecycled(holder);
+        if (currentPlayingPosition != position) {
+
+            pauseAllVideos();
+
+            currentPlayingPosition =
+                    position;
+        }
+
+        ReelViewHolder holder =
+                (ReelViewHolder)
+                        recyclerView.findViewHolderForAdapterPosition(
+                                position
+                        );
+
+        if (holder != null) {
+
+            holder.playVideo();
+        }
     }
 
     // =========================================================
@@ -135,10 +143,6 @@ public class ReelAdapter
     // =========================================================
 
     public void pauseAllVideos() {
-
-        if (reelList == null) {
-            return;
-        }
 
         RecyclerView recyclerView =
                 findRecyclerView();
@@ -155,14 +159,14 @@ public class ReelAdapter
                     recyclerView.getChildAt(i);
 
             RecyclerView.ViewHolder viewHolder =
-                    recyclerView.getChildViewHolder(child);
+                    recyclerView.getChildViewHolder(
+                            child
+                    );
 
             if (viewHolder instanceof ReelViewHolder) {
 
-                ReelViewHolder holder =
-                        (ReelViewHolder) viewHolder;
-
-                holder.pauseVideo();
+                ((ReelViewHolder) viewHolder)
+                        .pauseVideo();
             }
         }
     }
@@ -173,70 +177,15 @@ public class ReelAdapter
 
     public void resumeCurrentVideo() {
 
-        RecyclerView recyclerView =
-                findRecyclerView();
+        if (currentPlayingPosition ==
+                RecyclerView.NO_POSITION) {
 
-        if (recyclerView == null) {
             return;
         }
 
-        View completelyVisible =
-                null;
-
-        View firstVisible =
-                null;
-
-        for (int i = 0;
-             i < recyclerView.getChildCount();
-             i++) {
-
-            View child =
-                    recyclerView.getChildAt(i);
-
-            if (firstVisible == null) {
-                firstVisible = child;
-            }
-
-            int top =
-                    child.getTop();
-
-            int bottom =
-                    child.getBottom();
-
-            int recyclerTop =
-                    recyclerView.getPaddingTop();
-
-            int recyclerBottom =
-                    recyclerView.getHeight()
-                            - recyclerView.getPaddingBottom();
-
-            if (top >= recyclerTop
-                    && bottom <= recyclerBottom) {
-
-                completelyVisible = child;
-                break;
-            }
-        }
-
-        View target =
-                completelyVisible != null
-                        ? completelyVisible
-                        : firstVisible;
-
-        if (target == null) {
-            return;
-        }
-
-        RecyclerView.ViewHolder viewHolder =
-                recyclerView.getChildViewHolder(target);
-
-        if (viewHolder instanceof ReelViewHolder) {
-
-            ReelViewHolder holder =
-                    (ReelViewHolder) viewHolder;
-
-            holder.playVideo();
-        }
+        playVideoAt(
+                currentPlayingPosition
+        );
     }
 
     // =========================================================
@@ -248,28 +197,30 @@ public class ReelAdapter
         RecyclerView recyclerView =
                 findRecyclerView();
 
-        if (recyclerView == null) {
-            return;
-        }
+        if (recyclerView != null) {
 
-        for (int i = 0;
-             i < recyclerView.getChildCount();
-             i++) {
+            for (int i = 0;
+                 i < recyclerView.getChildCount();
+                 i++) {
 
-            View child =
-                    recyclerView.getChildAt(i);
+                View child =
+                        recyclerView.getChildAt(i);
 
-            RecyclerView.ViewHolder viewHolder =
-                    recyclerView.getChildViewHolder(child);
+                RecyclerView.ViewHolder viewHolder =
+                        recyclerView.getChildViewHolder(
+                                child
+                        );
 
-            if (viewHolder instanceof ReelViewHolder) {
+                if (viewHolder instanceof ReelViewHolder) {
 
-                ReelViewHolder holder =
-                        (ReelViewHolder) viewHolder;
-
-                holder.releasePlayer();
+                    ((ReelViewHolder) viewHolder)
+                            .releasePlayer();
+                }
             }
         }
+
+        currentPlayingPosition =
+                RecyclerView.NO_POSITION;
     }
 
     // =========================================================
@@ -288,36 +239,61 @@ public class ReelAdapter
     }
 
     // =========================================================
+    // RECYCLE
+    // =========================================================
+
+    @Override
+    public void onViewRecycled(
+            @NonNull ReelViewHolder holder) {
+
+        holder.releasePlayer();
+
+        super.onViewRecycled(holder);
+    }
+
+    // =========================================================
+    // ITEM COUNT
+    // =========================================================
+
+    @Override
+    public int getItemCount() {
+
+        return reelList == null
+                ? 0
+                : reelList.size();
+    }
+
+    // =========================================================
     // VIEW HOLDER
     // =========================================================
 
-    public class ReelViewHolder
+    class ReelViewHolder
             extends RecyclerView.ViewHolder {
 
         private final PlayerView reelPlayerView;
         private final TextView reelErrorText;
 
         private final ImageView reelProfileImage;
-
         private final TextView reelUsernameText;
-        private final TextView reelBottomUsername;
-        private final TextView reelCaptionText;
+
+        private final ImageButton reelEditButton;
+        private final ImageButton reelDeleteButton;
 
         private final ImageButton reelLikeButton;
         private final ImageButton reelCommentButton;
         private final ImageButton reelShareButton;
-        private final ImageButton reelDeleteButton;
-        private final ImageButton reelEditButton;
 
         private final TextView reelLikesText;
         private final TextView reelCommentsText;
         private final TextView reelViewsText;
 
+        private final TextView reelCaptionText;
+
         private ExoPlayer player;
 
         private Reel boundReel;
 
-        public ReelViewHolder(
+        ReelViewHolder(
                 @NonNull View itemView) {
 
             super(itemView);
@@ -342,14 +318,14 @@ public class ReelAdapter
                             R.id.reelUsernameText
                     );
 
-            reelBottomUsername =
+            reelEditButton =
                     itemView.findViewById(
-                            R.id.reelBottomUsername
+                            R.id.reelEditButton
                     );
 
-            reelCaptionText =
+            reelDeleteButton =
                     itemView.findViewById(
-                            R.id.reelCaptionText
+                            R.id.reelDeleteButton
                     );
 
             reelLikeButton =
@@ -367,16 +343,6 @@ public class ReelAdapter
                             R.id.reelShareButton
                     );
 
-            reelDeleteButton =
-                    itemView.findViewById(
-                            R.id.reelDeleteButton
-                    );
-
-            reelEditButton =
-                    itemView.findViewById(
-                            R.id.reelEditButton
-                    );
-
             reelLikesText =
                     itemView.findViewById(
                             R.id.reelLikesText
@@ -391,42 +357,39 @@ public class ReelAdapter
                     itemView.findViewById(
                             R.id.reelViewsText
                     );
+
+            reelCaptionText =
+                    itemView.findViewById(
+                            R.id.reelCaptionText
+                    );
+
+            setupButtons();
         }
 
         // =====================================================
         // BIND REEL
         // =====================================================
 
-        public void bind(Reel reel) {
+        void bind(Reel reel) {
 
             boundReel = reel;
 
-            releasePlayer();
-
-            reelErrorText.setVisibility(
-                    View.GONE
-            );
-
-            // -------------------------------------------------
-            // USERNAME
-            // -------------------------------------------------
+            if (reel == null) {
+                return;
+            }
 
             String username =
                     reel.getUsername();
 
-            if (username == null
-                    || username.trim().isEmpty()) {
+            if (TextUtils.isEmpty(username)) {
 
-                username = "Sanskriti User";
+                username =
+                        "Sanskriti User";
             }
 
-            reelUsernameText.setText(username);
-
-            reelBottomUsername.setText(username);
-
-            // -------------------------------------------------
-            // CAPTION
-            // -------------------------------------------------
+            reelUsernameText.setText(
+                    username
+            );
 
             String caption =
                     reel.getCaption();
@@ -435,97 +398,67 @@ public class ReelAdapter
                 caption = "";
             }
 
-            reelCaptionText.setText(caption);
-
-            // -------------------------------------------------
-            // COUNTS
-            // -------------------------------------------------
-
-            int likes =
-                    Math.max(
-                            0,
-                            reel.getLikes()
-                    );
-
-            int comments =
-                    Math.max(
-                            0,
-                            reel.getComments()
-                    );
-
-            int views =
-                    Math.max(
-                            0,
-                            reel.getViews()
-                    );
+            reelCaptionText.setText(
+                    caption
+            );
 
             reelLikesText.setText(
-                    formatCount(likes)
+                    String.valueOf(
+                            Math.max(
+                                    0,
+                                    reel.getLikes()
+                            )
+                    )
             );
 
             reelCommentsText.setText(
-                    formatCount(comments)
+                    String.valueOf(
+                            Math.max(
+                                    0,
+                                    reel.getComments()
+                            )
+                    )
             );
 
             reelViewsText.setText(
-                    formatCount(views)
+                    String.valueOf(
+                            Math.max(
+                                    0,
+                                    reel.getViews()
+                            )
+                    )
             );
 
-            // -------------------------------------------------
-            // PROFILE
-            // -------------------------------------------------
-
-            reelProfileImage.setImageResource(
-                    R.drawable.icon_foreground
+            updateLikeUI(
+                    reel.isLiked()
             );
 
-            // -------------------------------------------------
-            // LIKE ICON
-            // -------------------------------------------------
+            reelDeleteButton.setVisibility(
+                    reel.isOwnReel()
+                            ? View.VISIBLE
+                            : View.GONE
+            );
 
-            updateLikeUI();
+            /*
+             * Edit button is available only
+             * for the owner's reel.
+             */
 
-            // -------------------------------------------------
-            // DELETE
-            // -------------------------------------------------
+            reelEditButton.setVisibility(
+                    reel.isOwnReel()
+                            ? View.VISIBLE
+                            : View.GONE
+            );
 
-            if (reel.isOwnReel()) {
-
-                reelDeleteButton.setVisibility(
-                        View.VISIBLE
-                );
-
-            } else {
-
-                reelDeleteButton.setVisibility(
-                        View.GONE
-                );
-            }
-
-            // -------------------------------------------------
-            // EDIT
-            // -------------------------------------------------
-
-            if (reelEditButton != null) {
-
-                reelEditButton.setVisibility(
-                        View.GONE
-                );
-            }
-
-            // -------------------------------------------------
-            // VIDEO
-            // -------------------------------------------------
+            reelErrorText.setVisibility(
+                    View.GONE
+            );
 
             setupPlayer(
                     reel.getVideoUrl()
             );
 
-            // -------------------------------------------------
-            // ACTIONS
-            // -------------------------------------------------
-
-            setupActions();
+            checkLikeStatus(reel);
         }
 
         // =====================================================
@@ -535,8 +468,9 @@ public class ReelAdapter
         private void setupPlayer(
                 String videoUrl) {
 
-            if (videoUrl == null
-                    || videoUrl.trim().isEmpty()) {
+            releasePlayer();
+
+            if (TextUtils.isEmpty(videoUrl)) {
 
                 reelErrorText.setText(
                         "Video unavailable"
@@ -557,6 +491,10 @@ public class ReelAdapter
                     player
             );
 
+            player.setRepeatMode(
+                    Player.REPEAT_MODE_ONE
+            );
+
             MediaItem mediaItem =
                     MediaItem.fromUri(
                             Uri.parse(videoUrl)
@@ -566,14 +504,6 @@ public class ReelAdapter
                     mediaItem
             );
 
-            player.setRepeatMode(
-                    Player.REPEAT_MODE_ONE
-            );
-
-            player.setPlayWhenReady(
-                    false
-            );
-
             player.addListener(
                     new Player.Listener() {
 
@@ -581,8 +511,8 @@ public class ReelAdapter
                         public void onPlaybackStateChanged(
                                 int playbackState) {
 
-                            if (playbackState
-                                    == Player.STATE_READY) {
+                            if (playbackState ==
+                                    Player.STATE_READY) {
 
                                 reelErrorText
                                         .setVisibility(
@@ -599,12 +529,21 @@ public class ReelAdapter
                                     "Video unavailable"
                             );
 
-                            reelErrorText
-                                    .setVisibility(
-                                            View.VISIBLE
-                                    );
+                            reelErrorText.setVisibility(
+                                    View.VISIBLE
+                            );
                         }
                     }
+            );
+
+            /*
+             * Do not autoplay during bind.
+             * ReelActivity decides which reel
+             * is currently visible.
+             */
+
+            player.setPlayWhenReady(
+                    false
             );
 
             player.prepare();
@@ -614,7 +553,7 @@ public class ReelAdapter
         // PLAY
         // =====================================================
 
-        public void playVideo() {
+        void playVideo() {
 
             if (player == null) {
                 return;
@@ -631,26 +570,24 @@ public class ReelAdapter
         // PAUSE
         // =====================================================
 
-        public void pauseVideo() {
+        void pauseVideo() {
 
             if (player == null) {
                 return;
             }
 
             player.pause();
-
-            player.setPlayWhenReady(
-                    false
-            );
         }
 
         // =====================================================
         // RELEASE
         // =====================================================
 
-        public void releasePlayer() {
+        void releasePlayer() {
 
             if (player != null) {
+
+                player.pause();
 
                 player.stop();
 
@@ -659,55 +596,116 @@ public class ReelAdapter
                 player = null;
             }
 
-            if (reelPlayerView != null) {
+            reelPlayerView.setPlayer(
+                    null
+            );
+        }
 
-                reelPlayerView.setPlayer(
-                        null
+        // =====================================================
+        // LIKE STATUS
+        // =====================================================
+
+        private void checkLikeStatus(
+                Reel reel) {
+
+            if (!SupabaseAuthManager
+                    .isLoggedIn(context)) {
+
+                return;
+            }
+
+            ReelSupabaseHelper.checkReelLike(
+                    context,
+                    reel.getId(),
+                    new ReelSupabaseHelper
+                            .LikeCheckCallback() {
+
+                        @Override
+                        public void onResult(
+                                boolean liked) {
+
+                            if (boundReel != reel) {
+                                return;
+                            }
+
+                            reel.setLiked(
+                                    liked
+                            );
+
+                            updateLikeUI(
+                                    liked
+                            );
+                        }
+
+                        @Override
+                        public void onError(
+                                String message) {
+                            // Keep current UI.
+                        }
+                    }
+            );
+        }
+
+        // =====================================================
+        // LIKE UI
+        // =====================================================
+
+        private void updateLikeUI(
+                boolean liked) {
+
+            if (liked) {
+
+                reelLikeButton.setImageResource(
+                        android.R.drawable
+                                .btn_star_big_on
+                );
+
+                reelLikeButton.setContentDescription(
+                        "Unlike"
+                );
+
+            } else {
+
+                reelLikeButton.setImageResource(
+                        android.R.drawable
+                                .btn_star_big_off
+                );
+
+                reelLikeButton.setContentDescription(
+                        "Like"
                 );
             }
         }
 
         // =====================================================
-        // ACTIONS
+        // BUTTONS
         // =====================================================
 
-        private void setupActions() {
-
-            // -------------------------------------------------
-            // LIKE
-            // -------------------------------------------------
+        private void setupButtons() {
 
             reelLikeButton.setOnClickListener(
                     v -> toggleLike()
             );
 
-            // -------------------------------------------------
-            // COMMENTS
-            // -------------------------------------------------
-
             reelCommentButton.setOnClickListener(
                     v -> openComments()
             );
-
-            // -------------------------------------------------
-            // SHARE
-            // -------------------------------------------------
 
             reelShareButton.setOnClickListener(
                     v -> shareReel()
             );
 
-            // -------------------------------------------------
-            // DELETE
-            // -------------------------------------------------
-
             reelDeleteButton.setOnClickListener(
-                    v -> confirmDelete()
+                    v -> deleteReel()
+            );
+
+            reelEditButton.setOnClickListener(
+                    v -> editReel()
             );
         }
 
         // =====================================================
-        // LIKE
+        // TOGGLE LIKE
         // =====================================================
 
         private void toggleLike() {
@@ -728,118 +726,84 @@ public class ReelAdapter
                 return;
             }
 
+            final boolean oldLiked =
+                    boundReel.isLiked();
+
             reelLikeButton.setEnabled(
                     false
             );
 
-            boolean currentlyLiked =
-                    boundReel.isLiked();
+            ReelSupabaseHelper.toggleReelLike(
+                    context,
+                    boundReel.getId(),
+                    oldLiked,
+                    new ReelSupabaseHelper
+                            .ActionCallback() {
 
-            ReelSupabaseHelper
-                    .toggleReelLike(
-                            context,
-                            boundReel.getId(),
-                            currentlyLiked,
-                            new ReelSupabaseHelper.ActionCallback() {
+                        @Override
+                        public void onSuccess() {
 
-                                @Override
-                                public void onSuccess() {
-
-                                    boundReel.setLiked(
-                                            !currentlyLiked
-                                    );
-
-                                    int oldLikes =
-                                            Math.max(
-                                                    0,
-                                                    boundReel.getLikes()
-                                            );
-
-                                    int newLikes;
-
-                                    if (currentlyLiked) {
-
-                                        newLikes =
-                                                Math.max(
-                                                        0,
-                                                        oldLikes - 1
-                                                );
-
-                                    } else {
-
-                                        newLikes =
-                                                oldLikes + 1;
-                                    }
-
-                                    boundReel.setLikes(
-                                            newLikes
-                                    );
-
-                                    reelLikesText.setText(
-                                            formatCount(
-                                                    newLikes
-                                            )
-                                    );
-
-                                    updateLikeUI();
-
-                                    reelLikeButton
-                                            .setEnabled(
-                                                    true
-                                            );
-                                }
-
-                                @Override
-                                public void onError(
-                                        String message) {
-
-                                    reelLikeButton
-                                            .setEnabled(
-                                                    true
-                                            );
-
-                                    Toast.makeText(
-                                            context,
-                                            message == null
-                                                    ? "Like update failed."
-                                                    : message,
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-                                }
+                            if (boundReel == null) {
+                                return;
                             }
-                    );
-        }
 
-        // =====================================================
-        // LIKE UI
-        // =====================================================
+                            boolean newLiked =
+                                    !oldLiked;
 
-        private void updateLikeUI() {
+                            boundReel.setLiked(
+                                    newLiked
+                            );
 
-            if (boundReel == null) {
-                return;
-            }
+                            int likes =
+                                    boundReel.getLikes();
 
-            if (boundReel.isLiked()) {
+                            likes =
+                                    newLiked
+                                            ? likes + 1
+                                            : Math.max(
+                                                    0,
+                                                    likes - 1
+                                            );
 
-                reelLikeButton.setImageResource(
-                        android.R.drawable.btn_star_big_on
-                );
+                            boundReel.setLikes(
+                                    likes
+                            );
 
-                reelLikeButton.setContentDescription(
-                        "Unlike"
-                );
+                            reelLikesText.setText(
+                                    String.valueOf(
+                                            likes
+                                    )
+                            );
 
-            } else {
+                            updateLikeUI(
+                                    newLiked
+                            );
 
-                reelLikeButton.setImageResource(
-                        android.R.drawable.btn_star_big_off
-                );
+                            reelLikeButton.setEnabled(
+                                    true
+                            );
+                        }
 
-                reelLikeButton.setContentDescription(
-                        "Like"
-                );
-            }
+                        @Override
+                        public void onError(
+                                String message) {
+
+                            reelLikeButton.setEnabled(
+                                    true
+                            );
+
+                            Toast.makeText(
+                                    context,
+                                    TextUtils.isEmpty(
+                                            message
+                                    )
+                                            ? "Like update failed."
+                                            : message,
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    }
+            );
         }
 
         // =====================================================
@@ -849,7 +813,9 @@ public class ReelAdapter
         private void openComments() {
 
             if (boundReel == null
-                    || boundReel.getId() == null) {
+                    || TextUtils.isEmpty(
+                            boundReel.getId()
+                    )) {
 
                 return;
             }
@@ -883,8 +849,7 @@ public class ReelAdapter
             String videoUrl =
                     boundReel.getVideoUrl();
 
-            if (videoUrl == null
-                    || videoUrl.trim().isEmpty()) {
+            if (TextUtils.isEmpty(videoUrl)) {
 
                 Toast.makeText(
                         context,
@@ -898,14 +863,20 @@ public class ReelAdapter
             String caption =
                     boundReel.getCaption();
 
-            if (caption == null) {
-                caption = "";
-            }
+            String shareText;
 
-            String shareText =
-                    caption.trim()
-                            + "\n\n"
-                            + videoUrl;
+            if (TextUtils.isEmpty(caption)) {
+
+                shareText =
+                        videoUrl;
+
+            } else {
+
+                shareText =
+                        caption
+                                + "\n\n"
+                                + videoUrl;
+            }
 
             Intent shareIntent =
                     new Intent(
@@ -930,10 +901,10 @@ public class ReelAdapter
         }
 
         // =====================================================
-        // DELETE CONFIRM
+        // DELETE
         // =====================================================
 
-        private void confirmDelete() {
+        private void deleteReel() {
 
             if (boundReel == null) {
                 return;
@@ -955,123 +926,193 @@ public class ReelAdapter
                     .setPositiveButton(
                             "Delete",
                             (dialog, which) ->
-                                    deleteReel()
+                                    performDelete()
                     )
                     .show();
         }
 
+        private void performDelete() {
+
+            String reelId =
+                    boundReel.getId();
+
+            ReelSupabaseHelper.deleteReel(
+                    context,
+                    reelId,
+                    new ReelSupabaseHelper
+                            .ActionCallback() {
+
+                        @Override
+                        public void onSuccess() {
+
+                            int position =
+                                    getBindingAdapterPosition();
+
+                            if (position !=
+                                    RecyclerView.NO_POSITION) {
+
+                                reelList.remove(
+                                        position
+                                );
+
+                                notifyItemRemoved(
+                                        position
+                                );
+
+                                if (currentPlayingPosition ==
+                                        position) {
+
+                                    currentPlayingPosition =
+                                            RecyclerView.NO_POSITION;
+                                }
+                            }
+
+                            Toast.makeText(
+                                    context,
+                                    "Reel deleted",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+
+                        @Override
+                        public void onError(
+                                String message) {
+
+                            Toast.makeText(
+                                    context,
+                                    TextUtils.isEmpty(
+                                            message
+                                    )
+                                            ? "Reel delete failed."
+                                            : message,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+                    }
+            );
+        }
+
         // =====================================================
-        // DELETE
+        // EDIT
         // =====================================================
 
-        private void deleteReel() {
+        private void editReel() {
 
             if (boundReel == null) {
                 return;
             }
 
-            reelDeleteButton.setEnabled(
-                    false
+            final android.widget.EditText input =
+                    new android.widget.EditText(
+                            context
+                    );
+
+            input.setText(
+                    boundReel.getCaption()
             );
 
-            ReelSupabaseHelper
-                    .deleteReel(
-                            context,
-                            boundReel.getId(),
-                            new ReelSupabaseHelper.ActionCallback() {
+            input.setHint(
+                    "Write a caption..."
+            );
 
-                                @Override
-                                public void onSuccess() {
+            input.setPadding(
+                    30,
+                    10,
+                    30,
+                    10
+            );
 
-                                    int position =
-                                            getBindingAdapterPosition();
+            new androidx.appcompat.app.AlertDialog.Builder(
+                    context
+            )
+                    .setTitle(
+                            "Edit Reel"
+                    )
+                    .setView(
+                            input
+                    )
+                    .setNegativeButton(
+                            "Cancel",
+                            null
+                    )
+                    .setPositiveButton(
+                            "Save",
+                            (dialog, which) -> {
 
-                                    if (position != RecyclerView.NO_POSITION
-                                            && position < reelList.size()) {
+                                String newCaption =
+                                        input.getText()
+                                                .toString()
+                                                .trim();
 
-                                        reelList.remove(
-                                                position
-                                        );
-
-                                        notifyItemRemoved(
-                                                position
-                                        );
-                                    }
-
-                                    Toast.makeText(
-                                            context,
-                                            "Reel deleted",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-                                }
-
-                                @Override
-                                public void onError(
-                                        String message) {
-
-                                    reelDeleteButton
-                                            .setEnabled(
-                                                    true
-                                            );
-
-                                    Toast.makeText(
-                                            context,
-                                            message == null
-                                                    ? "Reel delete failed."
-                                                    : message,
-                                            Toast.LENGTH_LONG
-                                    ).show();
-                                }
+                                updateCaption(
+                                        newCaption
+                                );
                             }
-                    );
-        }
-    }
-
-    // =========================================================
-    // COUNT FORMAT
-    // =========================================================
-
-    private String formatCount(int count) {
-
-        if (count < 1000) {
-            return String.valueOf(count);
+                    )
+                    .show();
         }
 
-        if (count < 1000000) {
+        private void updateCaption(
+                String newCaption) {
 
-            double value =
-                    count / 1000.0;
-
-            if (value >= 100) {
-                return String.format(
-                        java.util.Locale.US,
-                        "%.0fK",
-                        value
-                );
+            if (boundReel == null) {
+                return;
             }
 
-            return String.format(
-                    java.util.Locale.US,
-                    "%.1fK",
-                    value
+            ReelSupabaseHelper.updateReel(
+                    context,
+                    boundReel.getId(),
+                    newCaption,
+                    boundReel.getVisibility(),
+                    new ReelSupabaseHelper
+                            .ActionCallback() {
+
+                        @Override
+                        public void onSuccess() {
+
+                            boundReel.setComments(
+                                    boundReel.getComments()
+                            );
+
+                            boundReelCaptionUpdate(
+                                    newCaption
+                            );
+
+                            Toast.makeText(
+                                    context,
+                                    "Reel updated ✓",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+
+                        @Override
+                        public void onError(
+                                String message) {
+
+                            Toast.makeText(
+                                    context,
+                                    TextUtils.isEmpty(
+                                            message
+                                    )
+                                            ? "Reel update failed."
+                                            : message,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+                    }
             );
         }
 
-        double value =
-                count / 1000000.0;
+        private void boundReelCaptionUpdate(
+                String caption) {
 
-        if (value >= 100) {
-            return String.format(
-                    java.util.Locale.US,
-                    "%.0fM",
-                    value
+            if (boundReel == null) {
+                return;
+            }
+
+            reelCaptionText.setText(
+                    caption
             );
         }
-
-        return String.format(
-                java.util.Locale.US,
-                "%.1fM",
-                value
-        );
     }
 }
