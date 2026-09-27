@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Reel Video -->
+    <!-- Full-screen Reel Video -->
     <androidx.media3.ui.PlayerView
         android:id="@+id/reelPlayerView"
         android:layout_width="match_parent"
@@ -23,17 +24,20 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:background="#99000000"
-        android:padding="14dp"
+        android:paddingStart="18dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="12dp"
         android:text="Video unavailable"
         android:textColor="#FFFFFF"
-        android:textSize="15sp"
+        android:textSize="14sp"
         android:visibility="gone" />
 
-    <!-- Top Gradient / Overlay -->
+    <!-- Top dark overlay -->
     <View
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:background="#66000000" />
+        android:background="#55000000" />
 
     <!-- Top User Bar -->
     <LinearLayout
@@ -45,7 +49,7 @@
         android:paddingStart="14dp"
         android:paddingTop="18dp"
         android:paddingEnd="8dp"
-        android:paddingBottom="12dp">
+        android:paddingBottom="10dp">
 
         <ImageView
             android:id="@+id/reelProfileImage"
@@ -68,7 +72,7 @@
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <!-- Edit Reel -->
+        <!-- Edit -->
         <ImageButton
             android:id="@+id/reelEditButton"
             android:layout_width="46dp"
@@ -80,7 +84,7 @@
             android:tint="#FFFFFF"
             android:visibility="gone" />
 
-        <!-- Delete Reel -->
+        <!-- Delete -->
         <ImageButton
             android:id="@+id/reelDeleteButton"
             android:layout_width="46dp"
@@ -94,7 +98,7 @@
 
     </LinearLayout>
 
-    <!-- Right Side Actions -->
+    <!-- Right Action Bar -->
     <LinearLayout
         android:layout_width="68dp"
         android:layout_height="wrap_content"
@@ -157,7 +161,6 @@
             android:src="@android:drawable/ic_menu_share"
             android:tint="#FFFFFF" />
 
-        <!-- Views -->
         <TextView
             android:id="@+id/reelViewsText"
             android:layout_width="wrap_content"
@@ -170,14 +173,14 @@
 
     </LinearLayout>
 
-    <!-- Bottom Overlay -->
+    <!-- Bottom dark overlay -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="210dp"
+        android:layout_height="220dp"
         android:layout_gravity="bottom"
         android:background="#88000000" />
 
-    <!-- Bottom Reel Info -->
+    <!-- Bottom Reel Information -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -186,7 +189,7 @@
         android:paddingStart="16dp"
         android:paddingTop="14dp"
         android:paddingEnd="86dp"
-        android:paddingBottom="28dp">
+        android:paddingBottom="30dp">
 
         <TextView
             android:id="@+id/reelBottomUsername"
@@ -207,7 +210,6 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="5"
-            android:text="Caption"
             android:textColor="#FFFFFF"
             android:textSize="15sp" />
 
