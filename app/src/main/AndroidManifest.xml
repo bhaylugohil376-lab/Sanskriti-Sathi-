@@ -165,23 +165,44 @@
             android:name=".StoryUploadActivity"
             android:exported="false" />
 
-        <!-- Reels -->
+        <!-- ================================================= -->
+        <!-- REELS -->
+        <!-- ================================================= -->
+
         <activity
             android:name=".ReelActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ReelUploadActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
+        <!-- Reel Editor -->
+        <activity
+            android:name=".ReelEditorActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- New Reel / Publish -->
+        <activity
+            android:name=".NewReelActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- Reel Comments -->
         <activity
             android:name=".ReelCommentsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
+        <!-- Existing Reel Edit -->
         <activity
-             android:name=".ReelEditActivity"
-             android:exported="false" />
-        
+            android:name=".ReelEditActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
         <!-- Chat -->
         <activity
             android:name=".ChatActivity"
