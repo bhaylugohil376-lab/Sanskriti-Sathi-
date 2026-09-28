@@ -1,9 +1,9 @@
 package com.sanskritisathi.app;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,15 +16,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public final class ReelSupabaseCommentsHelper {
-
-    private static final String COMMENTS_TABLE = "reel_comments";
+public final class ReelCommentSupabaseHelper {
 
     private static final Handler MAIN_HANDLER =
             new Handler(Looper.getMainLooper());
@@ -32,7 +31,11 @@ public final class ReelSupabaseCommentsHelper {
     private static final ExecutorService EXECUTOR =
             Executors.newCachedThreadPool();
 
-    private ReelSupabaseCommentsHelper() {
+    private static final String COMMENTS_TABLE =
+            "reel_comments";
+
+    private ReelCommentSupabaseHelper() {
+        // No instance
     }
 
     // =========================================================
@@ -48,13 +51,13 @@ public final class ReelSupabaseCommentsHelper {
 
     public interface ActionCallback {
 
-        void onSuccess(ReelComment comment);
+        void onSuccess();
 
         void onError(String message);
     }
 
     // =========================================================
-    // GET COMMENTS
+    // LOAD COMMENTS
     // =========================================================
 
     public static void getComments(
@@ -63,12 +66,18 @@ public final class ReelSupabaseCommentsHelper {
             CommentsCallback callback) {
 
         if (context == null) {
-            postError(callback, "Context missing.");
+            postCommentsError(
+                    callback,
+                    "Context missing."
+            );
             return;
         }
 
         if (TextUtils.isEmpty(reelId)) {
-            postError(callback, "Invalid Reel.");
+            postCommentsError(
+                    callback,
+                    "Invalid Reel."
+            );
             return;
         }
 
@@ -79,13 +88,16 @@ public final class ReelSupabaseCommentsHelper {
             try {
 
                 String token =
-                        SupabaseAuthManager.getAccessToken(context);
+                        SupabaseAuthManager
+                                .getAccessToken(context);
 
                 if (TextUtils.isEmpty(token)) {
-                    postError(
+
+                    postCommentsError(
                             callback,
-                            "Login session nahi mili."
+                            "Please login first."
                     );
+
                     return;
                 }
 
@@ -99,7 +111,7 @@ public final class ReelSupabaseCommentsHelper {
                                         reelId,
                                         "UTF-8"
                                 )
-                                + "&order=created_at.desc";
+                                + "&order=created_at.asc";
 
                 connection =
                         openConnection(
@@ -119,7 +131,7 @@ public final class ReelSupabaseCommentsHelper {
 
                 if (code < 200 || code >= 300) {
 
-                    postError(
+                    postCommentsError(
                             callback,
                             "Comments load failed: "
                                     + response
@@ -142,22 +154,28 @@ public final class ReelSupabaseCommentsHelper {
                             array.getJSONObject(i);
 
                     ReelComment comment =
-                            parseComment(
-                                    json
-                            );
+                            parseComment(json);
 
                     if (comment != null) {
                         result.add(comment);
                     }
                 }
 
-                MAIN_HANDLER.post(() ->
-                        callback.onSuccess(result)
-                );
+                final List<ReelComment> finalResult =
+                        result;
+
+                MAIN_HANDLER.post(() -> {
+
+                    if (callback != null) {
+                        callback.onSuccess(
+                                finalResult
+                        );
+                    }
+                });
 
             } catch (Exception e) {
 
-                postError(
+                postCommentsError(
                         callback,
                         safeMessage(
                                 e,
@@ -203,7 +221,18 @@ public final class ReelSupabaseCommentsHelper {
         if (TextUtils.isEmpty(text)) {
             postActionError(
                     callback,
-                    "Comment empty nahi ho sakta."
+                    "Comment empty hai."
+            );
+            return;
+        }
+
+        final String finalText =
+                text.trim();
+
+        if (finalText.length() > 500) {
+            postActionError(
+                    callback,
+                    "Comment maximum 500 characters ka ho sakta hai."
             );
             return;
         }
@@ -215,21 +244,19 @@ public final class ReelSupabaseCommentsHelper {
             try {
 
                 String userId =
-                        SupabaseAuthManager.getUserId(
-                                context
-                        );
+                        SupabaseAuthManager
+                                .getUserId(context);
 
                 String token =
-                        SupabaseAuthManager.getAccessToken(
-                                context
-                        );
+                        SupabaseAuthManager
+                                .getAccessToken(context);
 
                 if (TextUtils.isEmpty(userId)
                         || TextUtils.isEmpty(token)) {
 
                     postActionError(
                             callback,
-                            "Please login first."
+                            "Login session nahi mili."
                     );
 
                     return;
@@ -245,12 +272,16 @@ public final class ReelSupabaseCommentsHelper {
                     username = "Sanskriti User";
                 }
 
+                String commentId =
+                        UUID.randomUUID()
+                                .toString();
+
                 JSONObject json =
                         new JSONObject();
 
                 json.put(
                         "id",
-                        UUID.randomUUID().toString()
+                        commentId
                 );
 
                 json.put(
@@ -270,7 +301,7 @@ public final class ReelSupabaseCommentsHelper {
 
                 json.put(
                         "text",
-                        text.trim()
+                        finalText
                 );
 
                 String url =
@@ -330,38 +361,7 @@ public final class ReelSupabaseCommentsHelper {
                     return;
                 }
 
-                ReelComment newComment = null;
-
-                if (!TextUtils.isEmpty(response)) {
-
-                    JSONArray array =
-                            new JSONArray(response);
-
-                    if (array.length() > 0) {
-
-                        newComment =
-                                parseComment(
-                                        array.getJSONObject(0)
-                                );
-                    }
-                }
-
-                /*
-                 * Keep reel comment count synchronized.
-                 */
-                updateReelCommentCount(
-                        reelId,
-                        token
-                );
-
-                ReelComment finalComment =
-                        newComment;
-
-                MAIN_HANDLER.post(() ->
-                        callback.onSuccess(
-                                finalComment
-                        )
-                );
+                postActionSuccess(callback);
 
             } catch (Exception e) {
 
@@ -369,7 +369,120 @@ public final class ReelSupabaseCommentsHelper {
                         callback,
                         safeMessage(
                                 e,
-                                "Comment add failed."
+                                "Comment add nahi hui."
+                        )
+                );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
+    // =========================================================
+    // DELETE COMMENT
+    // =========================================================
+
+    public static void deleteComment(
+            Context context,
+            String commentId,
+            ActionCallback callback) {
+
+        if (context == null) {
+            postActionError(
+                    callback,
+                    "Context missing."
+            );
+            return;
+        }
+
+        if (TextUtils.isEmpty(commentId)) {
+            postActionError(
+                    callback,
+                    "Invalid comment."
+            );
+            return;
+        }
+
+        EXECUTOR.execute(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+
+                String userId =
+                        SupabaseAuthManager
+                                .getUserId(context);
+
+                String token =
+                        SupabaseAuthManager
+                                .getAccessToken(context);
+
+                if (TextUtils.isEmpty(userId)
+                        || TextUtils.isEmpty(token)) {
+
+                    postActionError(
+                            callback,
+                            "Login session nahi mili."
+                    );
+
+                    return;
+                }
+
+                String url =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + COMMENTS_TABLE
+                                + "?id=eq."
+                                + URLEncoder.encode(
+                                        commentId,
+                                        "UTF-8"
+                                )
+                                + "&user_id=eq."
+                                + URLEncoder.encode(
+                                        userId,
+                                        "UTF-8"
+                                );
+
+                connection =
+                        openConnection(
+                                url,
+                                "DELETE",
+                                token
+                        );
+
+                int code =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
+
+                if (code < 200 || code >= 300) {
+
+                    postActionError(
+                            callback,
+                            "Comment delete failed: "
+                                    + response
+                    );
+
+                    return;
+                }
+
+                postActionSuccess(callback);
+
+            } catch (Exception e) {
+
+                postActionError(
+                        callback,
+                        safeMessage(
+                                e,
+                                "Comment delete failed."
                         )
                 );
 
@@ -389,63 +502,109 @@ public final class ReelSupabaseCommentsHelper {
     private static ReelComment parseComment(
             JSONObject json) {
 
-        if (json == null) {
+        try {
+
+            String id =
+                    json.optString(
+                            "id",
+                            ""
+                    );
+
+            String reelId =
+                    json.optString(
+                            "reel_id",
+                            ""
+                    );
+
+            String userId =
+                    json.optString(
+                            "user_id",
+                            ""
+                    );
+
+            String username =
+                    json.optString(
+                            "username",
+                            "Sanskriti User"
+                    );
+
+            String text =
+                    json.optString(
+                            "text",
+                            ""
+                    );
+
+            String createdAtText =
+                    json.optString(
+                            "created_at",
+                            ""
+                    );
+
+            /*
+             * IMPORTANT:
+             *
+             * ReelComment.createdAt is long.
+             * Supabase created_at is normally ISO-8601 text.
+             *
+             * Convert String -> long before constructor.
+             */
+
+            long createdAt =
+                    parseCreatedAt(
+                            createdAtText
+                    );
+
+            return new ReelComment(
+                    id,
+                    reelId,
+                    userId,
+                    username,
+                    text,
+                    createdAt
+            );
+
+        } catch (Exception e) {
+
             return null;
         }
-
-        String id =
-                json.optString(
-                        "id",
-                        ""
-                );
-
-        String reelId =
-                json.optString(
-                        "reel_id",
-                        ""
-                );
-
-        String userId =
-                json.optString(
-                        "user_id",
-                        ""
-                );
-
-        String username =
-                json.optString(
-                        "username",
-                        ""
-                );
-
-        String text =
-                json.optString(
-                        "text",
-                        ""
-                );
-
-        String createdAt =
-                json.optString(
-                        "created_at",
-                        ""
-                );
-
-        return new ReelComment(
-                id,
-                reelId,
-                userId,
-                username,
-                text,
-                createdAt
-        );
     }
 
     // =========================================================
-    // USERNAME
+    // CREATED AT
+    // =========================================================
+
+    private static long parseCreatedAt(
+            String value) {
+
+        if (TextUtils.isEmpty(value)) {
+            return System.currentTimeMillis();
+        }
+
+        try {
+
+            return Instant
+                    .parse(value)
+                    .toEpochMilli();
+
+        } catch (Exception ignored) {
+
+            return System.currentTimeMillis();
+        }
+    }
+
+    // =========================================================
+    // GET USERNAME
     // =========================================================
 
     private static String getUsername(
             String userId,
             String token) {
+
+        if (TextUtils.isEmpty(userId)
+                || TextUtils.isEmpty(token)) {
+
+            return "";
+        }
 
         HttpURLConnection connection = null;
 
@@ -489,7 +648,8 @@ public final class ReelSupabaseCommentsHelper {
                 return "";
             }
 
-            return array.getJSONObject(0)
+            return array
+                    .getJSONObject(0)
                     .optString(
                             "username",
                             ""
@@ -503,121 +663,6 @@ public final class ReelSupabaseCommentsHelper {
 
             if (connection != null) {
                 connection.disconnect();
-            }
-        }
-    }
-
-    // =========================================================
-    // UPDATE REEL COMMENT COUNT
-    // =========================================================
-
-    private static void updateReelCommentCount(
-            String reelId,
-            String token) {
-
-        HttpURLConnection countConnection = null;
-        HttpURLConnection patchConnection = null;
-
-        try {
-
-            String countUrl =
-                    SupabaseConfig.PROJECT_URL
-                            + "/rest/v1/"
-                            + COMMENTS_TABLE
-                            + "?select=id"
-                            + "&reel_id=eq."
-                            + URLEncoder.encode(
-                                    reelId,
-                                    "UTF-8"
-                            );
-
-            countConnection =
-                    openConnection(
-                            countUrl,
-                            "GET",
-                            token
-                    );
-
-            int countCode =
-                    countConnection.getResponseCode();
-
-            String countResponse =
-                    readResponse(
-                            countConnection,
-                            countCode
-                    );
-
-            if (countCode < 200
-                    || countCode >= 300) {
-                return;
-            }
-
-            JSONArray comments =
-                    new JSONArray(
-                            countResponse
-                    );
-
-            JSONObject update =
-                    new JSONObject();
-
-            update.put(
-                    "comments",
-                    comments.length()
-            );
-
-            String patchUrl =
-                    SupabaseConfig.PROJECT_URL
-                            + "/rest/v1/reels"
-                            + "?id=eq."
-                            + URLEncoder.encode(
-                                    reelId,
-                                    "UTF-8"
-                            );
-
-            patchConnection =
-                    openConnection(
-                            patchUrl,
-                            "PATCH",
-                            token
-                    );
-
-            patchConnection.setDoOutput(true);
-
-            patchConnection.setRequestProperty(
-                    "Content-Type",
-                    "application/json"
-            );
-
-            patchConnection.setRequestProperty(
-                    "Prefer",
-                    "return=minimal"
-            );
-
-            OutputStream output =
-                    patchConnection.getOutputStream();
-
-            output.write(
-                    update.toString()
-                            .getBytes(
-                                    StandardCharsets.UTF_8
-                            )
-            );
-
-            output.flush();
-            output.close();
-
-            patchConnection.getResponseCode();
-
-        } catch (Exception ignored) {
-
-        } finally {
-
-            if (countConnection != null) {
-                countConnection.disconnect();
-            }
-
-            if (patchConnection != null) {
-                patchConnection.disconnect();
             }
         }
     }
@@ -678,18 +723,15 @@ public final class ReelSupabaseCommentsHelper {
 
     private static String readResponse(
             HttpURLConnection connection,
-            int responseCode)
+            int code)
             throws Exception {
 
         InputStream input;
 
-        if (responseCode >= 400) {
-
+        if (code >= 400) {
             input =
                     connection.getErrorStream();
-
         } else {
-
             input =
                     connection.getInputStream();
         }
@@ -726,55 +768,65 @@ public final class ReelSupabaseCommentsHelper {
     // CALLBACK HELPERS
     // =========================================================
 
-    private static void postError(
+    private static void postCommentsError(
             CommentsCallback callback,
             String message) {
 
-        if (callback == null) {
-            return;
-        }
+        MAIN_HANDLER.post(() -> {
 
-        MAIN_HANDLER.post(() ->
+            if (callback != null) {
                 callback.onError(
-                        message
-                )
-        );
+                        message == null
+                                ? "Comments error."
+                                : message
+                );
+            }
+        });
+    }
+
+    private static void postActionSuccess(
+            ActionCallback callback) {
+
+        MAIN_HANDLER.post(() -> {
+
+            if (callback != null) {
+                callback.onSuccess();
+            }
+        });
     }
 
     private static void postActionError(
             ActionCallback callback,
             String message) {
 
-        if (callback == null) {
-            return;
-        }
+        MAIN_HANDLER.post(() -> {
 
-        MAIN_HANDLER.post(() ->
+            if (callback != null) {
                 callback.onError(
-                        message
-                )
-        );
+                        message == null
+                                ? "Comment action failed."
+                                : message
+                );
+            }
+        });
     }
 
     // =========================================================
-    // SAFE MESSAGE
+    // ERROR
     // =========================================================
 
     private static String safeMessage(
-            Exception exception,
+            Exception e,
             String fallback) {
 
-        if (exception == null) {
+        if (e == null
+                || TextUtils.isEmpty(
+                        e.getMessage()
+                )) {
+
             return fallback;
         }
 
-        String message =
-                exception.getMessage();
-
-        if (TextUtils.isEmpty(message)) {
-            return fallback;
-        }
-
-        return message;
+        return e.getMessage();
     }
 }
