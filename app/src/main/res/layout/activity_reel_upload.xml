@@ -2,49 +2,46 @@
 
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/reelUploadRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#090B0F">
+    android:background="#000000">
 
     <!-- ===================================================== -->
-    <!-- SCREEN 1 : REEL EDITOR -->
+    <!-- MAIN CONTENT                                          -->
     <!-- ===================================================== -->
 
-    <FrameLayout
-        android:id="@+id/editorScreen"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#000000">
+        android:orientation="vertical">
 
-        <!-- VIDEO -->
-
-        <VideoView
-            android:id="@+id/editorVideoPreview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:background="#000000" />
-
-
-        <!-- TOP BAR -->
+        <!-- ================================================= -->
+        <!-- TOP BAR                                           -->
+        <!-- ================================================= -->
 
         <LinearLayout
+            android:id="@+id/reelTopBar"
             android:layout_width="match_parent"
-            android:layout_height="72dp"
-            android:layout_gravity="top"
+            android:layout_height="wrap_content"
+            android:minHeight="64dp"
             android:gravity="center_vertical"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:background="#33000000">
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="#000000">
 
-            <ImageButton
-                android:id="@+id/editorBackButton"
+            <TextView
+                android:id="@+id/reelBackButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Back"
-                android:src="@android:drawable/ic_menu_revert"
-                android:tint="#FFFFFF" />
+                android:gravity="center"
+                android:text="‹"
+                android:textColor="#FFFFFF"
+                android:textSize="42sp"
+                android:fontFamily="sans"
+                android:clickable="true"
+                android:focusable="true"/>
 
             <TextView
                 android:layout_width="0dp"
@@ -53,442 +50,191 @@
                 android:gravity="center"
                 android:text="Create Reel"
                 android:textColor="#FFFFFF"
-                android:textSize="19sp"
-                android:textStyle="bold" />
+                android:textSize="22sp"
+                android:textStyle="bold"/>
 
             <View
                 android:layout_width="48dp"
-                android:layout_height="48dp" />
+                android:layout_height="48dp"/>
 
         </LinearLayout>
 
+        <!-- ================================================= -->
+        <!-- VIDEO AREA                                        -->
+        <!-- ================================================= -->
 
-        <!-- EMPTY STATE -->
-
-        <LinearLayout
-            android:id="@+id/editorEmptyState"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="32dp">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#000000">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Create a Reel"
-                android:textColor="#FFFFFF"
-                android:textSize="27sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:text="Select a video to start"
-                android:textColor="#B0B4BA"
-                android:textSize="14sp" />
-
-        </LinearLayout>
-
-
-        <!-- EDITING TOOLBAR -->
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="86dp"
-            android:layout_gravity="bottom"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:background="#DD15171B">
-
-            <Button
-                android:id="@+id/audioButton"
-                android:layout_width="0dp"
-                android:layout_height="66dp"
-                android:layout_weight="1"
-                android:layout_margin="3dp"
-                android:text="♫&#10;Audio"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/textButton"
-                android:layout_width="0dp"
-                android:layout_height="66dp"
-                android:layout_weight="1"
-                android:layout_margin="3dp"
-                android:text="Aa&#10;Text"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/voiceButton"
-                android:layout_width="0dp"
-                android:layout_height="66dp"
-                android:layout_weight="1"
-                android:layout_margin="3dp"
-                android:text="🎙&#10;Voice"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/captionsButton"
-                android:layout_width="0dp"
-                android:layout_height="66dp"
-                android:layout_weight="1"
-                android:layout_margin="3dp"
-                android:text="CC&#10;Captions"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textAllCaps="false" />
-
-            <Button
-                android:id="@+id/stickersButton"
-                android:layout_width="0dp"
-                android:layout_height="66dp"
-                android:layout_weight="1"
-                android:layout_margin="3dp"
-                android:text="☺&#10;Stickers"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textAllCaps="false" />
-
-        </LinearLayout>
-
-
-        <!-- OPEN EDITS -->
-
-        <Button
-            android:id="@+id/openEditsButton"
-            android:layout_width="wrap_content"
-            android:layout_height="54dp"
-            android:layout_gravity="bottom|start"
-            android:layout_marginStart="20dp"
-            android:layout_marginBottom="100dp"
-            android:minWidth="150dp"
-            android:text="Open in Edits"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textAllCaps="false" />
-
-
-        <!-- NEXT -->
-
-        <Button
-            android:id="@+id/nextButton"
-            android:layout_width="130dp"
-            android:layout_height="54dp"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="100dp"
-            android:text="Next →"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:textAllCaps="false" />
-
-    </FrameLayout>
-
-
-    <!-- ===================================================== -->
-    <!-- SCREEN 2 : NEW REEL -->
-    <!-- ===================================================== -->
-
-    <ScrollView
-        android:id="@+id/detailsScreen"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#090B0F"
-        android:fillViewport="true"
-        android:visibility="gone">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-
-            <!-- TOP -->
-
-            <LinearLayout
+            <VideoView
+                android:id="@+id/videoPreview"
                 android:layout_width="match_parent"
-                android:layout_height="72dp"
-                android:gravity="center_vertical"
-                android:paddingStart="10dp"
-                android:paddingEnd="18dp">
+                android:layout_height="match_parent"
+                android:visibility="visible"/>
 
-                <ImageButton
-                    android:id="@+id/detailsBackButton"
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="Back"
-                    android:src="@android:drawable/ic_menu_revert"
-                    android:tint="#FFFFFF" />
+            <!-- Empty state -->
+            <LinearLayout
+                android:id="@+id/emptyVideoState"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="32dp">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:paddingStart="14dp"
-                    android:text="New reel"
+                    android:text="Create a Reel"
                     android:textColor="#FFFFFF"
-                    android:textSize="23sp"
-                    android:textStyle="bold" />
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Select a video to start"
+                    android:textColor="#AAAAAA"
+                    android:textSize="17sp"
+                    android:gravity="center"/>
 
             </LinearLayout>
 
+            <!-- Video selected indicator -->
+            <TextView
+                android:id="@+id/videoNameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:layout_marginTop="16dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:text="Select a video"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:background="#66000000"/>
 
-            <!-- COVER -->
+        </FrameLayout>
 
-            <FrameLayout
-                android:layout_width="236dp"
-                android:layout_height="414dp"
-                android:layout_gravity="center_horizontal"
-                android:background="#202328">
+        <!-- ================================================= -->
+        <!-- BOTTOM PANEL                                      -->
+        <!-- ================================================= -->
 
-                <VideoView
-                    android:id="@+id/coverPreview"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#111111" />
+        <LinearLayout
+            android:id="@+id/reelBottomBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingTop="14dp"
+            android:background="#080808">
 
-                <Button
-                    android:id="@+id/editCoverButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="48dp"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="18dp"
-                    android:text="Edit cover"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF"
-                    android:textStyle="bold" />
-
-            </FrameLayout>
-
-
-            <!-- CAPTION -->
+            <!-- Caption -->
 
             <EditText
                 android:id="@+id/captionInput"
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:layout_marginTop="24dp"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:gravity="top"
-                android:background="#090B0F"
-                android:hint="Write a caption and add hashtags..."
+                android:layout_height="52dp"
+                android:background="@android:color/transparent"
+                android:hint="Write a caption..."
                 android:textColor="#FFFFFF"
-                android:textColorHint="#9DA2AD"
+                android:textColorHint="#999999"
                 android:textSize="16sp"
-                android:maxLength="1000"
-                android:inputType="textCapSentences|textMultiLine" />
+                android:maxLines="2"
+                android:inputType="textCapSentences|textMultiLine"/>
 
-
-            <!-- QUICK BUTTONS -->
+            <!-- Audience -->
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="58dp"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:gravity="center_vertical">
-
-                <Button
-                    android:id="@+id/hashtagsButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="46dp"
-                    android:text="# Hashtags"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF" />
-
-                <Button
-                    android:id="@+id/pollButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="46dp"
-                    android:layout_marginStart="8dp"
-                    android:text="☰ Poll"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF" />
-
-                <Button
-                    android:id="@+id/promptButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="46dp"
-                    android:layout_marginStart="8dp"
-                    android:text="◯ Prompt"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF" />
-
-            </LinearLayout>
-
-
-            <!-- OPTIONS -->
-
-            <Button
-                android:id="@+id/tagPeopleButton"
-                android:layout_width="match_parent"
-                android:layout_height="62dp"
+                android:layout_height="52dp"
                 android:gravity="center_vertical"
-                android:paddingStart="24dp"
-                android:text="◎   Tag people                                      ›"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent" />
-
-            <Button
-                android:id="@+id/locationButton"
-                android:layout_width="match_parent"
-                android:layout_height="62dp"
-                android:gravity="center_vertical"
-                android:paddingStart="24dp"
-                android:text="⌖   Add location                                  ›"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent" />
-
-            <Button
-                android:id="@+id/renameAudioButton"
-                android:layout_width="match_parent"
-                android:layout_height="62dp"
-                android:gravity="center_vertical"
-                android:paddingStart="24dp"
-                android:text="♫   Rename audio                 Original Audio   ›"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent" />
-
-            <Button
-                android:id="@+id/aiLabelButton"
-                android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:gravity="center_vertical"
-                android:paddingStart="24dp"
-                android:text="✦   Add AI label"
-                android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent" />
-
-
-            <!-- DIVIDER -->
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="8dp"
-                android:background="#202328" />
-
-
-            <!-- AUDIENCE -->
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="72dp"
-                android:gravity="center_vertical"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp">
+                android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Audience"
-                    android:textColor="#FFFFFF"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
+                    android:text="Who can see this?"
+                    android:textColor="#AAAAAA"
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
 
                 <RadioButton
                     android:id="@+id/publicRadio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Everyone"
+                    android:layout_marginStart="12dp"
+                    android:checked="true"
+                    android:text="Public"
                     android:textColor="#FFFFFF"
-                    android:buttonTint="#D2A546" />
+                    android:buttonTint="#E4B54C"/>
 
                 <RadioButton
                     android:id="@+id/followersRadio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginStart="6dp"
                     android:text="Followers"
                     android:textColor="#FFFFFF"
-                    android:buttonTint="#D2A546" />
+                    android:buttonTint="#E4B54C"/>
 
             </LinearLayout>
 
-
-            <!-- PROGRESS -->
+            <!-- Progress -->
 
             <ProgressBar
                 android:id="@+id/uploadProgress"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
-                android:layout_height="4dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginEnd="24dp"
+                android:layout_height="5dp"
                 android:max="100"
                 android:progress="0"
-                android:visibility="gone" />
+                android:visibility="gone"/>
 
-            <TextView
-                android:id="@+id/uploadStatusText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="8dp"
-                android:text="Publishing..."
-                android:textColor="#D2A546"
-                android:textSize="13sp"
-                android:visibility="gone" />
-
-
-            <!-- BOTTOM BUTTONS -->
+            <!-- Buttons -->
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="90dp"
-                android:orientation="horizontal"
+                android:layout_height="64dp"
                 android:gravity="center_vertical"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:paddingBottom="14dp">
+                android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/saveDraftButton"
+                    android:id="@+id/selectVideoButton"
                     android:layout_width="0dp"
-                    android:layout_height="54dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="Save draft"
+                    android:text="Select Video"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
-                    android:textStyle="bold" />
+                    android:textSize="15sp"
+                    android:backgroundTint="#24262B"/>
 
                 <Button
                     android:id="@+id/publishButton"
                     android:layout_width="0dp"
-                    android:layout_height="54dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:text="Publish Reel"
                     android:textAllCaps="false"
                     android:textColor="#000000"
-                    android:textStyle="bold" />
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="#E4B54C"/>
 
             </LinearLayout>
 
         </LinearLayout>
 
-    </ScrollView>
+    </LinearLayout>
 
 </FrameLayout>
