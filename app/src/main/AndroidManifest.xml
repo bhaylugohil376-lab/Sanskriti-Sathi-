@@ -2,7 +2,6 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -19,12 +18,8 @@
             android:exported="true">
 
             <intent-filter>
-
                 <action android:name="android.intent.action.MAIN" />
-
-                <category
-                    android:name="android.intent.category.LAUNCHER" />
-
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
@@ -35,7 +30,6 @@
             android:exported="false" />
 
         <!-- Authentication -->
-
         <activity
             android:name=".LoginActivity"
             android:exported="false" />
@@ -48,31 +42,24 @@
             android:name=".ForgotPasswordActivity"
             android:exported="false" />
 
-        <!-- Google OAuth -->
         <activity
             android:name=".GoogleAuthActivity"
             android:exported="false" />
 
-        <!-- Google OAuth callback -->
         <activity
             android:name=".AuthCallbackActivity"
             android:exported="true">
 
             <intent-filter>
-
                 <action android:name="android.intent.action.VIEW" />
 
-                <category
-                    android:name="android.intent.category.DEFAULT" />
-
-                <category
-                    android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:scheme="sanskritisathi"
                     android:host="auth"
                     android:path="/callback" />
-
             </intent-filter>
 
         </activity>
@@ -179,25 +166,21 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- Reel Editor -->
         <activity
             android:name=".ReelEditorActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- New Reel / Publish -->
         <activity
             android:name=".NewReelActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- Reel Comments -->
         <activity
             android:name=".ReelCommentsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- Existing Reel Edit -->
         <activity
             android:name=".ReelEditActivity"
             android:exported="false"
@@ -216,14 +199,6 @@
             android:name=".GroupChatActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".ReelEditorActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".NewReelActivity"
-            android:exported="false" />
-        
     </application>
 
 </manifest>
