@@ -3,9 +3,11 @@ package com.sanskritisathi.app;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -63,20 +65,15 @@ public class ReelCommentsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(
-                R.layout.activity_reel_comments
-        );
+        setContentView(R.layout.activity_reel_comments);
 
         bindViews();
         setupRecyclerView();
         setupListeners();
 
-        reelId = getIntent().getStringExtra(
-                "reel_id"
-        );
+        reelId = getIntent().getStringExtra("reel_id");
 
         if (TextUtils.isEmpty(reelId)) {
-
             Toast.makeText(
                     this,
                     "Invalid Reel.",
@@ -87,59 +84,64 @@ public class ReelCommentsActivity extends AppCompatActivity {
             return;
         }
 
+        if (!SupabaseAuthManager.isLoggedIn(this)) {
+            Toast.makeText(
+                    this,
+                    "Please login first.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            finish();
+            return;
+        }
+
+        updateTitle();
+        updateEmptyState();
+
         loadComments();
     }
 
     // =========================================================
-    // BIND
+    // BIND VIEWS
     // =========================================================
 
     private void bindViews() {
 
         commentsRecyclerView =
-                findViewById(
-                        R.id.commentsRecyclerView
-                );
+                findViewById(R.id.commentsRecyclerView);
 
         commentInput =
-                findViewById(
-                        R.id.commentInput
-                );
+                findViewById(R.id.commentInput);
 
         sendButton =
-                findViewById(
-                        R.id.sendButton
-                );
+                findViewById(R.id.sendButton);
 
         closeButton =
-                findViewById(
-                        R.id.closeButton
-                );
+                findViewById(R.id.closeButton);
 
         progressBar =
-                findViewById(
-                        R.id.commentsProgress
-                );
+                findViewById(R.id.commentsProgress);
 
         emptyText =
-                findViewById(
-                        R.id.emptyCommentsText
-                );
+                findViewById(R.id.emptyCommentsText);
 
         commentTitle =
-                findViewById(
-                        R.id.commentTitle
-                );
+                findViewById(R.id.commentTitle);
     }
 
     // =========================================================
-    // RECYCLER
+    // RECYCLER VIEW
     // =========================================================
 
     private void setupRecyclerView() {
 
+        LinearLayoutManager layoutManager =
+                new LinearLayoutManager(this);
+
+        layoutManager.setStackFromEnd(false);
+
         commentsRecyclerView.setLayoutManager(
-                new LinearLayoutManager(this)
+                layoutManager
         );
 
         commentsRecyclerView.setHasFixedSize(false);
@@ -162,14 +164,12 @@ public class ReelCommentsActivity extends AppCompatActivity {
     private void setupListeners() {
 
         if (closeButton != null) {
-
             closeButton.setOnClickListener(
                     v -> finish()
             );
         }
 
         if (sendButton != null) {
-
             sendButton.setOnClickListener(
                     v -> addComment()
             );
@@ -180,8 +180,23 @@ public class ReelCommentsActivity extends AppCompatActivity {
             commentInput.setOnEditorActionListener(
                     (v, actionId, event) -> {
 
-                        addComment();
-                        return true;
+                        boolean send =
+                                actionId == EditorInfo.IME_ACTION_SEND
+                                        || actionId == EditorInfo.IME_ACTION_DONE
+                                        || (
+                                        event != null
+                                                && event.getKeyCode()
+                                                == KeyEvent.KEYCODE_ENTER
+                                                && event.getAction()
+                                                == KeyEvent.ACTION_DOWN
+                                );
+
+                        if (send) {
+                            addComment();
+                            return true;
+                        }
+
+                        return false;
                     }
             );
         }
@@ -206,22 +221,16 @@ public class ReelCommentsActivity extends AppCompatActivity {
                                 .getAccessToken(this);
 
                 if (TextUtils.isEmpty(token)) {
-
-                    runOnUiThread(() -> {
-
-                        showLoading(false);
-
-                        Toast.makeText(
-                                this,
-                                "Please login first.",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        finish();
-                    });
-
-                    return;
+                    throw new Exception(
+                            "Login session nahi mili."
+                    );
                 }
+
+                String encodedReelId =
+                        URLEncoder.encode(
+                                reelId,
+                                "UTF-8"
+                        );
 
                 String url =
                         SupabaseConfig.PROJECT_URL
@@ -229,10 +238,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
                                 + COMMENTS_TABLE
                                 + "?select=*"
                                 + "&reel_id=eq."
-                                + URLEncoder.encode(
-                                        reelId,
-                                        "UTF-8"
-                                )
+                                + encodedReelId
                                 + "&order=created_at.asc";
 
                 connection =
@@ -252,7 +258,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
                         );
 
                 if (code < 200 || code >= 300) {
-
                     throw new Exception(
                             "Comments load failed: "
                                     + response
@@ -283,7 +288,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
 
                     commentList.clear();
-
                     commentList.addAll(result);
 
                     adapter.notifyDataSetChanged();
@@ -291,7 +295,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
                     showLoading(false);
 
                     updateEmptyState();
-
                     updateTitle();
                 });
 
@@ -301,16 +304,16 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
                     showLoading(false);
 
+                    updateEmptyState();
+
                     Toast.makeText(
-                            this,
+                            ReelCommentsActivity.this,
                             safeMessage(
                                     e,
                                     "Comments load nahi hui."
                             ),
                             Toast.LENGTH_LONG
                     ).show();
-
-                    updateEmptyState();
                 });
 
             } finally {
@@ -339,6 +342,10 @@ public class ReelCommentsActivity extends AppCompatActivity {
             return;
         }
 
+        if (commentInput == null) {
+            return;
+        }
+
         String text =
                 commentInput
                         .getText()
@@ -346,7 +353,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
                         .trim();
 
         if (TextUtils.isEmpty(text)) {
-
             return;
         }
 
@@ -395,37 +401,17 @@ public class ReelCommentsActivity extends AppCompatActivity {
                     username = "Sanskriti User";
                 }
 
+                String commentId =
+                        UUID.randomUUID().toString();
+
                 JSONObject json =
                         new JSONObject();
 
-                String commentId =
-                        UUID.randomUUID()
-                                .toString();
-
-                json.put(
-                        "id",
-                        commentId
-                );
-
-                json.put(
-                        "reel_id",
-                        reelId
-                );
-
-                json.put(
-                        "user_id",
-                        userId
-                );
-
-                json.put(
-                        "username",
-                        username
-                );
-
-                json.put(
-                        "text",
-                        text
-                );
+                json.put("id", commentId);
+                json.put("reel_id", reelId);
+                json.put("user_id", userId);
+                json.put("username", username);
+                json.put("text", text);
 
                 String url =
                         SupabaseConfig.PROJECT_URL
@@ -451,18 +437,18 @@ public class ReelCommentsActivity extends AppCompatActivity {
                         "return=representation"
                 );
 
-                OutputStream output =
-                        connection.getOutputStream();
-
-                output.write(
+                byte[] body =
                         json.toString()
                                 .getBytes(
                                         StandardCharsets.UTF_8
-                                )
-                );
+                                );
 
-                output.flush();
-                output.close();
+                try (OutputStream output =
+                             connection.getOutputStream()) {
+
+                    output.write(body);
+                    output.flush();
+                }
 
                 int code =
                         connection.getResponseCode();
@@ -474,12 +460,14 @@ public class ReelCommentsActivity extends AppCompatActivity {
                         );
 
                 if (code < 200 || code >= 300) {
-
                     throw new Exception(
                             "Comment add failed: "
                                     + response
                     );
                 }
+
+                long createdAt =
+                        System.currentTimeMillis();
 
                 ReelComment newComment =
                         new ReelComment(
@@ -488,24 +476,26 @@ public class ReelCommentsActivity extends AppCompatActivity {
                                 userId,
                                 username,
                                 text,
-                                System.currentTimeMillis()
+                                createdAt
                         );
-
-                final ReelComment finalComment =
-                        newComment;
 
                 runOnUiThread(() -> {
 
                     commentList.add(
-                            finalComment
+                            newComment
                     );
 
                     adapter.notifyItemInserted(
                             commentList.size() - 1
                     );
 
-                    commentsRecyclerView.scrollToPosition(
-                            commentList.size() - 1
+                    updateEmptyState();
+                    updateTitle();
+
+                    commentsRecyclerView.post(() ->
+                            commentsRecyclerView.scrollToPosition(
+                                    commentList.size() - 1
+                            )
                     );
 
                     commentInput.setText("");
@@ -513,9 +503,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
                     hideKeyboard();
 
                     setCommentSending(false);
-
-                    updateEmptyState();
-                    updateTitle();
                 });
 
             } catch (Exception e) {
@@ -525,7 +512,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
                     setCommentSending(false);
 
                     Toast.makeText(
-                            this,
+                            ReelCommentsActivity.this,
                             safeMessage(
                                     e,
                                     "Comment add nahi hui."
@@ -621,7 +608,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
                         );
 
                 if (code < 200 || code >= 300) {
-
                     throw new Exception(
                             "Comment delete failed: "
                                     + response
@@ -630,19 +616,18 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
 
-                    if (position >= 0
-                            && position < commentList.size()) {
+                    int safePosition =
+                            position;
 
-                        commentList.remove(position);
+                    if (safePosition >= 0
+                            && safePosition < commentList.size()) {
 
-                        adapter.notifyItemRemoved(
-                                position
+                        commentList.remove(
+                                safePosition
                         );
 
-                        adapter.notifyItemRangeChanged(
-                                position,
-                                commentList.size()
-                                        - position
+                        adapter.notifyItemRemoved(
+                                safePosition
                         );
                     }
 
@@ -650,7 +635,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
                     updateTitle();
 
                     Toast.makeText(
-                            this,
+                            ReelCommentsActivity.this,
                             "Comment deleted.",
                             Toast.LENGTH_SHORT
                     ).show();
@@ -660,7 +645,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
 
                 runOnUiThread(() ->
                         Toast.makeText(
-                                this,
+                                ReelCommentsActivity.this,
                                 safeMessage(
                                         e,
                                         "Comment delete failed."
@@ -726,6 +711,12 @@ public class ReelCommentsActivity extends AppCompatActivity {
             long createdAt =
                     parseCreatedAt(created);
 
+            if (TextUtils.isEmpty(id)
+                    || TextUtils.isEmpty(reel)
+                    || TextUtils.isEmpty(user)) {
+                return null;
+            }
+
             return new ReelComment(
                     id,
                     reel,
@@ -742,7 +733,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // USERNAME
+    // GET USERNAME
     // =========================================================
 
     private String getUsername(
@@ -774,15 +765,15 @@ public class ReelCommentsActivity extends AppCompatActivity {
             int code =
                     connection.getResponseCode();
 
-            if (code < 200 || code >= 300) {
-                return "";
-            }
-
             String response =
                     readResponse(
                             connection,
                             code
                     );
+
+            if (code < 200 || code >= 300) {
+                return "";
+            }
 
             JSONArray array =
                     new JSONArray(response);
@@ -826,9 +817,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 (HttpURLConnection)
                         url.openConnection();
 
-        connection.setRequestMethod(
-                method
-        );
+        connection.setRequestMethod(method);
 
         connection.setConnectTimeout(
                 30000
@@ -843,6 +832,11 @@ public class ReelCommentsActivity extends AppCompatActivity {
                 SupabaseConfig.PUBLISHABLE_KEY
         );
 
+        connection.setRequestProperty(
+                "Accept",
+                "application/json"
+        );
+
         if (!TextUtils.isEmpty(token)) {
 
             connection.setRequestProperty(
@@ -850,11 +844,6 @@ public class ReelCommentsActivity extends AppCompatActivity {
                     "Bearer " + token
             );
         }
-
-        connection.setRequestProperty(
-                "Accept",
-                "application/json"
-        );
 
         return connection;
     }
@@ -882,26 +871,23 @@ public class ReelCommentsActivity extends AppCompatActivity {
             return "";
         }
 
-        BufferedReader reader =
-                new BufferedReader(
-                        new InputStreamReader(
-                                input,
-                                StandardCharsets.UTF_8
-                        )
-                );
-
         StringBuilder builder =
                 new StringBuilder();
 
-        String line;
+        try (BufferedReader reader =
+                     new BufferedReader(
+                             new InputStreamReader(
+                                     input,
+                                     StandardCharsets.UTF_8
+                             )
+                     )) {
 
-        while ((line =
-                reader.readLine()) != null) {
+            String line;
 
-            builder.append(line);
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
         }
-
-        reader.close();
 
         return builder.toString();
     }
@@ -953,8 +939,7 @@ public class ReelCommentsActivity extends AppCompatActivity {
         if (commentTitle != null) {
 
             commentTitle.setText(
-                    "Comments"
-                            + " "
+                    "Comments "
                             + commentList.size()
             );
         }
@@ -969,21 +954,22 @@ public class ReelCommentsActivity extends AppCompatActivity {
             view = commentInput;
         }
 
-        if (view != null) {
+        if (view == null) {
+            return;
+        }
 
-            InputMethodManager manager =
-                    (InputMethodManager)
-                            getSystemService(
-                                    Context.INPUT_METHOD_SERVICE
-                            );
+        InputMethodManager manager =
+                (InputMethodManager)
+                        getSystemService(
+                                Context.INPUT_METHOD_SERVICE
+                        );
 
-            if (manager != null) {
+        if (manager != null) {
 
-                manager.hideSoftInputFromWindow(
-                        view.getWindowToken(),
-                        0
-                );
-            }
+            manager.hideSoftInputFromWindow(
+                    view.getWindowToken(),
+                    0
+            );
         }
     }
 
@@ -1018,15 +1004,18 @@ public class ReelCommentsActivity extends AppCompatActivity {
             Exception e,
             String fallback) {
 
-        if (e == null
-                || TextUtils.isEmpty(
-                        e.getMessage()
-                )) {
-
+        if (e == null) {
             return fallback;
         }
 
-        return e.getMessage();
+        String message =
+                e.getMessage();
+
+        if (TextUtils.isEmpty(message)) {
+            return fallback;
+        }
+
+        return message;
     }
 
     // =========================================================
@@ -1034,7 +1023,8 @@ public class ReelCommentsActivity extends AppCompatActivity {
     // =========================================================
 
     private class CommentAdapter
-            extends RecyclerView.Adapter<CommentAdapter.CommentHolder> {
+            extends RecyclerView.Adapter<
+            CommentAdapter.CommentHolder> {
 
         private final Context context;
         private final List<ReelComment> list;
@@ -1073,12 +1063,15 @@ public class ReelCommentsActivity extends AppCompatActivity {
             ReelComment comment =
                     list.get(position);
 
+            String username =
+                    comment.getUsername();
+
+            if (TextUtils.isEmpty(username)) {
+                username = "Sanskriti User";
+            }
+
             holder.usernameText.setText(
-                    TextUtils.isEmpty(
-                            comment.getUsername()
-                    )
-                            ? "Sanskriti User"
-                            : comment.getUsername()
+                    username
             );
 
             holder.commentText.setText(
@@ -1096,8 +1089,8 @@ public class ReelCommentsActivity extends AppCompatActivity {
                             currentUserId
                     )
                             && currentUserId.equals(
-                                    comment.getUserId()
-                            );
+                            comment.getUserId()
+                    );
 
             holder.deleteButton.setVisibility(
                     ownComment
@@ -1106,10 +1099,20 @@ public class ReelCommentsActivity extends AppCompatActivity {
             );
 
             holder.deleteButton.setOnClickListener(
-                    v -> deleteComment(
-                            comment,
-                            holder.getBindingAdapterPosition()
-                    )
+                    v -> {
+
+                        int adapterPosition =
+                                holder.getBindingAdapterPosition();
+
+                        if (adapterPosition !=
+                                RecyclerView.NO_POSITION) {
+
+                            deleteComment(
+                                    comment,
+                                    adapterPosition
+                            );
+                        }
+                    }
             );
         }
 
