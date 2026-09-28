@@ -2,8 +2,9 @@ package com.sanskritisathi.app;
 
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
@@ -25,16 +26,20 @@ public class ReelActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Window window = getWindow();
-        window.setStatusBarColor(android.graphics.Color.BLACK);
-        window.setNavigationBarColor(android.graphics.Color.BLACK);
-
         setContentView(R.layout.activity_reel);
 
-        reelRecyclerView = findViewById(R.id.reelRecyclerView);
+        reelRecyclerView = findViewById(
+                R.id.reelRecyclerView
+        );
 
         setupRecyclerView();
+
+        loadReels();
     }
+
+    // =========================================================
+    // RECYCLER VIEW
+    // =========================================================
 
     private void setupRecyclerView() {
 
@@ -45,32 +50,48 @@ public class ReelActivity extends AppCompatActivity {
                         false
                 );
 
-        reelRecyclerView.setLayoutManager(layoutManager);
+        reelRecyclerView.setLayoutManager(
+                layoutManager
+        );
 
         reelRecyclerView.setHasFixedSize(false);
+
         reelRecyclerView.setItemViewCacheSize(2);
-        reelRecyclerView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        reelRecyclerView.setClipToPadding(false);
 
-        reelAdapter =
-                new ReelAdapter(
-                        this,
-                        reelList
-                );
+        reelRecyclerView.setOverScrollMode(
+                View.OVER_SCROLL_NEVER
+        );
 
-        reelRecyclerView.setAdapter(reelAdapter);
+        reelRecyclerView.setVerticalScrollBarEnabled(
+                false
+        );
 
+        // One complete Reel per swipe
         snapHelper = new PagerSnapHelper();
+
         snapHelper.attachToRecyclerView(
                 reelRecyclerView
         );
+
+        reelAdapter = new ReelAdapter(
+                this,
+                reelList
+        );
+
+        reelRecyclerView.setAdapter(
+                reelAdapter
+        );
+
+        // -----------------------------------------------------
+        // Scroll listener
+        // -----------------------------------------------------
 
         reelRecyclerView.addOnScrollListener(
                 new RecyclerView.OnScrollListener() {
 
                     @Override
                     public void onScrollStateChanged(
-                            RecyclerView recyclerView,
+                            @NonNull RecyclerView recyclerView,
                             int newState) {
 
                         super.onScrollStateChanged(
@@ -78,8 +99,8 @@ public class ReelActivity extends AppCompatActivity {
                                 newState
                         );
 
-                        if (newState ==
-                                RecyclerView.SCROLL_STATE_IDLE) {
+                        if (newState
+                                == RecyclerView.SCROLL_STATE_IDLE) {
 
                             playCurrentReel();
                         }
@@ -88,42 +109,182 @@ public class ReelActivity extends AppCompatActivity {
         );
     }
 
+    // =========================================================
+    // LOAD REELS
+    // =========================================================
+
+    private void loadReels() {
+
+        /*
+         * IMPORTANT:
+         *
+         * Yahan tumhare existing Supabase helper
+         * ka reel loading method use karo.
+         *
+         * Agar tumhare ReelSupabaseHelper me method
+         * ka naam different hai, wahi existing method
+         * use karna hai.
+         */
+
+        ReelSupabaseHelper.loadReels(
+                this,
+                new ReelSupabaseHelper.ReelsCallback() {
+
+                    @Override
+                    public void onSuccess(
+                            List<Reel> reels) {
+
+                        runOnUiThread(() -> {
+
+                            reelList.clear();
+
+                            if (reels != null) {
+
+                                reelList.addAll(
+                                        reels
+                                );
+                            }
+
+                            reelAdapter.notifyDataSetChanged();
+
+                            if (reelList.isEmpty()) {
+
+                                Toast.makeText(
+                                        ReelActivity.this,
+                                        "Abhi koi Reel available nahi hai.",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                                return;
+                            }
+
+                            /*
+                             * First Reel ko automatically
+                             * play karo.
+                             */
+                            reelRecyclerView.post(
+                                    () -> playCurrentReel()
+                            );
+                        });
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+
+                        runOnUiThread(() -> {
+
+                            Toast.makeText(
+                                    ReelActivity.this,
+                                    message == null
+                                            ? "Reels load nahi hui."
+                                            : message,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        });
+                    }
+                }
+        );
+    }
+
+    // =========================================================
+    // CURRENT REEL PLAY
+    // =========================================================
+
     private void playCurrentReel() {
 
-        if (reelAdapter != null) {
-            reelAdapter.resumeCurrentVideo();
+        if (reelRecyclerView == null
+                || reelAdapter == null) {
+            return;
         }
-    }
 
-    public RecyclerView getReelRecyclerView() {
-        return reelRecyclerView;
-    }
+        /*
+         * Pehle sab videos pause.
+         */
+        reelAdapter.pauseAllVideos();
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+        View snapView =
+                snapHelper.findSnapView(
+                        reelRecyclerView.getLayoutManager()
+                );
 
-        if (reelAdapter != null) {
-            reelAdapter.resumeCurrentVideo();
+        if (snapView == null) {
+            return;
         }
+
+        int position =
+                reelRecyclerView
+                        .getLayoutManager()
+                        .getPosition(
+                                snapView
+                        );
+
+        if (position == RecyclerView.NO_POSITION) {
+            return;
+        }
+
+        /*
+         * Adapter ke current player ko
+         * resume karne do.
+         */
+        reelAdapter.resumeCurrentVideo();
     }
+
+    // =========================================================
+    // PAUSE WHEN ACTIVITY GOES BACKGROUND
+    // =========================================================
 
     @Override
     protected void onPause() {
-        super.onPause();
 
         if (reelAdapter != null) {
+
             reelAdapter.pauseAllVideos();
         }
+
+        super.onPause();
     }
+
+    // =========================================================
+    // RESUME
+    // =========================================================
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+
+        if (reelRecyclerView != null
+                && reelAdapter != null) {
+
+            reelRecyclerView.post(
+                    () -> playCurrentReel()
+            );
+        }
+    }
+
+    // =========================================================
+    // DESTROY
+    // =========================================================
 
     @Override
     protected void onDestroy() {
 
         if (reelAdapter != null) {
+
             reelAdapter.releaseAllVideos();
         }
 
         super.onDestroy();
+    }
+
+    // =========================================================
+    // GET RECYCLER VIEW
+    // ReelAdapter is using this method
+    // =========================================================
+
+    public RecyclerView getReelRecyclerView() {
+
+        return reelRecyclerView;
     }
 }
