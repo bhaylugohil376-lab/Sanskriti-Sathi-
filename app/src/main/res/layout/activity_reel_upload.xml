@@ -16,11 +16,12 @@
         <LinearLayout
             android:id="@+id/reelTopBar"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
+            android:minHeight="64dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:background="#000000">
 
             <TextView
@@ -31,6 +32,7 @@
                 android:text="‹"
                 android:textColor="#FFFFFF"
                 android:textSize="42sp"
+                android:fontFamily="sans"
                 android:clickable="true"
                 android:focusable="true"/>
 
@@ -41,7 +43,7 @@
                 android:gravity="center"
                 android:text="Create Reel"
                 android:textColor="#FFFFFF"
-                android:textSize="21sp"
+                android:textSize="22sp"
                 android:textStyle="bold"/>
 
             <View
@@ -52,28 +54,28 @@
 
         <!-- VIDEO AREA -->
         <FrameLayout
-            android:id="@+id/videoContainer"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:background="#000000">
 
-            <!-- VIDEO -->
+            <!-- IMPORTANT: Initially hidden -->
             <VideoView
                 android:id="@+id/videoPreview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_gravity="center"
                 android:visibility="gone"
                 android:background="#000000"/>
 
-            <!-- EMPTY STATE -->
+            <!-- Empty state -->
             <LinearLayout
                 android:id="@+id/emptyVideoState"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="30dp"
+                android:padding="32dp"
                 android:background="#000000">
 
                 <TextView
@@ -81,7 +83,7 @@
                     android:layout_height="wrap_content"
                     android:text="Create a Reel"
                     android:textColor="#FFFFFF"
-                    android:textSize="30sp"
+                    android:textSize="32sp"
                     android:textStyle="bold"
                     android:gravity="center"/>
 
@@ -91,27 +93,26 @@
                     android:layout_marginTop="10dp"
                     android:text="Select a video to start"
                     android:textColor="#AAAAAA"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:gravity="center"/>
 
             </LinearLayout>
 
-            <!-- SELECTED VIDEO NAME -->
+            <!-- Selected video indicator -->
             <TextView
                 android:id="@+id/videoNameText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|center_horizontal"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="16dp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:paddingTop="7dp"
-                android:paddingBottom="7dp"
-                android:text="Video selected ✓"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:text="Select a video"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
-                android:visibility="gone"
-                android:background="#99000000"/>
+                android:background="#66000000"/>
 
         </FrameLayout>
 
@@ -121,15 +122,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="10dp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingTop="14dp"
             android:background="#080808">
 
             <EditText
                 android:id="@+id/captionInput"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="52dp"
                 android:background="@android:color/transparent"
                 android:hint="Write a caption..."
                 android:textColor="#FFFFFF"
@@ -140,7 +141,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="52dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -156,7 +157,7 @@
                     android:id="@+id/publicRadio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="12dp"
                     android:checked="true"
                     android:text="Public"
                     android:textColor="#FFFFFF"
@@ -166,7 +167,7 @@
                     android:id="@+id/followersRadio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginStart="6dp"
                     android:text="Followers"
                     android:textColor="#FFFFFF"
                     android:buttonTint="#E4B54C"/>
@@ -184,16 +185,16 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="64dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/selectVideoButton"
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
+                    android:layout_marginEnd="8dp"
                     android:text="Select Video"
                     android:textAllCaps="false"
                     android:textColor="#FFFFFF"
@@ -203,9 +204,9 @@
                 <Button
                     android:id="@+id/publishButton"
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
+                    android:layout_height="52dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="6dp"
+                    android:layout_marginStart="8dp"
                     android:text="Publish Reel"
                     android:textAllCaps="false"
                     android:textColor="#000000"
