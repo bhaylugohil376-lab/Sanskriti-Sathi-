@@ -6,15 +6,13 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Full-screen vertical reels -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/reelRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#000000"
         android:clipToPadding="false"
         android:overScrollMode="never"
-        android:scrollbars="none"
-        android:background="#000000"
-        android:orientation="vertical" />
+        android:scrollbars="none"/>
 
 </FrameLayout>
