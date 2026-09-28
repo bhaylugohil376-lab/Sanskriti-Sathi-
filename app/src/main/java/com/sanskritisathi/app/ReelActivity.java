@@ -7,7 +7,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -16,19 +15,18 @@ import java.util.List;
 public class ReelActivity extends AppCompatActivity {
 
     private RecyclerView reelRecyclerView;
-
     private ReelAdapter reelAdapter;
 
     private final List<Reel> reelList =
             new ArrayList<>();
 
-    private PagerSnapHelper pagerSnapHelper;
+    private LinearLayoutManager layoutManager;
 
     private boolean loading = false;
+    private boolean firstLoad = true;
 
-    // =========================================================
-    // CREATE
-    // =========================================================
+    private int lastPlayedPosition =
+            RecyclerView.NO_POSITION;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +37,14 @@ public class ReelActivity extends AppCompatActivity {
         );
 
         bindViews();
+
         setupRecyclerView();
+
         loadReels();
     }
 
     // =========================================================
-    // BIND
+    // BIND VIEWS
     // =========================================================
 
     private void bindViews() {
@@ -56,12 +56,12 @@ public class ReelActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // RECYCLER VIEW
+    // SETUP RECYCLER VIEW
     // =========================================================
 
     private void setupRecyclerView() {
 
-        LinearLayoutManager layoutManager =
+        layoutManager =
                 new LinearLayoutManager(
                         this,
                         LinearLayoutManager.VERTICAL,
@@ -80,12 +80,12 @@ public class ReelActivity extends AppCompatActivity {
                 2
         );
 
-        reelRecyclerView.setOverScrollMode(
-                View.OVER_SCROLL_NEVER
-        );
-
         reelRecyclerView.setClipToPadding(
                 false
+        );
+
+        reelRecyclerView.setOverScrollMode(
+                View.OVER_SCROLL_NEVER
         );
 
         reelRecyclerView.setVerticalScrollBarEnabled(
@@ -102,20 +102,14 @@ public class ReelActivity extends AppCompatActivity {
                 reelAdapter
         );
 
-        // -----------------------------------------------------
-        // Instagram-style one-reel-at-a-time snapping
-        // -----------------------------------------------------
+        setupScrollListener();
+    }
 
-        pagerSnapHelper =
-                new PagerSnapHelper();
+    // =========================================================
+    // SCROLL LISTENER
+    // =========================================================
 
-        pagerSnapHelper.attachToRecyclerView(
-                reelRecyclerView
-        );
-
-        // -----------------------------------------------------
-        // Detect settled reel and play it
-        // -----------------------------------------------------
+    private void setupScrollListener() {
 
         reelRecyclerView.addOnScrollListener(
                 new RecyclerView.OnScrollListener() {
@@ -130,11 +124,39 @@ public class ReelActivity extends AppCompatActivity {
                                 newState
                         );
 
+                        /*
+                         * Instagram-style behavior:
+                         *
+                         * User swipe karte waqt
+                         * current video pause rahega.
+                         *
+                         * Scroll complete hone ke baad
+                         * center/visible reel play hogi.
+                         */
+
                         if (newState ==
                                 RecyclerView.SCROLL_STATE_IDLE) {
 
-                            playSnappedReel();
+                            playBestVisibleReel();
                         }
+                    }
+
+                    @Override
+                    public void onScrolled(
+                            @NonNull RecyclerView recyclerView,
+                            int dx,
+                            int dy) {
+
+                        super.onScrolled(
+                                recyclerView,
+                                dx,
+                                dy
+                        );
+
+                        /*
+                         * Fast scrolling ke time
+                         * videos continuously switch nahi honge.
+                         */
                     }
                 }
         );
@@ -165,7 +187,6 @@ public class ReelActivity extends AppCompatActivity {
                         reelList.clear();
 
                         if (reels != null) {
-
                             reelList.addAll(
                                     reels
                             );
@@ -184,8 +205,18 @@ public class ReelActivity extends AppCompatActivity {
                             return;
                         }
 
+                        /*
+                         * First reel ko layout hone ke
+                         * baad play karenge.
+                         */
+
                         reelRecyclerView.post(
-                                () -> playSnappedReel()
+                                () -> {
+
+                                    playBestVisibleReel();
+
+                                    firstLoad = false;
+                                }
                         );
                     }
 
@@ -208,73 +239,149 @@ public class ReelActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // PLAY SNAPPED REEL
+    // FIND BEST VISIBLE REEL
     // =========================================================
 
-    private void playSnappedReel() {
+    private void playBestVisibleReel() {
 
-        if (reelAdapter == null) {
+        if (reelAdapter == null
+                || reelList.isEmpty()) {
+
             return;
         }
+
+        int position =
+                findBestVisiblePosition();
+
+        if (position ==
+                RecyclerView.NO_POSITION) {
+
+            return;
+        }
+
+        /*
+         * Pehle sab visible videos pause.
+         */
 
         reelAdapter.pauseAllVideos();
 
-        View snappedView =
-                pagerSnapHelper.findSnapView(
-                        reelRecyclerView.getLayoutManager()
-                );
-
-        if (snappedView == null) {
-
-            reelAdapter.resumeCurrentVideo();
-
-            return;
-        }
+        /*
+         * Selected visible video play.
+         */
 
         RecyclerView.ViewHolder holder =
-                reelRecyclerView.getChildViewHolder(
-                        snappedView
-                );
+                reelRecyclerView
+                        .findViewHolderForAdapterPosition(
+                                position
+                        );
 
         if (holder instanceof ReelAdapter.ReelViewHolder) {
 
             ReelAdapter.ReelViewHolder reelHolder =
-                    (ReelAdapter.ReelViewHolder) holder;
+                    (ReelAdapter.ReelViewHolder)
+                            holder;
 
-            reelHolder.playVideo();
-
-            addViewForSnappedReel(
-                    holder.getBindingAdapterPosition()
-            );
+            reelHolder.playPlayer();
         }
+
+        /*
+         * New reel par view count.
+         */
+
+        if (position != lastPlayedPosition) {
+
+            lastPlayedPosition =
+                    position;
+
+            Reel reel =
+                    reelList.get(position);
+
+            if (reel != null) {
+
+                addViewOnce(
+                        reel
+                );
+            }
+        }
+    }
+
+    // =========================================================
+    // FIND MOST CENTERED VISIBLE REEL
+    // =========================================================
+
+    private int findBestVisiblePosition() {
+
+        int childCount =
+                reelRecyclerView.getChildCount();
+
+        if (childCount == 0) {
+
+            return RecyclerView.NO_POSITION;
+        }
+
+        int recyclerCenter =
+                reelRecyclerView.getHeight() / 2;
+
+        int bestPosition =
+                RecyclerView.NO_POSITION;
+
+        int smallestDistance =
+                Integer.MAX_VALUE;
+
+        for (int i = 0;
+             i < childCount;
+             i++) {
+
+            View child =
+                    reelRecyclerView.getChildAt(i);
+
+            int childCenter =
+                    (child.getTop()
+                            + child.getBottom()) / 2;
+
+            int distance =
+                    Math.abs(
+                            childCenter
+                                    - recyclerCenter
+                    );
+
+            if (distance <
+                    smallestDistance) {
+
+                smallestDistance =
+                        distance;
+
+                RecyclerView.ViewHolder holder =
+                        reelRecyclerView
+                                .getChildViewHolder(
+                                        child
+                                );
+
+                bestPosition =
+                        holder.getBindingAdapterPosition();
+            }
+        }
+
+        return bestPosition;
     }
 
     // =========================================================
     // ADD VIEW
     // =========================================================
 
-    private void addViewForSnappedReel(
-            int position) {
-
-        if (position == RecyclerView.NO_POSITION) {
-            return;
-        }
-
-        if (position < 0
-                || position >= reelList.size()) {
-            return;
-        }
-
-        Reel reel =
-                reelList.get(position);
+    private void addViewOnce(
+            Reel reel) {
 
         if (reel == null
                 || reel.getId() == null) {
+
             return;
         }
 
-        // Local count update immediately.
-        // Backend update happens asynchronously.
+        /*
+         * Local count immediately update.
+         */
+
         int oldViews =
                 Math.max(
                         0,
@@ -286,9 +393,13 @@ public class ReelActivity extends AppCompatActivity {
         );
 
         reelAdapter.notifyItemChanged(
-                position,
-                "view_count"
+                lastPlayedPosition,
+                "views"
         );
+
+        /*
+         * Supabase count update.
+         */
 
         ReelSupabaseHelper.addReelView(
                 this,
@@ -297,20 +408,20 @@ public class ReelActivity extends AppCompatActivity {
 
                     @Override
                     public void onSuccess() {
-                        // Nothing else required.
+                        // Count already updated locally.
                     }
 
                     @Override
                     public void onError(
                             String message) {
-                        // Do not interrupt reel playback.
+                        // Silent failure.
                     }
                 }
         );
     }
 
     // =========================================================
-    // PAUSE
+    // LIFECYCLE - PAUSE
     // =========================================================
 
     @Override
@@ -325,7 +436,7 @@ public class ReelActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // RESUME
+    // LIFECYCLE - RESUME
     // =========================================================
 
     @Override
@@ -333,12 +444,28 @@ public class ReelActivity extends AppCompatActivity {
 
         super.onResume();
 
-        if (reelAdapter != null) {
+        if (reelAdapter != null
+                && !reelList.isEmpty()) {
 
             reelRecyclerView.post(
-                    () -> playSnappedReel()
+                    () -> playBestVisibleReel()
             );
         }
+    }
+
+    // =========================================================
+    // LIFECYCLE - STOP
+    // =========================================================
+
+    @Override
+    protected void onStop() {
+
+        if (reelAdapter != null) {
+
+            reelAdapter.pauseAllVideos();
+        }
+
+        super.onStop();
     }
 
     // =========================================================
@@ -357,7 +484,7 @@ public class ReelActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // GET RECYCLER VIEW
+    // PUBLIC ACCESS FOR ADAPTER
     // =========================================================
 
     public RecyclerView getReelRecyclerView() {
