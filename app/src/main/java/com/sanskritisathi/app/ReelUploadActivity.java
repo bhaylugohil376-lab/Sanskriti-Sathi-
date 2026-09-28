@@ -1,92 +1,83 @@
 package com.sanskritisathi.app;
 
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 public class ReelUploadActivity extends AppCompatActivity {
 
-    // =========================================================
-    // EDITOR SCREEN
-    // =========================================================
+    private View rootLayout;
+    private View topBar;
+    private View bottomBar;
 
-    private View editorScreen;
-    private VideoView editorVideoPreview;
-
-    private ImageButton editorBackButton;
-
-    private Button audioButton;
-    private Button textButton;
-    private Button voiceButton;
-    private Button captionsButton;
-    private Button stickersButton;
-
-    private Button openEditsButton;
-    private Button nextButton;
-
-    // =========================================================
-    // DETAILS SCREEN
-    // =========================================================
-
-    private View detailsScreen;
-
-    private ImageButton detailsBackButton;
-
-    private VideoView coverPreview;
-    private Button editCoverButton;
+    private VideoView videoPreview;
+    private TextView videoNameText;
 
     private EditText captionInput;
-
-    private Button hashtagsButton;
-    private Button pollButton;
-    private Button promptButton;
-
-    private Button tagPeopleButton;
-    private Button locationButton;
-    private Button renameAudioButton;
-    private Button aiLabelButton;
 
     private RadioButton publicRadio;
     private RadioButton followersRadio;
 
-    private Button saveDraftButton;
+    private Button selectVideoButton;
     private Button publishButton;
 
     private ProgressBar uploadProgress;
-    private TextView uploadStatusText;
-
-    // =========================================================
-    // DATA
-    // =========================================================
 
     private Uri selectedVideoUri;
 
-    private boolean uploading = false;
-
     private ActivityResultLauncher<String> videoPickerLauncher;
 
-    // =========================================================
-    // CREATE
-    // =========================================================
+    private boolean uploading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /*
+         * IMPORTANT:
+         * We allow edge-to-edge but manually apply
+         * status/navigation bar insets to the correct areas.
+         * This prevents Android navigation buttons from
+         * covering the Reel controls.
+         */
+        WindowCompat.setDecorFitsSystemWindows(
+                getWindow(),
+                false
+        );
+
+        Window window = getWindow();
+
+        window.setStatusBarColor(
+                android.graphics.Color.TRANSPARENT
+        );
+
+        window.setNavigationBarColor(
+                android.graphics.Color.BLACK
+        );
+
+        if (android.os.Build.VERSION.SDK_INT >= 29) {
+            window.setNavigationBarContrastEnforced(false);
+            window.setStatusBarContrastEnforced(false);
+        }
 
         setContentView(
                 R.layout.activity_reel_upload
@@ -94,13 +85,11 @@ public class ReelUploadActivity extends AppCompatActivity {
 
         bindViews();
 
+        setupSystemInsets();
+
         setupVideoPicker();
 
         setupListeners();
-
-        setupBackHandler();
-
-        setupInitialUI();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
 
@@ -111,7 +100,14 @@ public class ReelUploadActivity extends AppCompatActivity {
             ).show();
 
             finish();
+            return;
         }
+
+        publishButton.setEnabled(false);
+
+        uploadProgress.setVisibility(
+                View.GONE
+        );
     }
 
     // =========================================================
@@ -120,119 +116,34 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private void bindViews() {
 
-        // Editor
-
-        editorScreen =
+        rootLayout =
                 findViewById(
-                        R.id.editorScreen
+                        R.id.reelUploadRoot
                 );
 
-        editorVideoPreview =
+        topBar =
                 findViewById(
-                        R.id.editorVideoPreview
+                        R.id.reelTopBar
                 );
 
-        editorBackButton =
+        bottomBar =
                 findViewById(
-                        R.id.editorBackButton
+                        R.id.reelBottomBar
                 );
 
-        audioButton =
+        videoPreview =
                 findViewById(
-                        R.id.audioButton
+                        R.id.videoPreview
                 );
 
-        textButton =
+        videoNameText =
                 findViewById(
-                        R.id.textButton
-                );
-
-        voiceButton =
-                findViewById(
-                        R.id.voiceButton
-                );
-
-        captionsButton =
-                findViewById(
-                        R.id.captionsButton
-                );
-
-        stickersButton =
-                findViewById(
-                        R.id.stickersButton
-                );
-
-        openEditsButton =
-                findViewById(
-                        R.id.openEditsButton
-                );
-
-        nextButton =
-                findViewById(
-                        R.id.nextButton
-                );
-
-
-        // Details
-
-        detailsScreen =
-                findViewById(
-                        R.id.detailsScreen
-                );
-
-        detailsBackButton =
-                findViewById(
-                        R.id.detailsBackButton
-                );
-
-        coverPreview =
-                findViewById(
-                        R.id.coverPreview
-                );
-
-        editCoverButton =
-                findViewById(
-                        R.id.editCoverButton
+                        R.id.videoNameText
                 );
 
         captionInput =
                 findViewById(
                         R.id.captionInput
-                );
-
-        hashtagsButton =
-                findViewById(
-                        R.id.hashtagsButton
-                );
-
-        pollButton =
-                findViewById(
-                        R.id.pollButton
-                );
-
-        promptButton =
-                findViewById(
-                        R.id.promptButton
-                );
-
-        tagPeopleButton =
-                findViewById(
-                        R.id.tagPeopleButton
-                );
-
-        locationButton =
-                findViewById(
-                        R.id.locationButton
-                );
-
-        renameAudioButton =
-                findViewById(
-                        R.id.renameAudioButton
-                );
-
-        aiLabelButton =
-                findViewById(
-                        R.id.aiLabelButton
                 );
 
         publicRadio =
@@ -245,9 +156,9 @@ public class ReelUploadActivity extends AppCompatActivity {
                         R.id.followersRadio
                 );
 
-        saveDraftButton =
+        selectVideoButton =
                 findViewById(
-                        R.id.saveDraftButton
+                        R.id.selectVideoButton
                 );
 
         publishButton =
@@ -259,44 +170,64 @@ public class ReelUploadActivity extends AppCompatActivity {
                 findViewById(
                         R.id.uploadProgress
                 );
-
-        uploadStatusText =
-                findViewById(
-                        R.id.uploadStatusText
-                );
     }
 
     // =========================================================
-    // INITIAL UI
+    // SYSTEM INSETS
     // =========================================================
 
-    private void setupInitialUI() {
+    private void setupSystemInsets() {
 
-        editorScreen.setVisibility(
-                View.VISIBLE
+        if (rootLayout == null) {
+            return;
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(
+                rootLayout,
+                (view, windowInsets) -> {
+
+                    Insets insets =
+                            windowInsets.getInsets(
+                                    WindowInsetsCompat.Type.systemBars()
+                            );
+
+                    if (topBar != null) {
+
+                        topBar.setPadding(
+                                topBar.getPaddingLeft(),
+                                insets.top + dp(8),
+                                topBar.getPaddingRight(),
+                                topBar.getPaddingBottom()
+                        );
+                    }
+
+                    if (bottomBar != null) {
+
+                        bottomBar.setPadding(
+                                bottomBar.getPaddingLeft(),
+                                bottomBar.getPaddingTop(),
+                                bottomBar.getPaddingRight(),
+                                insets.bottom + dp(12)
+                        );
+                    }
+
+                    return windowInsets;
+                }
         );
 
-        detailsScreen.setVisibility(
-                View.GONE
+        ViewCompat.requestApplyInsets(
+                rootLayout
         );
+    }
 
-        nextButton.setEnabled(
-                false
+    private int dp(int value) {
+
+        return Math.round(
+                value
+                        * getResources()
+                        .getDisplayMetrics()
+                        .density
         );
-
-        publicRadio.setChecked(
-                true
-        );
-
-        uploadProgress.setVisibility(
-                View.GONE
-        );
-
-        uploadStatusText.setVisibility(
-                View.GONE
-        );
-
-        setupButtonStyles();
     }
 
     // =========================================================
@@ -316,9 +247,97 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                             selectedVideoUri = uri;
 
-                            showSelectedVideo(uri);
+                            showVideoPreview(
+                                    uri
+                            );
+
+                            if (videoNameText != null) {
+
+                                videoNameText.setText(
+                                        "Video selected ✓"
+                                );
+                            }
+
+                            if (publishButton != null) {
+
+                                publishButton.setEnabled(
+                                        true
+                                );
+                            }
                         }
                 );
+    }
+
+    // =========================================================
+    // VIDEO PREVIEW
+    // =========================================================
+
+    private void showVideoPreview(
+            @NonNull Uri uri) {
+
+        if (videoPreview == null) {
+            return;
+        }
+
+        try {
+
+            videoPreview.setVisibility(
+                    View.VISIBLE
+            );
+
+            videoPreview.setVideoURI(
+                    uri
+            );
+
+            videoPreview.setOnPreparedListener(
+                    mediaPlayer -> {
+
+                        mediaPlayer.setLooping(
+                                true
+                        );
+
+                        /*
+                         * Start automatically like Instagram.
+                         */
+                        videoPreview.start();
+                    }
+            );
+
+            videoPreview.setOnErrorListener(
+                    (mp, what, extra) -> {
+
+                        Toast.makeText(
+                                ReelUploadActivity.this,
+                                "Video preview open nahi ho saka.",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        return true;
+                    }
+            );
+
+            videoPreview.setOnClickListener(
+                    v -> {
+
+                        if (videoPreview.isPlaying()) {
+
+                            videoPreview.pause();
+
+                        } else {
+
+                            videoPreview.start();
+                        }
+                    }
+            );
+
+        } catch (Exception e) {
+
+            Toast.makeText(
+                    this,
+                    "Video preview failed.",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
     }
 
     // =========================================================
@@ -327,183 +346,19 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private void setupListeners() {
 
-        // -----------------------------------------------------
-        // Editor back
-        // -----------------------------------------------------
+        if (selectVideoButton != null) {
 
-        editorBackButton.setOnClickListener(
-                v -> finish()
-        );
+            selectVideoButton.setOnClickListener(
+                    v -> openVideoPicker()
+            );
+        }
 
+        if (publishButton != null) {
 
-        // -----------------------------------------------------
-        // Open video picker
-        // -----------------------------------------------------
-
-        editorVideoPreview.setOnClickListener(
-                v -> openVideoPicker()
-        );
-
-
-        // -----------------------------------------------------
-        // Editing buttons
-        // -----------------------------------------------------
-
-        audioButton.setOnClickListener(
-                v -> showComingSoon("Audio")
-        );
-
-        textButton.setOnClickListener(
-                v -> showComingSoon("Text")
-        );
-
-        voiceButton.setOnClickListener(
-                v -> showComingSoon("Voice")
-        );
-
-        captionsButton.setOnClickListener(
-                v -> showComingSoon("Captions")
-        );
-
-        stickersButton.setOnClickListener(
-                v -> showComingSoon("Stickers")
-        );
-
-        openEditsButton.setOnClickListener(
-                v -> showComingSoon("Edits")
-        );
-
-
-        // -----------------------------------------------------
-        // Next
-        // -----------------------------------------------------
-
-        nextButton.setOnClickListener(
-                v -> openDetailsScreen()
-        );
-
-
-        // -----------------------------------------------------
-        // Details back
-        // -----------------------------------------------------
-
-        detailsBackButton.setOnClickListener(
-                v -> showEditorScreen()
-        );
-
-
-        // -----------------------------------------------------
-        // Cover
-        // -----------------------------------------------------
-
-        editCoverButton.setOnClickListener(
-                v -> showComingSoon("Edit cover")
-        );
-
-
-        // -----------------------------------------------------
-        // Details options
-        // -----------------------------------------------------
-
-        hashtagsButton.setOnClickListener(
-                v -> insertHashtag()
-        );
-
-        pollButton.setOnClickListener(
-                v -> showComingSoon("Poll")
-        );
-
-        promptButton.setOnClickListener(
-                v -> showComingSoon("Prompt")
-        );
-
-        tagPeopleButton.setOnClickListener(
-                v -> showComingSoon("Tag people")
-        );
-
-        locationButton.setOnClickListener(
-                v -> showComingSoon("Add location")
-        );
-
-        renameAudioButton.setOnClickListener(
-                v -> showComingSoon("Rename audio")
-        );
-
-        aiLabelButton.setOnClickListener(
-                v -> showComingSoon("AI label")
-        );
-
-
-        // -----------------------------------------------------
-        // Save draft
-        // -----------------------------------------------------
-
-        saveDraftButton.setOnClickListener(
-                v -> Toast.makeText(
-                        this,
-                        "Draft feature ready for next update.",
-                        Toast.LENGTH_SHORT
-                ).show()
-        );
-
-
-        // -----------------------------------------------------
-        // Publish
-        // -----------------------------------------------------
-
-        publishButton.setOnClickListener(
-                v -> uploadReel()
-        );
-
-
-        // -----------------------------------------------------
-        // Video prepared
-        // -----------------------------------------------------
-
-        editorVideoPreview.setOnPreparedListener(
-                mediaPlayer -> {
-
-                    mediaPlayer.setLooping(
-                            true
-                    );
-
-                    mediaPlayer.setVolume(
-                            1.0f,
-                            1.0f
-                    );
-
-                    editorVideoPreview.start();
-                }
-        );
-
-
-        editorVideoPreview.setOnErrorListener(
-                (mp, what, extra) -> {
-
-                    Toast.makeText(
-                            ReelUploadActivity.this,
-                            "Video preview load nahi ho paya.",
-                            Toast.LENGTH_SHORT
-                    ).show();
-
-                    return true;
-                }
-        );
-
-
-        coverPreview.setOnPreparedListener(
-                mediaPlayer -> {
-
-                    mediaPlayer.setLooping(
-                            true
-                    );
-
-                    mediaPlayer.setVolume(
-                            0.0f,
-                            0.0f
-                    );
-                }
-        );
+            publishButton.setOnClickListener(
+                    v -> uploadReel()
+            );
+        }
     }
 
     // =========================================================
@@ -522,154 +377,7 @@ public class ReelUploadActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // SHOW SELECTED VIDEO
-    // =========================================================
-
-    private void showSelectedVideo(
-            Uri uri) {
-
-        selectedVideoUri = uri;
-
-        editorVideoPreview.stopPlayback();
-
-        editorVideoPreview.setVideoURI(
-                uri
-        );
-
-        editorVideoPreview.setVisibility(
-                View.VISIBLE
-        );
-
-        nextButton.setEnabled(
-                true
-        );
-
-        nextButton.setAlpha(
-                1.0f
-        );
-
-        editorVideoPreview.requestFocus();
-
-        // Details cover
-
-        coverPreview.stopPlayback();
-
-        coverPreview.setVideoURI(
-                uri
-        );
-
-        coverPreview.setVisibility(
-                View.VISIBLE
-        );
-
-        Toast.makeText(
-                this,
-                "Video selected ✓",
-                Toast.LENGTH_SHORT
-        ).show();
-    }
-
-    // =========================================================
-    // DETAILS SCREEN
-    // =========================================================
-
-    private void openDetailsScreen() {
-
-        if (selectedVideoUri == null) {
-
-            Toast.makeText(
-                    this,
-                    "Pehle video select karo.",
-                    Toast.LENGTH_SHORT
-            ).show();
-
-            return;
-        }
-
-        if (editorVideoPreview != null) {
-
-            editorVideoPreview.pause();
-        }
-
-        editorScreen.setVisibility(
-                View.GONE
-        );
-
-        detailsScreen.setVisibility(
-                View.VISIBLE
-        );
-
-        coverPreview.setVideoURI(
-                selectedVideoUri
-        );
-
-        coverPreview.start();
-    }
-
-    // =========================================================
-    // EDITOR SCREEN
-    // =========================================================
-
-    private void showEditorScreen() {
-
-        if (uploading) {
-            return;
-        }
-
-        detailsScreen.setVisibility(
-                View.GONE
-        );
-
-        editorScreen.setVisibility(
-                View.VISIBLE
-        );
-
-        if (selectedVideoUri != null) {
-
-            editorVideoPreview.start();
-        }
-    }
-
-    // =========================================================
-    // HASHTAG
-    // =========================================================
-
-    private void insertHashtag() {
-
-        if (captionInput == null) {
-            return;
-        }
-
-        int position =
-                captionInput
-                        .getSelectionStart();
-
-        if (position < 0) {
-            position = captionInput.length();
-        }
-
-        String current =
-                captionInput
-                        .getText()
-                        .toString();
-
-        String add =
-                current.length() == 0
-                        ? "#"
-                        : " #";
-
-        captionInput
-                .getText()
-                .insert(
-                        position,
-                        add
-                );
-
-        captionInput.requestFocus();
-    }
-
-    // =========================================================
-    // PUBLISH REEL
+    // UPLOAD REEL
     // =========================================================
 
     private void uploadReel() {
@@ -724,73 +432,69 @@ public class ReelUploadActivity extends AppCompatActivity {
                     public void onProgress(
                             int progress) {
 
-                        runOnUiThread(
-                                () -> {
+                        runOnUiThread(() -> {
 
-                                    uploadProgress
-                                            .setProgress(
-                                                    progress
-                                            );
+                            if (uploadProgress != null) {
 
-                                    uploadStatusText
-                                            .setText(
-                                                    "Publishing "
-                                                            + progress
-                                                            + "%"
-                                            );
+                                uploadProgress.setProgress(
+                                        progress
+                                );
+                            }
 
-                                    publishButton
-                                            .setText(
-                                                    "Publishing "
-                                                            + progress
-                                                            + "%"
-                                            );
-                                }
-                        );
+                            if (publishButton != null) {
+
+                                publishButton.setText(
+                                        "Uploading "
+                                                + progress
+                                                + "%"
+                                );
+                            }
+                        });
                     }
 
                     @Override
                     public void onSuccess(
                             String videoUrl) {
 
-                        runOnUiThread(
-                                () -> {
+                        runOnUiThread(() -> {
 
-                                    setUploadingState(
-                                            false
-                                    );
+                            setUploadingState(
+                                    false
+                            );
 
-                                    Toast.makeText(
-                                            ReelUploadActivity.this,
-                                            "Reel publish ho gayi ✓",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
+                            Toast.makeText(
+                                    ReelUploadActivity.this,
+                                    "Reel publish ho gayi ✓",
+                                    Toast.LENGTH_SHORT
+                            ).show();
 
-                                    finish();
-                                }
-                        );
+                            /*
+                             * Upload helper already:
+                             * 1. uploads video
+                             * 2. creates Reel row
+                             */
+                            finish();
+                        });
                     }
 
                     @Override
                     public void onError(
                             String message) {
 
-                        runOnUiThread(
-                                () -> {
+                        runOnUiThread(() -> {
 
-                                    setUploadingState(
-                                            false
-                                    );
+                            setUploadingState(
+                                    false
+                            );
 
-                                    Toast.makeText(
-                                            ReelUploadActivity.this,
-                                            message == null
-                                                    ? "Reel upload failed."
-                                                    : message,
-                                            Toast.LENGTH_LONG
-                                    ).show();
-                                }
-                        );
+                            Toast.makeText(
+                                    ReelUploadActivity.this,
+                                    message == null
+                                            ? "Reel upload failed."
+                                            : message,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        });
                     }
                 }
         );
@@ -802,7 +506,8 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private String getSelectedVisibility() {
 
-        if (followersRadio.isChecked()) {
+        if (followersRadio != null
+                && followersRadio.isChecked()) {
 
             return "Followers";
         }
@@ -815,265 +520,86 @@ public class ReelUploadActivity extends AppCompatActivity {
     // =========================================================
 
     private void setUploadingState(
-            boolean state) {
+            boolean isUploading) {
 
-        uploading = state;
+        uploading = isUploading;
 
-        editorBackButton.setEnabled(
-                !state
-        );
+        if (selectVideoButton != null) {
 
-        detailsBackButton.setEnabled(
-                !state
-        );
-
-        captionInput.setEnabled(
-                !state
-        );
-
-        publicRadio.setEnabled(
-                !state
-        );
-
-        followersRadio.setEnabled(
-                !state
-        );
-
-        saveDraftButton.setEnabled(
-                !state
-        );
-
-        publishButton.setEnabled(
-                !state
-        );
-
-        uploadProgress.setVisibility(
-                state
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-
-        uploadStatusText.setVisibility(
-                state
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-
-        if (state) {
-
-            uploadProgress.setProgress(
-                    0
+            selectVideoButton.setEnabled(
+                    !isUploading
             );
+        }
 
-            uploadStatusText.setText(
-                    "Preparing upload..."
-            );
+        if (captionInput != null) {
 
-            publishButton.setText(
-                    "Publishing..."
+            captionInput.setEnabled(
+                    !isUploading
             );
+        }
+
+        if (publicRadio != null) {
+
+            publicRadio.setEnabled(
+                    !isUploading
+            );
+        }
+
+        if (followersRadio != null) {
+
+            followersRadio.setEnabled(
+                    !isUploading
+            );
+        }
+
+        if (isUploading) {
+
+            if (publishButton != null) {
+
+                publishButton.setEnabled(
+                        false
+                );
+
+                publishButton.setText(
+                        "Uploading..."
+                );
+            }
+
+            if (uploadProgress != null) {
+
+                uploadProgress.setVisibility(
+                        View.VISIBLE
+                );
+
+                uploadProgress.setProgress(
+                        0
+                );
+            }
 
         } else {
 
-            publishButton.setText(
-                    "Publish Reel"
-            );
+            if (uploadProgress != null) {
 
-            publishButton.setEnabled(
-                    selectedVideoUri != null
-            );
+                uploadProgress.setVisibility(
+                        View.GONE
+                );
+            }
+
+            if (publishButton != null) {
+
+                publishButton.setText(
+                        "Publish Reel"
+                );
+
+                publishButton.setEnabled(
+                        selectedVideoUri != null
+                );
+            }
         }
     }
 
     // =========================================================
-    // BUTTON STYLES
-    // =========================================================
-
-    private void setupButtonStyles() {
-
-        stylePrimaryButton(
-                nextButton
-        );
-
-        stylePrimaryButton(
-                publishButton
-        );
-
-        styleSecondaryButton(
-                openEditsButton
-        );
-
-        styleSecondaryButton(
-                saveDraftButton
-        );
-
-        styleToolButton(
-                audioButton
-        );
-
-        styleToolButton(
-                textButton
-        );
-
-        styleToolButton(
-                voiceButton
-        );
-
-        styleToolButton(
-                captionsButton
-        );
-
-        styleToolButton(
-                stickersButton
-        );
-    }
-
-    private void stylePrimaryButton(
-            Button button) {
-
-        GradientDrawable bg =
-                new GradientDrawable();
-
-        bg.setColor(
-                Color.rgb(
-                        210,
-                        165,
-                        70
-                )
-        );
-
-        bg.setCornerRadius(
-                dp(28)
-        );
-
-        button.setBackground(
-                bg
-        );
-
-        button.setBackgroundTintList(
-                null
-        );
-
-        button.setTextColor(
-                Color.BLACK
-        );
-
-        button.setAllCaps(
-                false
-        );
-    }
-
-    private void styleSecondaryButton(
-            Button button) {
-
-        GradientDrawable bg =
-                new GradientDrawable();
-
-        bg.setColor(
-                Color.rgb(
-                        35,
-                        38,
-                        43
-                )
-        );
-
-        bg.setCornerRadius(
-                dp(28)
-        );
-
-        button.setBackground(
-                bg
-        );
-
-        button.setBackgroundTintList(
-                null
-        );
-
-        button.setTextColor(
-                Color.WHITE
-        );
-
-        button.setAllCaps(
-                false
-        );
-    }
-
-    private void styleToolButton(
-            Button button) {
-
-        GradientDrawable bg =
-                new GradientDrawable();
-
-        bg.setColor(
-                Color.rgb(
-                        40,
-                        43,
-                        48
-                )
-        );
-
-        bg.setCornerRadius(
-                dp(12)
-        );
-
-        button.setBackground(
-                bg
-        );
-
-        button.setBackgroundTintList(
-                null
-        );
-
-        button.setTextColor(
-                Color.WHITE
-        );
-
-        button.setAllCaps(
-                false
-        );
-    }
-
-    // =========================================================
-    // BACK HANDLER
-    // =========================================================
-
-    private void setupBackHandler() {
-
-        getOnBackPressedDispatcher()
-                .addCallback(
-                        this,
-                        new OnBackPressedCallback(true) {
-
-                            @Override
-                            public void handleOnBackPressed() {
-
-                                if (uploading) {
-
-                                    Toast.makeText(
-                                            ReelUploadActivity.this,
-                                            "Publishing complete hone do.",
-                                            Toast.LENGTH_SHORT
-                                    ).show();
-
-                                    return;
-                                }
-
-                                if (detailsScreen.getVisibility()
-                                        == View.VISIBLE) {
-
-                                    showEditorScreen();
-
-                                } else {
-
-                                    finish();
-                                }
-                            }
-                        }
-                );
-    }
-
-    // =========================================================
-    // LIFECYCLE
+    // PAUSE VIDEO WHEN LEAVING
     // =========================================================
 
     @Override
@@ -1081,61 +607,46 @@ public class ReelUploadActivity extends AppCompatActivity {
 
         super.onPause();
 
-        if (editorVideoPreview != null) {
-            editorVideoPreview.pause();
-        }
+        if (videoPreview != null
+                && videoPreview.isPlaying()) {
 
-        if (coverPreview != null) {
-            coverPreview.pause();
+            videoPreview.pause();
         }
     }
+
+    // =========================================================
+    // RELEASE VIDEO
+    // =========================================================
 
     @Override
-    protected void onResume() {
+    protected void onDestroy() {
 
-        super.onResume();
+        if (videoPreview != null) {
 
-        if (!uploading
-                && selectedVideoUri != null) {
-
-            if (editorScreen.getVisibility()
-                    == View.VISIBLE) {
-
-                editorVideoPreview.start();
-
-            } else if (detailsScreen.getVisibility()
-                    == View.VISIBLE) {
-
-                coverPreview.start();
-            }
+            videoPreview.stopPlayback();
         }
+
+        super.onDestroy();
     }
 
     // =========================================================
-    // SMALL ACTION
+    // BACK PRESS
     // =========================================================
 
-    private void showComingSoon(
-            String feature) {
+    @Override
+    public void onBackPressed() {
 
-        Toast.makeText(
-                this,
-                feature
-                        + " editing next update mein add hoga.",
-                Toast.LENGTH_SHORT
-        ).show();
-    }
+        if (uploading) {
 
-    // =========================================================
-    // DP
-    // =========================================================
+            Toast.makeText(
+                    this,
+                    "Upload complete hone do.",
+                    Toast.LENGTH_SHORT
+            ).show();
 
-    private float dp(
-            float value) {
+            return;
+        }
 
-        return value *
-                getResources()
-                        .getDisplayMetrics()
-                        .density;
+        super.onBackPressed();
     }
 }
