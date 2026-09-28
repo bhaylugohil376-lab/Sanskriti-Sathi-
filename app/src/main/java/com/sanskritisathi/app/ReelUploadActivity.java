@@ -28,6 +28,7 @@ public class ReelUploadActivity extends AppCompatActivity {
     private View rootLayout;
     private View topBar;
     private View bottomBar;
+    private View emptyVideoState;
 
     private VideoView videoPreview;
     private TextView videoNameText;
@@ -71,11 +72,8 @@ public class ReelUploadActivity extends AppCompatActivity {
         setContentView(R.layout.activity_reel_upload);
 
         bindViews();
-
         setupSystemInsets();
-
         setupVideoPicker();
-
         setupListeners();
 
         if (!SupabaseAuthManager.isLoggedIn(this)) {
@@ -107,45 +105,89 @@ public class ReelUploadActivity extends AppCompatActivity {
 
     private void bindViews() {
 
-        rootLayout = findViewById(R.id.reelUploadRoot);
+        rootLayout = findViewById(
+                R.id.reelUploadRoot
+        );
 
-        topBar = findViewById(R.id.reelTopBar);
+        topBar = findViewById(
+                R.id.reelTopBar
+        );
 
-        bottomBar = findViewById(R.id.reelBottomBar);
+        bottomBar = findViewById(
+                R.id.reelBottomBar
+        );
 
-        videoPreview = findViewById(R.id.videoPreview);
+        emptyVideoState = findViewById(
+                R.id.emptyVideoState
+        );
 
-        videoNameText = findViewById(R.id.videoNameText);
+        videoPreview = findViewById(
+                R.id.videoPreview
+        );
 
-        captionInput = findViewById(R.id.captionInput);
+        videoNameText = findViewById(
+                R.id.videoNameText
+        );
 
-        publicRadio = findViewById(R.id.publicRadio);
+        captionInput = findViewById(
+                R.id.captionInput
+        );
 
-        followersRadio = findViewById(R.id.followersRadio);
+        publicRadio = findViewById(
+                R.id.publicRadio
+        );
 
-        selectVideoButton = findViewById(R.id.selectVideoButton);
+        followersRadio = findViewById(
+                R.id.followersRadio
+        );
 
-        publishButton = findViewById(R.id.publishButton);
+        selectVideoButton = findViewById(
+                R.id.selectVideoButton
+        );
 
-        uploadProgress = findViewById(R.id.uploadProgress);
+        publishButton = findViewById(
+                R.id.publishButton
+        );
+
+        uploadProgress = findViewById(
+                R.id.uploadProgress
+        );
     }
 
     // =========================================================
-    // INITIAL PREVIEW STATE
+    // INITIAL VIDEO STATE
     // =========================================================
 
     private void setupInitialPreviewState() {
 
-        if (videoPreview == null) {
-            return;
+        previewPrepared = false;
+
+        if (videoPreview != null) {
+
+            videoPreview.stopPlayback();
+
+            videoPreview.setVisibility(
+                    View.GONE
+            );
+
+            videoPreview.setBackgroundColor(
+                    Color.BLACK
+            );
         }
 
-        videoPreview.setVisibility(View.GONE);
+        if (emptyVideoState != null) {
 
-        videoPreview.setBackgroundColor(Color.BLACK);
+            emptyVideoState.setVisibility(
+                    View.VISIBLE
+            );
+        }
 
-        videoPreview.setOnPreparedListener(null);
-        videoPreview.setOnErrorListener(null);
+        if (videoNameText != null) {
+
+            videoNameText.setText(
+                    "Select a video"
+            );
+        }
     }
 
     // =========================================================
@@ -191,7 +233,9 @@ public class ReelUploadActivity extends AppCompatActivity {
                 }
         );
 
-        ViewCompat.requestApplyInsets(rootLayout);
+        ViewCompat.requestApplyInsets(
+                rootLayout
+        );
     }
 
     private int dp(int value) {
@@ -220,10 +264,21 @@ public class ReelUploadActivity extends AppCompatActivity {
                             }
 
                             selectedVideoUri = uri;
-
                             previewPrepared = false;
 
-                            showVideoPreview(uri);
+                            if (emptyVideoState != null) {
+
+                                emptyVideoState.setVisibility(
+                                        View.GONE
+                                );
+                            }
+
+                            if (videoPreview != null) {
+
+                                videoPreview.setVisibility(
+                                        View.VISIBLE
+                                );
+                            }
 
                             if (videoNameText != null) {
 
@@ -234,14 +289,18 @@ public class ReelUploadActivity extends AppCompatActivity {
 
                             if (publishButton != null) {
 
-                                publishButton.setEnabled(true);
+                                publishButton.setEnabled(
+                                        true
+                                );
                             }
+
+                            showVideoPreview(uri);
                         }
                 );
     }
 
     // =========================================================
-    // VIDEO PREVIEW - FIXED
+    // VIDEO PREVIEW - BLACK SCREEN FIX
     // =========================================================
 
     private void showVideoPreview(
@@ -254,20 +313,24 @@ public class ReelUploadActivity extends AppCompatActivity {
         try {
 
             /*
-             * Reset old video first.
-             * This prevents old Surface/MediaPlayer state
-             * from causing a black preview.
+             * Stop previous MediaPlayer completely.
              */
             videoPreview.stopPlayback();
 
-            videoPreview.setVisibility(View.VISIBLE);
+            previewPrepared = false;
 
-            videoPreview.setBackgroundColor(Color.BLACK);
+            videoPreview.setVisibility(
+                    View.VISIBLE
+            );
+
+            videoPreview.setBackgroundColor(
+                    Color.BLACK
+            );
 
             /*
-             * Important:
-             * Keep the URI directly from the picker.
-             * Do not convert content:// URI to String/file path.
+             * IMPORTANT:
+             * Set URI only ONCE.
+             * Do not call setVideoURI again after delay.
              */
             videoPreview.setVideoURI(uri);
 
@@ -283,9 +346,7 @@ public class ReelUploadActivity extends AppCompatActivity {
                             mp.setLooping(true);
 
                             /*
-                             * Seek to first frame.
-                             * This helps avoid a blank/black
-                             * first frame on some devices.
+                             * Keep first frame visible.
                              */
                             try {
                                 mp.seekTo(1);
@@ -293,10 +354,12 @@ public class ReelUploadActivity extends AppCompatActivity {
                             }
 
                             /*
-                             * Start only after MediaPlayer
-                             * is actually prepared.
+                             * Start only after prepared.
                              */
-                            videoPreview.start();
+                            try {
+                                videoPreview.start();
+                            } catch (Exception ignored) {
+                            }
                         }
                     }
             );
@@ -307,7 +370,10 @@ public class ReelUploadActivity extends AppCompatActivity {
                         if (!isFinishing()
                                 && !isDestroyed()) {
 
-                            videoPreview.start();
+                            try {
+                                videoPreview.start();
+                            } catch (Exception ignored) {
+                            }
                         }
                     }
             );
@@ -316,6 +382,13 @@ public class ReelUploadActivity extends AppCompatActivity {
                     (mp, what, extra) -> {
 
                         previewPrepared = false;
+
+                        if (emptyVideoState != null) {
+
+                            emptyVideoState.setVisibility(
+                                    View.VISIBLE
+                            );
+                        }
 
                         Toast.makeText(
                                 ReelUploadActivity.this,
@@ -330,7 +403,8 @@ public class ReelUploadActivity extends AppCompatActivity {
             videoPreview.setOnClickListener(
                     v -> {
 
-                        if (!previewPrepared) {
+                        if (!previewPrepared
+                                || uploading) {
                             return;
                         }
 
@@ -348,28 +422,6 @@ public class ReelUploadActivity extends AppCompatActivity {
                         } catch (Exception ignored) {
                         }
                     }
-            );
-
-            /*
-             * Give VideoView time to create its Surface.
-             */
-            videoPreview.postDelayed(
-                    () -> {
-
-                        if (selectedVideoUri != null
-                                && !isFinishing()
-                                && !isDestroyed()) {
-
-                            try {
-                                videoPreview.setVideoURI(
-                                        selectedVideoUri
-                                );
-                            } catch (Exception ignored) {
-                            }
-                        }
-
-                    },
-                    150
             );
 
         } catch (Exception e) {
@@ -403,6 +455,35 @@ public class ReelUploadActivity extends AppCompatActivity {
                     v -> uploadReel()
             );
         }
+
+        /*
+         * XML back button.
+         */
+        View backButton =
+                findViewById(
+                        R.id.reelBackButton
+                );
+
+        if (backButton != null) {
+
+            backButton.setOnClickListener(
+                    v -> {
+
+                        if (uploading) {
+
+                            Toast.makeText(
+                                    this,
+                                    "Upload complete hone do.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                        } else {
+
+                            finish();
+                        }
+                    }
+            );
+        }
     }
 
     // =========================================================
@@ -415,11 +496,13 @@ public class ReelUploadActivity extends AppCompatActivity {
             return;
         }
 
-        videoPickerLauncher.launch("video/*");
+        videoPickerLauncher.launch(
+                "video/*"
+        );
     }
 
     // =========================================================
-    // UPLOAD
+    // UPLOAD REEL
     // =========================================================
 
     private void uploadReel() {
@@ -540,10 +623,6 @@ public class ReelUploadActivity extends AppCompatActivity {
                                     Toast.LENGTH_LONG
                             ).show();
 
-                            /*
-                             * Upload fail hone par preview
-                             * dobara start kar do.
-                             */
                             if (videoPreview != null
                                     && selectedVideoUri != null
                                     && previewPrepared) {
@@ -628,7 +707,9 @@ public class ReelUploadActivity extends AppCompatActivity {
                         View.VISIBLE
                 );
 
-                uploadProgress.setProgress(0);
+                uploadProgress.setProgress(
+                        0
+                );
             }
 
         } else {
@@ -668,9 +749,7 @@ public class ReelUploadActivity extends AppCompatActivity {
                 && previewPrepared) {
 
             try {
-
                 videoPreview.start();
-
             } catch (Exception ignored) {
             }
         }
