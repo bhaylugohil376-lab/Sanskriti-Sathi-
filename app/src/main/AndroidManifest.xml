@@ -215,13 +215,14 @@
         <activity
             android:name=".GroupChatActivity"
             android:exported="false" />
-<activity
-    android:name=".NewReelActivity"
-    android:exported="false" />
 
-<activity
-    android:name=".ReelEditorActivity"
-    android:exported="false" />
+        <activity
+            android:name=".ReelEditorActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".NewReelActivity"
+            android:exported="false" />
         
     </application>
 
