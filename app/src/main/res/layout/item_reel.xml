@@ -2,13 +2,12 @@
 
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- ===================================================== -->
     <!-- VIDEO -->
-    <!-- ===================================================== -->
 
     <androidx.media3.ui.PlayerView
         android:id="@+id/reelPlayerView"
@@ -20,12 +19,11 @@
         android:clickable="false"
         android:clipToPadding="false"
         android:clipChildren="false"
-        android:show_buffering="when_playing"
-        android:use_controller="false" />
+        app:show_buffering="when_playing"
+        app:use_controller="false"
+        app:resize_mode="zoom" />
 
-    <!-- ===================================================== -->
     <!-- VIDEO ERROR -->
-    <!-- ===================================================== -->
 
     <TextView
         android:id="@+id/reelErrorText"
@@ -41,9 +39,7 @@
         android:background="#88000000"
         android:visibility="gone" />
 
-    <!-- ===================================================== -->
-    <!-- TOP GRADIENT-LIKE DARK AREA -->
-    <!-- ===================================================== -->
+    <!-- TOP DARK AREA -->
 
     <View
         android:layout_width="match_parent"
@@ -52,9 +48,7 @@
         android:background="#55000000"
         android:clickable="false" />
 
-    <!-- ===================================================== -->
-    <!-- PROFILE / USERNAME -->
-    <!-- ===================================================== -->
+    <!-- PROFILE -->
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -79,7 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="@SanskritiUser"
+            android:text="Sanskriti User"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -88,9 +82,7 @@
 
     </LinearLayout>
 
-    <!-- ===================================================== -->
     <!-- RIGHT SIDE ACTIONS -->
-    <!-- ===================================================== -->
 
     <LinearLayout
         android:layout_width="64dp"
@@ -99,8 +91,6 @@
         android:layout_marginEnd="10dp"
         android:gravity="center_horizontal"
         android:orientation="vertical">
-
-        <!-- LIKE -->
 
         <ImageButton
             android:id="@+id/reelLikeButton"
@@ -123,8 +113,6 @@
             android:textSize="13sp"
             android:textStyle="bold"
             android:gravity="center" />
-
-        <!-- COMMENT -->
 
         <ImageButton
             android:id="@+id/reelCommentButton"
@@ -149,8 +137,6 @@
             android:textStyle="bold"
             android:gravity="center" />
 
-        <!-- SHARE -->
-
         <ImageButton
             android:id="@+id/reelShareButton"
             android:layout_width="54dp"
@@ -163,8 +149,6 @@
             android:contentDescription="Share"
             android:clickable="true"
             android:focusable="true" />
-
-        <!-- DELETE -->
 
         <ImageButton
             android:id="@+id/reelDeleteButton"
@@ -182,9 +166,7 @@
 
     </LinearLayout>
 
-    <!-- ===================================================== -->
-    <!-- BOTTOM DARK OVERLAY -->
-    <!-- ===================================================== -->
+    <!-- BOTTOM DARK AREA -->
 
     <View
         android:layout_width="match_parent"
@@ -193,9 +175,7 @@
         android:background="#66000000"
         android:clickable="false" />
 
-    <!-- ===================================================== -->
     <!-- BOTTOM CONTENT -->
-    <!-- ===================================================== -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -205,8 +185,6 @@
         android:layout_marginEnd="82dp"
         android:layout_marginBottom="24dp"
         android:orientation="vertical">
-
-        <!-- CAPTION -->
 
         <TextView
             android:id="@+id/reelCaptionText"
@@ -219,14 +197,12 @@
             android:maxLines="4"
             android:ellipsize="end" />
 
-        <!-- VIEWS -->
-
         <TextView
             android:id="@+id/reelViewsText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="0"
+            android:text="0 views"
             android:textColor="#DDFFFFFF"
             android:textSize="13sp"
             android:textStyle="bold" />
