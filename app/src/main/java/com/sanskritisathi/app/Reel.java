@@ -3,7 +3,7 @@ package com.sanskritisathi.app;
 public class Reel {
 
     private String id;
-    private String ownerUid;
+    private String userId;
     private String username;
     private String videoUrl;
     private String thumbnailUrl;
@@ -11,6 +11,7 @@ public class Reel {
     private String visibility;
 
     private long createdAt;
+
     private int likes;
     private int comments;
     private int views;
@@ -20,7 +21,7 @@ public class Reel {
 
     public Reel(
             String id,
-            String ownerUid,
+            String userId,
             String username,
             String videoUrl,
             String thumbnailUrl,
@@ -34,7 +35,7 @@ public class Reel {
             boolean ownReel) {
 
         this.id = id;
-        this.ownerUid = ownerUid;
+        this.userId = userId;
         this.username = username;
         this.videoUrl = videoUrl;
         this.thumbnailUrl = thumbnailUrl;
@@ -48,12 +49,16 @@ public class Reel {
         this.ownReel = ownReel;
     }
 
+    // =========================================================
+    // GETTERS
+    // =========================================================
+
     public String getId() {
         return id;
     }
 
-    public String getOwnerUid() {
-        return ownerUid;
+    public String getUserId() {
+        return userId;
     }
 
     public String getUsername() {
@@ -100,20 +105,20 @@ public class Reel {
         return ownReel;
     }
 
-    public void setLiked(boolean liked) {
-        this.liked = liked;
+    // =========================================================
+    // SETTERS
+    // =========================================================
+
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void setLikes(int likes) {
-        this.likes = likes;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public void setComments(int comments) {
-        this.comments = comments;
-    }
-
-    public void setViews(int views) {
-        this.views = views;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void setVideoUrl(String videoUrl) {
@@ -122,5 +127,37 @@ public class Reel {
 
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setLikes(int likes) {
+        this.likes = Math.max(0, likes);
+    }
+
+    public void setComments(int comments) {
+        this.comments = Math.max(0, comments);
+    }
+
+    public void setViews(int views) {
+        this.views = Math.max(0, views);
+    }
+
+    public void setLiked(boolean liked) {
+        this.liked = liked;
+    }
+
+    public void setOwnReel(boolean ownReel) {
+        this.ownReel = ownReel;
     }
 }
