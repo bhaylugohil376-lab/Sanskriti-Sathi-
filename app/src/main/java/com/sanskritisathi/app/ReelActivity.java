@@ -7,7 +7,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ public class ReelActivity extends AppCompatActivity {
 
     private final List<Reel> reelList = new ArrayList<>();
 
-    private PagerSnapHelper snapHelper;
+    private boolean loading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,13 +27,25 @@ public class ReelActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_reel);
 
-        reelRecyclerView = findViewById(
-                R.id.reelRecyclerView
-        );
-
+        bindViews();
         setupRecyclerView();
-
         loadReels();
+    }
+
+    // =========================================================
+    // BIND VIEWS
+    // =========================================================
+
+    private void bindViews() {
+
+        reelRecyclerView =
+                findViewById(R.id.reelRecyclerView);
+
+        if (reelRecyclerView == null) {
+            throw new IllegalStateException(
+                    "reelRecyclerView not found in activity_reel.xml"
+            );
+        }
     }
 
     // =========================================================
@@ -62,30 +73,26 @@ public class ReelActivity extends AppCompatActivity {
                 View.OVER_SCROLL_NEVER
         );
 
+        reelRecyclerView.setClipToPadding(false);
+
         reelRecyclerView.setVerticalScrollBarEnabled(
                 false
         );
 
-        // One complete Reel per swipe
-        snapHelper = new PagerSnapHelper();
-
-        snapHelper.attachToRecyclerView(
-                reelRecyclerView
-        );
-
-        reelAdapter = new ReelAdapter(
-                this,
-                reelList
-        );
+        reelAdapter =
+                new ReelAdapter(
+                        this,
+                        reelList
+                );
 
         reelRecyclerView.setAdapter(
                 reelAdapter
         );
 
-        // -----------------------------------------------------
-        // Scroll listener
-        // -----------------------------------------------------
-
+        /*
+         * Instagram-style:
+         * Play only the reel that becomes visible.
+         */
         reelRecyclerView.addOnScrollListener(
                 new RecyclerView.OnScrollListener() {
 
@@ -99,8 +106,8 @@ public class ReelActivity extends AppCompatActivity {
                                 newState
                         );
 
-                        if (newState
-                                == RecyclerView.SCROLL_STATE_IDLE) {
+                        if (newState ==
+                                RecyclerView.SCROLL_STATE_IDLE) {
 
                             playCurrentReel();
                         }
@@ -115,18 +122,13 @@ public class ReelActivity extends AppCompatActivity {
 
     private void loadReels() {
 
-        /*
-         * IMPORTANT:
-         *
-         * Yahan tumhare existing Supabase helper
-         * ka reel loading method use karo.
-         *
-         * Agar tumhare ReelSupabaseHelper me method
-         * ka naam different hai, wahi existing method
-         * use karna hai.
-         */
+        if (loading) {
+            return;
+        }
 
-        ReelSupabaseHelper.loadReels(
+        loading = true;
+
+        ReelSupabaseHelper.getActiveReels(
                 this,
                 new ReelSupabaseHelper.ReelsCallback() {
 
@@ -136,13 +138,12 @@ public class ReelActivity extends AppCompatActivity {
 
                         runOnUiThread(() -> {
 
+                            loading = false;
+
                             reelList.clear();
 
                             if (reels != null) {
-
-                                reelList.addAll(
-                                        reels
-                                );
+                                reelList.addAll(reels);
                             }
 
                             reelAdapter.notifyDataSetChanged();
@@ -159,11 +160,11 @@ public class ReelActivity extends AppCompatActivity {
                             }
 
                             /*
-                             * First Reel ko automatically
-                             * play karo.
+                             * Wait until RecyclerView has
+                             * finished layout before playback.
                              */
-                            reelRecyclerView.post(
-                                    () -> playCurrentReel()
+                            reelRecyclerView.post(() ->
+                                    playCurrentReel()
                             );
                         });
                     }
@@ -173,6 +174,8 @@ public class ReelActivity extends AppCompatActivity {
                             String message) {
 
                         runOnUiThread(() -> {
+
+                            loading = false;
 
                             Toast.makeText(
                                     ReelActivity.this,
@@ -188,57 +191,26 @@ public class ReelActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // CURRENT REEL PLAY
+    // CURRENT REEL
     // =========================================================
 
     private void playCurrentReel() {
 
-        if (reelRecyclerView == null
-                || reelAdapter == null) {
+        if (reelAdapter == null) {
             return;
         }
 
-        /*
-         * Pehle sab videos pause.
-         */
-        reelAdapter.pauseAllVideos();
-
-        View snapView =
-                snapHelper.findSnapView(
-                        reelRecyclerView.getLayoutManager()
-                );
-
-        if (snapView == null) {
-            return;
-        }
-
-        int position =
-                reelRecyclerView
-                        .getLayoutManager()
-                        .getPosition(
-                                snapView
-                        );
-
-        if (position == RecyclerView.NO_POSITION) {
-            return;
-        }
-
-        /*
-         * Adapter ke current player ko
-         * resume karne do.
-         */
         reelAdapter.resumeCurrentVideo();
     }
 
     // =========================================================
-    // PAUSE WHEN ACTIVITY GOES BACKGROUND
+    // PAUSE WHEN ACTIVITY NOT VISIBLE
     // =========================================================
 
     @Override
     protected void onPause() {
 
         if (reelAdapter != null) {
-
             reelAdapter.pauseAllVideos();
         }
 
@@ -254,11 +226,10 @@ public class ReelActivity extends AppCompatActivity {
 
         super.onResume();
 
-        if (reelRecyclerView != null
-                && reelAdapter != null) {
+        if (reelAdapter != null) {
 
-            reelRecyclerView.post(
-                    () -> playCurrentReel()
+            reelRecyclerView.post(() ->
+                    reelAdapter.resumeCurrentVideo()
             );
         }
     }
@@ -271,20 +242,21 @@ public class ReelActivity extends AppCompatActivity {
     protected void onDestroy() {
 
         if (reelAdapter != null) {
-
             reelAdapter.releaseAllVideos();
+        }
+
+        if (reelRecyclerView != null) {
+            reelRecyclerView.setAdapter(null);
         }
 
         super.onDestroy();
     }
 
     // =========================================================
-    // GET RECYCLER VIEW
-    // ReelAdapter is using this method
+    // PUBLIC ACCESS FOR ADAPTER
     // =========================================================
 
     public RecyclerView getReelRecyclerView() {
-
         return reelRecyclerView;
     }
 }
