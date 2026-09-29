@@ -39,6 +39,10 @@ public class ReelAdapter
         setHasStableIds(true);
     }
 
+    // =========================================================
+    // STABLE ID
+    // =========================================================
+
     @Override
     public long getItemId(int position) {
 
@@ -59,6 +63,10 @@ public class ReelAdapter
         return reel.getId().hashCode();
     }
 
+    // =========================================================
+    // CREATE HOLDER
+    // =========================================================
+
     @NonNull
     @Override
     public ReelViewHolder onCreateViewHolder(
@@ -76,56 +84,27 @@ public class ReelAdapter
         return new ReelViewHolder(view);
     }
 
+    // =========================================================
+    // BIND
+    // =========================================================
+
     @Override
     public void onBindViewHolder(
             @NonNull ReelViewHolder holder,
             int position) {
 
-        holder.bind(
-                reelList.get(position)
-        );
+        Reel reel = reelList.get(position);
+
+        holder.bind(reel);
     }
+
+    // =========================================================
+    // COUNT
+    // =========================================================
 
     @Override
     public int getItemCount() {
         return reelList.size();
-    }
-
-    // =========================================================
-    // PLAY VIDEO AT POSITION
-    // =========================================================
-
-    public void playVideoAtPosition(int position) {
-
-        RecyclerView recyclerView =
-                findRecyclerView();
-
-        if (recyclerView == null) {
-            return;
-        }
-
-        if (position < 0 ||
-                position >= reelList.size()) {
-            return;
-        }
-
-        /*
-         * Pause every visible reel first.
-         */
-        pauseAllVideos();
-
-        RecyclerView.ViewHolder viewHolder =
-                recyclerView.findViewHolderForAdapterPosition(
-                        position
-                );
-
-        if (viewHolder instanceof ReelViewHolder) {
-
-            ReelViewHolder holder =
-                    (ReelViewHolder) viewHolder;
-
-            holder.playVideo();
-        }
     }
 
     // =========================================================
@@ -181,6 +160,35 @@ public class ReelAdapter
     }
 
     // =========================================================
+    // PLAY VIDEO AT POSITION
+    // =========================================================
+
+    public void playVideoAtPosition(int position) {
+
+        RecyclerView recyclerView =
+                findRecyclerView();
+
+        if (recyclerView == null) {
+            return;
+        }
+
+        if (position < 0 ||
+                position >= reelList.size()) {
+            return;
+        }
+
+        RecyclerView.ViewHolder holder =
+                recyclerView.findViewHolderForAdapterPosition(
+                        position
+                );
+
+        if (holder instanceof ReelViewHolder) {
+
+            ((ReelViewHolder) holder).playVideo();
+        }
+    }
+
+    // =========================================================
     // RELEASE ALL
     // =========================================================
 
@@ -209,7 +217,7 @@ public class ReelAdapter
     }
 
     // =========================================================
-    // VISIBLE HOLDERS
+    // GET VISIBLE HOLDERS
     // =========================================================
 
     private List<ReelViewHolder> getVisibleHolders() {
@@ -346,7 +354,7 @@ public class ReelAdapter
         }
 
         // =====================================================
-        // PLAYER
+        // PLAYER SETUP
         // =====================================================
 
         private void setupPlayer() {
@@ -402,14 +410,14 @@ public class ReelAdapter
         }
 
         // =====================================================
-        // BIND
+        // BIND REEL
         // =====================================================
 
         public void bind(Reel reel) {
 
-            currentReel = reel;
-
             viewAdded = false;
+
+            currentReel = reel;
 
             if (reel == null) {
                 return;
@@ -495,10 +503,9 @@ public class ReelAdapter
 
             try {
                 player.stop();
+                player.clearMediaItems();
             } catch (Exception ignored) {
             }
-
-            player.clearMediaItems();
 
             if (reelErrorText != null) {
 
@@ -517,28 +524,25 @@ public class ReelAdapter
 
             try {
 
-                Uri uri =
+                Uri videoUri =
                         Uri.parse(
                                 videoUrl.trim()
                         );
 
                 MediaItem mediaItem =
-                        MediaItem.fromUri(uri);
+                        MediaItem.fromUri(
+                                videoUri
+                        );
 
                 player.setMediaItem(
                         mediaItem
                 );
 
-                /*
-                 * Prepare immediately so the first
-                 * frame can become available.
-                 */
                 player.prepare();
 
                 /*
-                 * Do NOT autoplay here.
-                 * ReelActivity decides which item
-                 * should play.
+                 * Activity decides when the
+                 * current Reel should play.
                  */
                 player.setPlayWhenReady(false);
 
@@ -550,17 +554,16 @@ public class ReelAdapter
 
         private void showVideoError() {
 
-            if (reelErrorText == null) {
-                return;
+            if (reelErrorText != null) {
+
+                reelErrorText.setText(
+                        "Video unavailable"
+                );
+
+                reelErrorText.setVisibility(
+                        View.VISIBLE
+                );
             }
-
-            reelErrorText.setText(
-                    "Video unavailable"
-            );
-
-            reelErrorText.setVisibility(
-                    View.VISIBLE
-            );
         }
 
         // =====================================================
@@ -571,23 +574,12 @@ public class ReelAdapter
 
             if (player == null ||
                     currentReel == null) {
-
                 return;
             }
 
             try {
 
-                /*
-                 * If player is idle, prepare again.
-                 */
-                if (player.getPlaybackState() ==
-                        Player.STATE_IDLE) {
-
-                    player.prepare();
-                }
-
                 player.setPlayWhenReady(true);
-
                 player.play();
 
                 addViewOnce();
@@ -607,11 +599,7 @@ public class ReelAdapter
             }
 
             try {
-
-                player.setPlayWhenReady(false);
-
                 player.pause();
-
             } catch (Exception ignored) {
             }
         }
@@ -663,7 +651,7 @@ public class ReelAdapter
         }
 
         // =====================================================
-        // LIKE STATE
+        // CHECK LIKE
         // =====================================================
 
         private void checkLikeState() {
@@ -770,6 +758,9 @@ public class ReelAdapter
                 );
             }
 
+            /*
+             * Tap video = play/pause.
+             */
             if (reelPlayerView != null) {
 
                 reelPlayerView.setOnClickListener(
@@ -817,7 +808,6 @@ public class ReelAdapter
             }
 
             if (reelLikeButton != null) {
-
                 reelLikeButton.setEnabled(false);
             }
 
@@ -832,6 +822,10 @@ public class ReelAdapter
 
                         @Override
                         public void onSuccess() {
+
+                            if (currentReel == null) {
+                                return;
+                            }
 
                             boolean newLiked =
                                     !oldLiked;
@@ -1069,11 +1063,6 @@ public class ReelAdapter
 
                 try {
                     player.stop();
-                } catch (Exception ignored) {
-                }
-
-                try {
-                    player.clearMediaItems();
                 } catch (Exception ignored) {
                 }
 
