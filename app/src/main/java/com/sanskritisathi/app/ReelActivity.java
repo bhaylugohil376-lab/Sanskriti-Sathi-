@@ -20,7 +20,8 @@ public class ReelActivity extends AppCompatActivity {
 
     private final List<Reel> reelList = new ArrayList<>();
 
-    private int currentPosition = RecyclerView.NO_POSITION;
+    private int currentPosition =
+            RecyclerView.NO_POSITION;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +29,8 @@ public class ReelActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_reel);
 
-        reelRecyclerView = findViewById(R.id.reelRecyclerView);
+        reelRecyclerView =
+                findViewById(R.id.reelRecyclerView);
 
         setupRecyclerView();
         setupSnapHelper();
@@ -48,11 +50,13 @@ public class ReelActivity extends AppCompatActivity {
                         false
                 );
 
-        reelRecyclerView.setLayoutManager(layoutManager);
+        reelRecyclerView.setLayoutManager(
+                layoutManager
+        );
 
         reelRecyclerView.setHasFixedSize(false);
 
-        reelRecyclerView.setItemViewCacheSize(2);
+        reelRecyclerView.setItemViewCacheSize(1);
 
         reelRecyclerView.setOverScrollMode(
                 View.OVER_SCROLL_NEVER
@@ -68,7 +72,9 @@ public class ReelActivity extends AppCompatActivity {
                         reelList
                 );
 
-        reelRecyclerView.setAdapter(reelAdapter);
+        reelRecyclerView.setAdapter(
+                reelAdapter
+        );
 
         reelRecyclerView.addOnScrollListener(
                 new RecyclerView.OnScrollListener() {
@@ -83,14 +89,18 @@ public class ReelActivity extends AppCompatActivity {
                                 newState
                         );
 
-                        /*
-                         * Instagram-style:
-                         * play only after scrolling settles.
-                         */
+                        if (newState ==
+                                RecyclerView.SCROLL_STATE_DRAGGING) {
+
+                            reelAdapter.pauseAllVideos();
+                        }
+
                         if (newState ==
                                 RecyclerView.SCROLL_STATE_IDLE) {
 
-                            playCurrentReel();
+                            recyclerView.post(
+                                    () -> playCurrentReel()
+                            );
                         }
                     }
                 }
@@ -98,7 +108,7 @@ public class ReelActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // SNAP - ONE REEL AT A TIME
+    // SNAP
     // =========================================================
 
     private void setupSnapHelper() {
@@ -116,14 +126,6 @@ public class ReelActivity extends AppCompatActivity {
     // =========================================================
 
     private void loadReels() {
-
-        /*
-         * IMPORTANT:
-         *
-         * Replace this with your existing
-         * ReelSupabaseHelper method if the method
-         * name is different.
-         */
 
         ReelSupabaseHelper.loadReels(
                 this,
@@ -158,14 +160,7 @@ public class ReelActivity extends AppCompatActivity {
                     @Override
                     public void onError(
                             String message) {
-
-                        runOnUiThread(() -> {
-
-                            /*
-                             * Keep screen stable if loading fails.
-                             * You can add your own error UI here.
-                             */
-                        });
+                        // Keep existing UI stable.
                     }
                 }
         );
@@ -177,25 +172,25 @@ public class ReelActivity extends AppCompatActivity {
 
     private void playCurrentReel() {
 
-        if (reelAdapter == null ||
-                reelRecyclerView == null) {
+        if (isFinishing() ||
+                isDestroyed()) {
             return;
         }
 
-        if (layoutManager == null) {
+        if (reelRecyclerView == null ||
+                reelAdapter == null ||
+                layoutManager == null) {
             return;
         }
 
-        /*
-         * Find the reel completely visible on screen.
-         */
+        if (reelList.isEmpty()) {
+            return;
+        }
+
         int position =
                 layoutManager
                         .findFirstCompletelyVisibleItemPosition();
 
-        /*
-         * If not completely visible, use first visible.
-         */
         if (position ==
                 RecyclerView.NO_POSITION) {
 
@@ -217,10 +212,13 @@ public class ReelActivity extends AppCompatActivity {
         currentPosition = position;
 
         /*
-         * Adapter controls the actual ExoPlayer.
+         * Stop every visible reel first.
          */
         reelAdapter.pauseAllVideos();
 
+        /*
+         * Play only snapped/current reel.
+         */
         reelAdapter.playVideoAtPosition(
                 position
         );
@@ -235,10 +233,12 @@ public class ReelActivity extends AppCompatActivity {
 
         super.onResume();
 
-        if (reelAdapter != null) {
+        if (reelRecyclerView != null &&
+                reelAdapter != null) {
 
-            reelRecyclerView.post(
-                    () -> playCurrentReel()
+            reelRecyclerView.postDelayed(
+                    () -> playCurrentReel(),
+                    150
             );
         }
     }
