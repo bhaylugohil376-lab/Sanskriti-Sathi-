@@ -37,10 +37,6 @@ public class ReelActivity extends AppCompatActivity {
         loadReels();
     }
 
-    // =========================================================
-    // RECYCLER VIEW
-    // =========================================================
-
     private void setupRecyclerView() {
 
         layoutManager =
@@ -56,14 +52,13 @@ public class ReelActivity extends AppCompatActivity {
 
         reelRecyclerView.setHasFixedSize(false);
 
-        reelRecyclerView.setItemViewCacheSize(1);
+        reelRecyclerView.setItemViewCacheSize(2);
 
         reelRecyclerView.setOverScrollMode(
                 View.OVER_SCROLL_NEVER
         );
 
         reelRecyclerView.setClipToPadding(false);
-
         reelRecyclerView.setClipChildren(false);
 
         reelAdapter =
@@ -98,18 +93,15 @@ public class ReelActivity extends AppCompatActivity {
                         if (newState ==
                                 RecyclerView.SCROLL_STATE_IDLE) {
 
-                            recyclerView.post(
-                                    () -> playCurrentReel()
+                            recyclerView.postDelayed(
+                                    () -> playCurrentReel(),
+                                    150
                             );
                         }
                     }
                 }
         );
     }
-
-    // =========================================================
-    // SNAP
-    // =========================================================
 
     private void setupSnapHelper() {
 
@@ -121,13 +113,11 @@ public class ReelActivity extends AppCompatActivity {
         );
     }
 
-    // =========================================================
-    // LOAD REELS
-    // =========================================================
-
     private void loadReels() {
 
-        ReelSupabaseHelper.loadReels(
+        // IMPORTANT:
+        // Helper mein actual method getActiveReels() hai.
+        ReelSupabaseHelper.getActiveReels(
                 this,
                 new ReelSupabaseHelper.ReelsCallback() {
 
@@ -160,25 +150,25 @@ public class ReelActivity extends AppCompatActivity {
                     @Override
                     public void onError(
                             String message) {
-                        // Keep existing UI stable.
+
+                        runOnUiThread(() -> {
+
+                            reelList.clear();
+
+                            reelAdapter.notifyDataSetChanged();
+
+                            currentPosition =
+                                    RecyclerView.NO_POSITION;
+                        });
                     }
                 }
         );
     }
 
-    // =========================================================
-    // PLAY CURRENT REEL
-    // =========================================================
-
     private void playCurrentReel() {
 
-        if (isFinishing() ||
-                isDestroyed()) {
-            return;
-        }
-
-        if (reelRecyclerView == null ||
-                reelAdapter == null ||
+        if (reelAdapter == null ||
+                reelRecyclerView == null ||
                 layoutManager == null) {
             return;
         }
@@ -211,79 +201,53 @@ public class ReelActivity extends AppCompatActivity {
 
         currentPosition = position;
 
-        /*
-         * Stop every visible reel first.
-         */
         reelAdapter.pauseAllVideos();
 
-        /*
-         * Play only snapped/current reel.
-         */
         reelAdapter.playVideoAtPosition(
                 position
         );
     }
-
-    // =========================================================
-    // RESUME
-    // =========================================================
 
     @Override
     protected void onResume() {
 
         super.onResume();
 
-        if (reelRecyclerView != null &&
-                reelAdapter != null) {
+        if (reelAdapter != null &&
+                reelRecyclerView != null) {
 
             reelRecyclerView.postDelayed(
                     () -> playCurrentReel(),
-                    150
+                    200
             );
         }
     }
-
-    // =========================================================
-    // PAUSE
-    // =========================================================
 
     @Override
     protected void onPause() {
 
         if (reelAdapter != null) {
-
             reelAdapter.pauseAllVideos();
         }
 
         super.onPause();
     }
 
-    // =========================================================
-    // DESTROY
-    // =========================================================
-
     @Override
     protected void onDestroy() {
 
         if (reelAdapter != null) {
-
             reelAdapter.releaseAllVideos();
         }
 
         if (reelRecyclerView != null) {
-
             reelRecyclerView.setAdapter(null);
         }
 
         super.onDestroy();
     }
 
-    // =========================================================
-    // GETTER
-    // =========================================================
-
     public RecyclerView getReelRecyclerView() {
-
         return reelRecyclerView;
     }
 }
