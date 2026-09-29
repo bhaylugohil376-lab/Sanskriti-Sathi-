@@ -1,7 +1,10 @@
 package com.sanskritisathi.app;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,245 +12,150 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ReelActivity extends AppCompatActivity {
+public class ReelActivity extends AppCompatActivity implements ReelAdapter.ReelInteractionListener {
 
-    private RecyclerView reelRecyclerView;
+    private static final String TAG = "ReelActivity";
+    private RecyclerView recyclerViewReels;
+    private ProgressBar progressBar;
     private ReelAdapter reelAdapter;
+    private ReelSupabaseHelper supabaseHelper;
     private LinearLayoutManager layoutManager;
-
-    private final List<Reel> reelList = new ArrayList<>();
-
-    private int currentPosition =
-            RecyclerView.NO_POSITION;
+    private int currentPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_reel);
 
-        reelRecyclerView =
-                findViewById(R.id.reelRecyclerView);
+        recyclerViewReels = findViewById(R.id.recyclerViewReels);
+        progressBar = findViewById(R.id.progressBar);
 
-        setupRecyclerView();
-        setupSnapHelper();
-        loadReels();
-    }
+        supabaseHelper = new ReelSupabaseHelper();
+        reelAdapter = new ReelAdapter(this, this);
 
-    private void setupRecyclerView() {
+        layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerViewReels.setLayoutManager(layoutManager);
+        recyclerViewReels.setAdapter(reelAdapter);
 
-        layoutManager =
-                new LinearLayoutManager(
-                        this,
-                        LinearLayoutManager.VERTICAL,
-                        false
-                );
+        PagerSnapHelper snapHelper = new PagerSnapHelper();
+        snapHelper.attachToRecyclerView(recyclerViewReels);
 
-        reelRecyclerView.setLayoutManager(
-                layoutManager
-        );
-
-        reelRecyclerView.setHasFixedSize(false);
-
-        reelRecyclerView.setItemViewCacheSize(2);
-
-        reelRecyclerView.setOverScrollMode(
-                View.OVER_SCROLL_NEVER
-        );
-
-        reelRecyclerView.setClipToPadding(false);
-        reelRecyclerView.setClipChildren(false);
-
-        reelAdapter =
-                new ReelAdapter(
-                        this,
-                        reelList
-                );
-
-        reelRecyclerView.setAdapter(
-                reelAdapter
-        );
-
-        reelRecyclerView.addOnScrollListener(
-                new RecyclerView.OnScrollListener() {
-
-                    @Override
-                    public void onScrollStateChanged(
-                            @NonNull RecyclerView recyclerView,
-                            int newState) {
-
-                        super.onScrollStateChanged(
-                                recyclerView,
-                                newState
-                        );
-
-                        if (newState ==
-                                RecyclerView.SCROLL_STATE_DRAGGING) {
-
-                            reelAdapter.pauseAllVideos();
-                        }
-
-                        if (newState ==
-                                RecyclerView.SCROLL_STATE_IDLE) {
-
-                            recyclerView.postDelayed(
-                                    () -> playCurrentReel(),
-                                    150
-                            );
-                        }
-                    }
+        recyclerViewReels.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    playCurrentVisibleReel();
                 }
-        );
+            }
+        });
+
+        fetchActiveReels();
     }
 
-    private void setupSnapHelper() {
-
-        PagerSnapHelper snapHelper =
-                new PagerSnapHelper();
-
-        snapHelper.attachToRecyclerView(
-                reelRecyclerView
-        );
-    }
-
-    private void loadReels() {
-
-        // IMPORTANT:
-        // Helper mein actual method getActiveReels() hai.
-        ReelSupabaseHelper.getActiveReels(
-                this,
-                new ReelSupabaseHelper.ReelsCallback() {
-
-                    @Override
-                    public void onSuccess(
-                            List<Reel> reels) {
-
-                        runOnUiThread(() -> {
-
-                            reelList.clear();
-
-                            if (reels != null) {
-                                reelList.addAll(reels);
-                            }
-
-                            reelAdapter.notifyDataSetChanged();
-
-                            currentPosition =
-                                    RecyclerView.NO_POSITION;
-
-                            if (!reelList.isEmpty()) {
-
-                                reelRecyclerView.post(
-                                        () -> playCurrentReel()
-                                );
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onError(
-                            String message) {
-
-                        runOnUiThread(() -> {
-
-                            reelList.clear();
-
-                            reelAdapter.notifyDataSetChanged();
-
-                            currentPosition =
-                                    RecyclerView.NO_POSITION;
-                        });
-                    }
+    private void fetchActiveReels() {
+        progressBar.setVisibility(View.VISIBLE);
+        supabaseHelper.getActiveReels(new ReelSupabaseHelper.GetReelsCallback() {
+            @Override
+            public void onSuccess(List<Reel> reels) {
+                progressBar.setVisibility(View.GONE);
+                if (reels == null || reels.isEmpty()) {
+                    Toast.makeText(ReelActivity.this, "No reels found", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-        );
+                reelAdapter.setReels(reels);
+                recyclerViewReels.post(() -> playCurrentVisibleReel());
+            }
+
+            @Override
+            public void onError(Exception e) {
+                progressBar.setVisibility(View.GONE);
+                Log.e(TAG, "Error fetching reels: " + e.getMessage());
+                Toast.makeText(ReelActivity.this, "Failed to load reels: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void playCurrentReel() {
-
-        if (reelAdapter == null ||
-                reelRecyclerView == null ||
-                layoutManager == null) {
-            return;
+    private void playCurrentVisibleReel() {
+        int position = layoutManager.findFirstCompletelyVisibleItemPosition();
+        if (position == RecyclerView.NO_POSITION) {
+            position = layoutManager.findFirstVisibleItemPosition();
         }
 
-        if (reelList.isEmpty()) {
-            return;
-        }
+        if (position != RecyclerView.NO_POSITION && position != currentPosition) {
+            if (currentPosition != -1) {
+                RecyclerView.ViewHolder oldHolder = recyclerViewReels.findViewHolderForAdapterPosition(currentPosition);
+                if (oldHolder instanceof ReelAdapter.ReelViewHolder) {
+                    ((ReelAdapter.ReelViewHolder) oldHolder).pausePlayer();
+                }
+            }
 
-        int position =
-                layoutManager
-                        .findFirstCompletelyVisibleItemPosition();
-
-        if (position ==
-                RecyclerView.NO_POSITION) {
-
-            position =
-                    layoutManager
-                            .findFirstVisibleItemPosition();
-        }
-
-        if (position ==
-                RecyclerView.NO_POSITION) {
-            return;
-        }
-
-        if (position < 0 ||
-                position >= reelList.size()) {
-            return;
-        }
-
-        currentPosition = position;
-
-        reelAdapter.pauseAllVideos();
-
-        reelAdapter.playVideoAtPosition(
-                position
-        );
-    }
-
-    @Override
-    protected void onResume() {
-
-        super.onResume();
-
-        if (reelAdapter != null &&
-                reelRecyclerView != null) {
-
-            reelRecyclerView.postDelayed(
-                    () -> playCurrentReel(),
-                    200
-            );
+            currentPosition = position;
+            RecyclerView.ViewHolder newHolder = recyclerViewReels.findViewHolderForAdapterPosition(currentPosition);
+            if (newHolder instanceof ReelAdapter.ReelViewHolder) {
+                ((ReelAdapter.ReelViewHolder) newHolder).playPlayer();
+            }
         }
     }
 
     @Override
     protected void onPause() {
-
-        if (reelAdapter != null) {
-            reelAdapter.pauseAllVideos();
-        }
-
         super.onPause();
+        pauseActivePlayer();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        playCurrentVisibleReel();
     }
 
     @Override
     protected void onDestroy() {
-
-        if (reelAdapter != null) {
-            reelAdapter.releaseAllVideos();
-        }
-
-        if (reelRecyclerView != null) {
-            reelRecyclerView.setAdapter(null);
-        }
-
         super.onDestroy();
+        releaseAllPlayers();
     }
 
-    public RecyclerView getReelRecyclerView() {
-        return reelRecyclerView;
+    private void pauseActivePlayer() {
+        if (currentPosition != -1) {
+            RecyclerView.ViewHolder holder = recyclerViewReels.findViewHolderForAdapterPosition(currentPosition);
+            if (holder instanceof ReelAdapter.ReelViewHolder) {
+                ((ReelAdapter.ReelViewHolder) holder).pausePlayer();
+            }
+        }
+    }
+
+    private void releaseAllPlayers() {
+        for (int i = 0; i < recyclerViewReels.getChildCount(); i++) {
+            View child = recyclerViewReels.getChildAt(i);
+            RecyclerView.ViewHolder holder = recyclerViewReels.getChildViewHolder(child);
+            if (holder instanceof ReelAdapter.ReelViewHolder) {
+                ((ReelAdapter.ReelViewHolder) holder).releasePlayer();
+            }
+        }
+    }
+
+    @Override
+    public void onLikeClicked(Reel reel, int position) {
+        reel.setLiked(!reel.isLiked());
+        reel.setLikes(reel.isLiked() ? reel.getLikes() + 1 : Math.max(0, reel.getLikes() - 1));
+        reelAdapter.notifyItemChanged(position);
+    }
+
+    @Override
+    public void onCommentClicked(Reel reel, int position) {
+        Toast.makeText(this, "Comments feature clicked", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onShareClicked(Reel reel, int position) {
+        Toast.makeText(this, "Share: " + reel.getVideoUrl(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDeleteClicked(Reel reel, int position) {
+        Toast.makeText(this, "Delete option clicked", Toast.LENGTH_SHORT).show();
     }
 }
