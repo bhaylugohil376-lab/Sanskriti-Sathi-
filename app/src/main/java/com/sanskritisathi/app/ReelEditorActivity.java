@@ -254,59 +254,42 @@ public class ReelEditorActivity extends AppCompatActivity {
         if (toolAudio != null) {
 
             toolAudio.setOnClickListener(
-                    v -> showComingSoon(
-                            "Audio"
-                    )
+                    v -> startActivity(new Intent(this, AudioSelectionActivity.class))
             );
         }
 
         if (toolText != null) {
 
             toolText.setOnClickListener(
-                    v -> showComingSoon(
-                            "Text"
-                    )
+                    v -> Toast.makeText(this, "Text tool selected", Toast.LENGTH_SHORT).show()
             );
         }
 
         if (toolVoice != null) {
 
             toolVoice.setOnClickListener(
-                    v -> showComingSoon(
-                            "Voice"
-                    )
+                    v -> Toast.makeText(this, "Voice tool selected", Toast.LENGTH_SHORT).show()
             );
         }
 
         if (toolCaptions != null) {
 
             toolCaptions.setOnClickListener(
-                    v -> showComingSoon(
-                            "Captions"
-                    )
+                    v -> Toast.makeText(this, "Captions tool selected", Toast.LENGTH_SHORT).show()
             );
         }
 
         if (toolStickers != null) {
 
             toolStickers.setOnClickListener(
-                    v -> showComingSoon(
-                            "Stickers"
-                    )
+                    v -> Toast.makeText(this, "Stickers tool selected", Toast.LENGTH_SHORT).show()
             );
         }
 
         if (toolEdits != null) {
 
             toolEdits.setOnClickListener(
-                    v -> {
-
-                        Toast.makeText(
-                                this,
-                                "Open in Edits option ready hai.",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
+                    v -> startActivity(new Intent(this, FiltersActivity.class))
             );
         }
     }
