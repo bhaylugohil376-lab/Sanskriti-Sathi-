@@ -21,7 +21,7 @@ public class CulturePost {
     private boolean saved;
 
     public CulturePost() {
-        // Required empty constructor for Firebase
+        // Required empty constructor
     }
 
     /*
@@ -75,7 +75,7 @@ public class CulturePost {
     }
 
     /*
-     * Firebase/basic constructor
+     * Basic constructor
      */
     public CulturePost(
             String id,
