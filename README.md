@@ -1,3 +1,6 @@
+Sanskriti Sathi🇮🇳
+
+
 Sanskriti Sathi — Instagram-style final project
 This project is a Firebase-free Android app shell aligned to the approved 24-screen Instagram-style reference.
 Approved 24-screen reference
