@@ -184,6 +184,13 @@ public class MyProfileActivity extends AppCompatActivity {
             );
         }
 
+        View dashboardButton = findViewById(R.id.professionalDashboardButton);
+        if (dashboardButton != null) {
+            dashboardButton.setOnClickListener(v -> startActivity(
+                    new Intent(MyProfileActivity.this, ProfessionalDashboardActivity.class)
+            ));
+        }
+
         if (profileImage != null) {
 
             profileImage.setClickable(true);
