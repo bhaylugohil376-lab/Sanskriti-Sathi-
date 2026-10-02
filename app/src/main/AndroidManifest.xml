@@ -6,6 +6,8 @@
 
     <application
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Sanskriti Sathi"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -28,6 +30,13 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+
+        <activity android:name=".ExploreActivity" android:exported="false" />
+        <activity android:name=".ProfessionalDashboardActivity" android:exported="false" />
+        <activity android:name=".AudioSelectionActivity" android:exported="false" />
+        <activity android:name=".FiltersActivity" android:exported="false" />
+        <activity android:name=".SearchActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".NotificationsActivity" android:exported="false" />
 
         <!-- Authentication -->
         <activity
@@ -74,10 +83,6 @@
             android:exported="false" />
 
         <activity
-            android:name=".UserProfileActivity"
-            android:exported="false" />
-
-        <activity
             android:name=".SettingsActivity"
             android:exported="false" />
 
@@ -120,37 +125,15 @@
             android:exported="false" />
 
         <!-- Culture -->
-        <activity
-            android:name=".CultureActivity"
-            android:exported="false" />
 
         <!-- Post -->
-        <activity
-            android:name=".PostUploadActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".PostCommentsActivity"
-            android:exported="false" />
+        <activity android:name=".PostUploadActivity" android:exported="false" />
 
         <!-- Search -->
-        <activity
-            android:name=".SearchActivity"
-            android:exported="false" />
 
         <!-- Notifications -->
-        <activity
-            android:name=".NotificationsActivity"
-            android:exported="false" />
 
         <!-- Stories -->
-        <activity
-            android:name=".StoryActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".StoryUploadActivity"
-            android:exported="false" />
 
         <!-- ================================================= -->
         <!-- REELS -->
@@ -189,15 +172,13 @@
         <!-- Chat -->
         <activity
             android:name=".ChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".OneToOneChatActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".GroupChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
     </application>
 
