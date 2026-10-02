@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFF8F0">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="16dp"
+        android:background="#FFFFFF"
+        android:elevation="4dp">
+
+        <ImageButton
+            android:id="@+id/notificationsBackButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:src="@android:drawable/ic_menu_revert"
+            android:tint="#6D3218" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Notifications"
+            android:textColor="#4A2112"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            android:fontFamily="sans" />
+
+    </LinearLayout>
+
+    <!-- Loading -->
+    <TextView
+        android:id="@+id/notificationsLoadingText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="Loading notifications..."
+        android:textColor="#8A6A5A"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <!-- Notification List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/notificationsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="24dp" />
+
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/notificationsEmptyText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:gravity="center"
+        android:text="You don't have any notifications yet."
+        android:textColor="#8A6A5A"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+</LinearLayout>
