@@ -49,7 +49,7 @@ public class OneToOneChatActivity extends AppCompatActivity {
 
             Toast.makeText(
                     OneToOneChatActivity.this,
-                    "Message Firebase mein next step mein save hoga.",
+                    "Message backend mein save hoga.",
                     Toast.LENGTH_SHORT
             ).show();
 
