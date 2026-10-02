@@ -10,7 +10,7 @@ public class UserProfile {
     private String profileImageUrl;
 
     public UserProfile() {
-        // Firebase Firestore ke liye empty constructor
+        // Empty constructor for model compatibility
     }
 
     public UserProfile(
