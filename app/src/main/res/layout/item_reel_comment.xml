@@ -9,7 +9,9 @@
     android:paddingStart="14dp"
     android:paddingTop="10dp"
     android:paddingEnd="10dp"
-    android:paddingBottom="10dp">
+    android:paddingBottom="10dp"
+    android:background="#FFFFFF"
+>
 
     <!-- Profile -->
     <ImageView
