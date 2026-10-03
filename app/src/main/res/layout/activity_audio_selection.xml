@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFDF7">
+ <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:gravity="center_vertical" android:paddingHorizontal="16dp">
+  <TextView android:id="@+id/backButton" android:layout_width="48dp" android:layout_height="48dp" android:gravity="center" android:text="‹" android:textSize="34sp" android:textColor="#3B2117"/>
+  <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Add Audio" android:textSize="21sp" android:textStyle="bold" android:textColor="#3B2117"/>
+ </LinearLayout>
+ <TextView android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center" android:text="Trending     Saved     Original" android:textColor="#FF6D00" android:textStyle="bold"/>
+ <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+  <TextView android:layout_width="match_parent" android:layout_height="62dp" android:gravity="center_vertical" android:text="▶  Sanatan Dhun     2:45 • Trending" android:textSize="16sp" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="62dp" android:gravity="center_vertical" android:text="▶  Vande Mataram     3:12 • Trending" android:textSize="16sp" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="62dp" android:gravity="center_vertical" android:text="▶  Bharat Humko Jaan Se Pyara Hai" android:textSize="16sp" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="62dp" android:gravity="center_vertical" android:text="▶  Shiv Tandav     4:20 • Devotional" android:textSize="16sp" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="62dp" android:gravity="center_vertical" android:text="▶  Radha Krishna     3:50 • Bhakti" android:textSize="16sp" android:textColor="#3B2117"/>
+ </LinearLayout>
+</LinearLayout>
