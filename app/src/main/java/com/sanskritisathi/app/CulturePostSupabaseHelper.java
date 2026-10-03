@@ -16,19 +16,15 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public final class CulturePostSupabaseHelper {
+public final class PostCommentSupabaseHelper {
 
-    private CulturePostSupabaseHelper() {
-    }
-
-    private static final String TABLE = "posts";
+    private static final String TABLE = "post_comments";
 
     private static final ExecutorService EXECUTOR =
             Executors.newSingleThreadExecutor();
@@ -36,8 +32,11 @@ public final class CulturePostSupabaseHelper {
     private static final Handler MAIN =
             new Handler(Looper.getMainLooper());
 
-    public interface PostsCallback {
-        void onSuccess(List<CulturePost> posts);
+    private PostCommentSupabaseHelper() {
+    }
+
+    public interface CommentsCallback {
+        void onSuccess(List<PostComment> comments);
         void onError(String message);
     }
 
@@ -46,61 +45,21 @@ public final class CulturePostSupabaseHelper {
         void onError(String message);
     }
 
-    public interface LikeCallback {
-        void onSuccess(boolean liked, int likeCount);
-        void onError(String message);
-    }
-
-    public interface LikeStatusCallback {
-        void onResult(boolean liked);
-    }
-
-    // =========================================================
-    // PUBLIC POSTS
-    // =========================================================
-
-    public static void getPublicPosts(
-            @NonNull PostsCallback callback
-    ) {
-        requestPosts(
-                "visibility=eq.Public&order=created_at.desc&limit=100",
-                callback
-        );
-    }
-
-    // =========================================================
-    // MY POSTS
-    // =========================================================
-
-    public static void getMyPosts(
+    public static void getComments(
             Context context,
-            @NonNull PostsCallback callback
+            String postId,
+            @NonNull CommentsCallback callback
     ) {
 
-        String uid =
-                SupabaseAuthManager.getUserId(context);
-
-        if (uid == null || uid.trim().isEmpty()) {
-            callback.onError("Pehle Login karein.");
+        if (!isLoggedIn(context)) {
+            callback.onError("Please login first.");
             return;
         }
 
-        requestPosts(
-                "author_uid=eq."
-                        + encode(uid)
-                        + "&order=created_at.desc&limit=100",
-                callback
-        );
-    }
-
-    // =========================================================
-    // LOAD POSTS
-    // =========================================================
-
-    private static void requestPosts(
-            String query,
-            @NonNull PostsCallback callback
-    ) {
+        if (postId == null || postId.trim().isEmpty()) {
+            callback.onError("Post not found.");
+            return;
+        }
 
         EXECUTOR.execute(() -> {
 
@@ -108,36 +67,29 @@ public final class CulturePostSupabaseHelper {
 
             try {
 
-                URL url = new URL(
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/"
-                                + TABLE
-                                + "?"
-                                + query
-                );
+                String query =
+                        "post_id=eq."
+                                + encode(postId)
+                                + "&select=*"
+                                + "&order=created_at.asc"
+                                + "&limit=500";
 
                 connection =
-                        (HttpURLConnection) url.openConnection();
-
-                connection.setRequestMethod("GET");
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(20000);
-
-                addHeaders(connection, false);
+                        openConnection(
+                                TABLE + "?" + query,
+                                "GET"
+                        );
 
                 int code =
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(
-                                connection,
-                                code
-                        );
+                        readResponse(connection, code);
 
                 if (code < 200 || code >= 300) {
                     postError(
                             callback,
-                            "Posts load nahi hue: "
+                            "Comments load nahi hui: "
                                     + cleanError(response)
                     );
                     return;
@@ -146,7 +98,7 @@ public final class CulturePostSupabaseHelper {
                 JSONArray array =
                         new JSONArray(response);
 
-                List<CulturePost> posts =
+                List<PostComment> list =
                         new ArrayList<>();
 
                 for (int i = 0;
@@ -156,24 +108,51 @@ public final class CulturePostSupabaseHelper {
                     JSONObject json =
                             array.getJSONObject(i);
 
-                    CulturePost post =
-                            jsonToPost(json);
+                    String id =
+                            json.optString("id", "");
 
-                    if (post != null) {
-                        posts.add(post);
-                    }
+                    String authorUid =
+                            json.optString(
+                                    "author_uid",
+                                    ""
+                            );
+
+                    String author =
+                            json.optString(
+                                    "author",
+                                    "Sanskriti User"
+                            );
+
+                    String text =
+                            json.optString(
+                                    "text",
+                                    ""
+                            );
+
+                    String createdAt =
+                            json.optString(
+                                    "created_at",
+                                    ""
+                            );
+
+                    list.add(
+                            new PostComment(
+                                    id,
+                                    authorUid,
+                                    author,
+                                    text,
+                                    createdAt
+                            )
+                    );
                 }
 
-                postSuccess(
-                        callback,
-                        posts
-                );
+                postSuccess(callback, list);
 
             } catch (Exception e) {
 
                 postError(
                         callback,
-                        "Posts load error: "
+                        "Comments load error: "
                                 + safeMessage(e)
                 );
 
@@ -186,16 +165,10 @@ public final class CulturePostSupabaseHelper {
         });
     }
 
-    // =========================================================
-    // CREATE POST
-    // =========================================================
-
-    public static void createPost(
+    public static void addComment(
             Context context,
-            String category,
-            String caption,
-            String imageUrl,
-            String visibility,
+            String postId,
+            String text,
             @NonNull ActionCallback callback
     ) {
 
@@ -203,24 +176,33 @@ public final class CulturePostSupabaseHelper {
                 SupabaseAuthManager.getUserId(context);
 
         if (uid == null || uid.trim().isEmpty()) {
-            callback.onError("Pehle Login karein.");
+            callback.onError("Please login first.");
             return;
         }
 
-        if (caption == null ||
-                caption.trim().isEmpty()) {
+        if (postId == null ||
+                postId.trim().isEmpty()) {
 
-            callback.onError("Caption khali hai.");
+            callback.onError("Post not found.");
             return;
         }
 
-        String cleanCaption =
-                caption.trim();
+        if (text == null ||
+                text.trim().isEmpty()) {
 
-        if (cleanCaption.length() > 5000) {
+            callback.onError("Write a comment.");
+            return;
+        }
+
+        String cleanText =
+                text.trim();
+
+        if (cleanText.length() > 1000) {
+
             callback.onError(
-                    "Caption maximum 5000 characters ka ho sakta hai."
+                    "Comment maximum 1000 characters ka ho sakta hai."
             );
+
             return;
         }
 
@@ -234,6 +216,11 @@ public final class CulturePostSupabaseHelper {
                         new JSONObject();
 
                 body.put(
+                        "post_id",
+                        postId
+                );
+
+                body.put(
                         "author_uid",
                         uid
                 );
@@ -244,75 +231,34 @@ public final class CulturePostSupabaseHelper {
                 );
 
                 body.put(
-                        "category",
-                        category == null ||
-                                category.trim().isEmpty()
-                                ? "Indian Culture"
-                                : category.trim()
+                        "text",
+                        cleanText
                 );
 
                 body.put(
-                        "caption",
-                        cleanCaption
+                        "created_at",
+                        java.time.Instant
+                                .now()
+                                .toString()
                 );
-
-                body.put(
-                        "image_url",
-                        imageUrl == null
-                                ? ""
-                                : imageUrl.trim()
-                );
-
-                body.put(
-                        "visibility",
-                        "Followers".equalsIgnoreCase(
-                                visibility
-                        )
-                                ? "Followers"
-                                : "Public"
-                );
-
-                body.put("likes", 0);
-                body.put("comments", 0);
-
-                URL url =
-                        new URL(
-                                SupabaseConfig.PROJECT_URL
-                                        + "/rest/v1/"
-                                        + TABLE
-                                );
 
                 connection =
-                        (HttpURLConnection)
-                                url.openConnection();
+                        openConnection(
+                                TABLE,
+                                "POST"
+                        );
 
-                connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(20000);
-
-                addHeaders(connection, true);
 
                 connection.setRequestProperty(
                         "Prefer",
                         "return=minimal"
                 );
 
-                byte[] data =
-                        body.toString()
-                                .getBytes(
-                                        StandardCharsets.UTF_8
-                                );
-
-                connection.setFixedLengthStreamingMode(
-                        data.length
+                writeBody(
+                        connection,
+                        body
                 );
-
-                try (OutputStream output =
-                             connection.getOutputStream()) {
-
-                    output.write(data);
-                }
 
                 int code =
                         connection.getResponseCode();
@@ -325,13 +271,17 @@ public final class CulturePostSupabaseHelper {
 
                 if (code >= 200 && code < 300) {
 
+                    updatePostCommentCount(
+                            postId
+                    );
+
                     postSuccess(callback);
 
                 } else {
 
                     postError(
                             callback,
-                            "Post create nahi hui: "
+                            "Comment failed: "
                                     + cleanError(response)
                     );
                 }
@@ -340,7 +290,7 @@ public final class CulturePostSupabaseHelper {
 
                 postError(
                         callback,
-                        "Post create error: "
+                        "Comment error: "
                                 + safeMessage(e)
                 );
 
@@ -353,83 +303,103 @@ public final class CulturePostSupabaseHelper {
         });
     }
 
-    // =========================================================
-    // LIKE / UNLIKE
-    // =========================================================
-
-    public static void toggleLike(
-            Context context,
-            String postId,
-            @NonNull LikeCallback callback
+    private static void updatePostCommentCount(
+            String postId
     ) {
 
-        String uid =
-                SupabaseAuthManager.getUserId(context);
+        HttpURLConnection connection = null;
 
-        if (uid == null || uid.trim().isEmpty()) {
-            callback.onError("Pehle Login karein.");
-            return;
-        }
+        try {
 
-        if (postId == null ||
-                postId.trim().isEmpty()) {
+            String query =
+                    "id=eq."
+                            + encode(postId)
+                            + "&select=comments";
 
-            callback.onError(
-                    "Post ID available nahi hai."
+            connection =
+                    openConnection(
+                            "posts?" + query,
+                            "GET"
+                    );
+
+            int code =
+                    connection.getResponseCode();
+
+            String response =
+                    readResponse(
+                            connection,
+                            code
+                    );
+
+            if (code < 200 || code >= 300) {
+                return;
+            }
+
+            JSONArray array =
+                    new JSONArray(response);
+
+            if (array.length() == 0) {
+                return;
+            }
+
+            JSONObject post =
+                    array.getJSONObject(0);
+
+            int current =
+                    post.optInt(
+                            "comments",
+                            0
+                    );
+
+            int newCount =
+                    Math.max(0, current) + 1;
+
+            if (connection != null) {
+                connection.disconnect();
+            }
+
+            JSONObject body =
+                    new JSONObject();
+
+            body.put(
+                    "comments",
+                    newCount
             );
-            return;
-        }
 
-        /*
-         * IMPORTANT:
-         *
-         * Supabase schema mein likes table/relationship
-         * confirm kiye bina fake endpoint nahi banaya.
-         *
-         * Isliye yahan existing schema ke according
-         * likes implementation connect karna hoga.
-         */
-        callback.onError(
-                "Likes ke liye Supabase posts/likes schema verify karna hai."
-        );
+            connection =
+                    openConnection(
+                            "posts?id=eq."
+                                    + encode(postId),
+                            "PATCH"
+                    );
+
+            connection.setDoOutput(true);
+
+            connection.setRequestProperty(
+                    "Prefer",
+                    "return=minimal"
+            );
+
+            writeBody(
+                    connection,
+                    body
+            );
+
+            connection.getResponseCode();
+
+        } catch (Exception ignored) {
+
+        } finally {
+
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
     }
 
-    // =========================================================
-    // CHECK LIKE
-    // =========================================================
-
-    public static void checkLiked(
+    public static void deleteComment(
             Context context,
-            String postId,
-            @NonNull LikeStatusCallback callback
-    ) {
-
-        String uid =
-                SupabaseAuthManager.getUserId(context);
-
-        if (uid == null ||
-                uid.trim().isEmpty() ||
-                postId == null ||
-                postId.trim().isEmpty()) {
-
-            callback.onResult(false);
-            return;
-        }
-
-        /*
-         * Existing Supabase schema verify hone tak
-         * false return — Firebase fallback nahi.
-         */
-        callback.onResult(false);
-    }
-
-    // =========================================================
-    // DELETE POST
-    // =========================================================
-
-    public static void deletePost(
-            Context context,
-            String postId,
+            String commentId,
             @NonNull ActionCallback callback
     ) {
 
@@ -437,16 +407,14 @@ public final class CulturePostSupabaseHelper {
                 SupabaseAuthManager.getUserId(context);
 
         if (uid == null || uid.trim().isEmpty()) {
-            callback.onError("Pehle Login karein.");
+            callback.onError("Please login first.");
             return;
         }
 
-        if (postId == null ||
-                postId.trim().isEmpty()) {
+        if (commentId == null ||
+                commentId.trim().isEmpty()) {
 
-            callback.onError(
-                    "Post ID available nahi hai."
-            );
+            callback.onError("Invalid comment.");
             return;
         }
 
@@ -456,26 +424,17 @@ public final class CulturePostSupabaseHelper {
 
             try {
 
-                URL url =
-                        new URL(
-                                SupabaseConfig.PROJECT_URL
-                                        + "/rest/v1/"
-                                        + TABLE
-                                        + "?id=eq."
-                                        + encode(postId)
-                                        + "&author_uid=eq."
-                                        + encode(uid)
-                        );
+                String query =
+                        "id=eq."
+                                + encode(commentId)
+                                + "&author_uid=eq."
+                                + encode(uid);
 
                 connection =
-                        (HttpURLConnection)
-                                url.openConnection();
-
-                connection.setRequestMethod("DELETE");
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(20000);
-
-                addHeaders(connection, false);
+                        openConnection(
+                                TABLE + "?" + query,
+                                "DELETE"
+                        );
 
                 int code =
                         connection.getResponseCode();
@@ -494,7 +453,7 @@ public final class CulturePostSupabaseHelper {
 
                     postError(
                             callback,
-                            "Post delete nahi hui: "
+                            "Comment delete nahi hua: "
                                     + cleanError(response)
                     );
                 }
@@ -503,7 +462,7 @@ public final class CulturePostSupabaseHelper {
 
                 postError(
                         callback,
-                        "Post delete error: "
+                        "Delete error: "
                                 + safeMessage(e)
                 );
 
@@ -516,138 +475,46 @@ public final class CulturePostSupabaseHelper {
         });
     }
 
-    // =========================================================
-    // JSON -> CULTURE POST
-    // =========================================================
-
-    private static CulturePost jsonToPost(
-            JSONObject json
+    private static boolean isLoggedIn(
+            Context context
     ) {
 
-        try {
+        String uid =
+                SupabaseAuthManager.getUserId(context);
 
-            String id =
-                    json.optString(
-                            "id",
-                            json.optString(
-                                    "post_id",
-                                    ""
-                            )
-                    );
-
-            String authorUid =
-                    json.optString(
-                            "author_uid",
-                            ""
-                    );
-
-            String author =
-                    json.optString(
-                            "author",
-                            "Sanskriti User"
-                    );
-
-            String category =
-                    json.optString(
-                            "category",
-                            "Indian Culture"
-                    );
-
-            String caption =
-                    json.optString(
-                            "caption",
-                            ""
-                    );
-
-            String imageUrl =
-                    json.optString(
-                            "image_url",
-                            json.optString(
-                                    "imageUrl",
-                                    ""
-                            )
-                    );
-
-            String visibility =
-                    json.optString(
-                            "visibility",
-                            "Public"
-                    );
-
-            long createdAt =
-                    parseCreatedAt(
-                            json.optString(
-                                    "created_at",
-                                    ""
-                            )
-                    );
-
-            int likes =
-                    json.optInt(
-                            "likes",
-                            0
-                    );
-
-            int comments =
-                    json.optInt(
-                            "comments",
-                            0
-                    );
-
-            return new CulturePost(
-                    id,
-                    authorUid,
-                    author,
-                    category,
-                    caption,
-                    imageUrl,
-                    visibility,
-                    createdAt,
-                    Math.max(0, likes),
-                    Math.max(0, comments),
-                    R.drawable.icon_foreground,
-                    R.drawable.icon_foreground,
-                    false,
-                    false
-            );
-
-        } catch (Exception e) {
-            return null;
-        }
+        return uid != null &&
+                !uid.trim().isEmpty();
     }
 
-    private static long parseCreatedAt(
-            String value
-    ) {
+    private static HttpURLConnection openConnection(
+            String path,
+            String method
+    ) throws Exception {
 
-        if (value == null ||
-                value.trim().isEmpty()) {
-            return 0L;
-        }
+        URL url =
+                new URL(
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + path
+                );
 
-        try {
+        HttpURLConnection connection =
+                (HttpURLConnection)
+                        url.openConnection();
 
-            return java.time.Instant
-                    .parse(value)
-                    .toEpochMilli();
-
-        } catch (Exception ignored) {
-            return 0L;
-        }
-    }
-
-    // =========================================================
-    // HEADERS
-    // =========================================================
-
-    private static void addHeaders(
-            HttpURLConnection connection,
-            boolean write
-    ) {
+        connection.setRequestMethod(method);
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(20000);
 
         connection.setRequestProperty(
                 "apikey",
                 SupabaseConfig.PUBLISHABLE_KEY
+        );
+
+        connection.setRequestProperty(
+                "Authorization",
+                "Bearer "
+                        + SupabaseConfig.PUBLISHABLE_KEY
         );
 
         connection.setRequestProperty(
@@ -660,44 +527,36 @@ public final class CulturePostSupabaseHelper {
                 "application/json"
         );
 
-        /*
-         * Supabase publishable key is sent here.
-         *
-         * User session token is intentionally not guessed
-         * from another API. RLS/schema should decide access.
-         */
-        connection.setRequestProperty(
-                "Authorization",
-                "Bearer "
-                        + SupabaseConfig.PUBLISHABLE_KEY
-        );
-
-        if (write) {
-            connection.setRequestProperty(
-                    "Prefer",
-                    "return=minimal"
-            );
-        }
+        return connection;
     }
 
-    // =========================================================
-    // HTTP HELPERS
-    // =========================================================
+    private static void writeBody(
+            HttpURLConnection connection,
+            JSONObject body
+    ) throws Exception {
+
+        byte[] data =
+                body.toString()
+                        .getBytes(
+                                StandardCharsets.UTF_8
+                        );
+
+        try (OutputStream output =
+                     connection.getOutputStream()) {
+
+            output.write(data);
+        }
+    }
 
     private static String readResponse(
             HttpURLConnection connection,
             int code
     ) throws Exception {
 
-        InputStream stream;
-
-        if (code >= 200 && code < 400) {
-            stream =
-                    connection.getInputStream();
-        } else {
-            stream =
-                    connection.getErrorStream();
-        }
+        InputStream stream =
+                code >= 200 && code < 400
+                        ? connection.getInputStream()
+                        : connection.getErrorStream();
 
         if (stream == null) {
             return "";
@@ -726,6 +585,23 @@ public final class CulturePostSupabaseHelper {
         return result.toString();
     }
 
+    private static String encode(
+            String value
+    ) {
+
+        try {
+
+            return URLEncoder.encode(
+                    value,
+                    StandardCharsets.UTF_8.name()
+            );
+
+        } catch (Exception e) {
+
+            return value;
+        }
+    }
+
     private static String cleanError(
             String response
     ) {
@@ -733,7 +609,7 @@ public final class CulturePostSupabaseHelper {
         if (response == null ||
                 response.trim().isEmpty()) {
 
-            return "Unknown server error";
+            return "Server error";
         }
 
         try {
@@ -751,64 +627,43 @@ public final class CulturePostSupabaseHelper {
                 return message;
             }
 
-            String error =
-                    json.optString(
-                            "error",
-                            ""
-                    );
-
-            if (!error.isEmpty()) {
-                return error;
-            }
+            return json.optString(
+                    "hint",
+                    response
+            );
 
         } catch (Exception ignored) {
-        }
 
-        return response;
+            return response;
+        }
     }
 
     private static String safeMessage(
             Exception e
     ) {
 
-        String message =
-                e.getMessage();
-
-        return message == null ||
-                message.trim().isEmpty()
+        return e.getMessage() == null
                 ? e.getClass().getSimpleName()
-                : message;
+                : e.getMessage();
     }
-
-    private static String encode(
-            String value
-    ) {
-
-        try {
-
-            return java.net.URLEncoder
-                    .encode(
-                            value,
-                            StandardCharsets.UTF_8.name()
-                    );
-
-        } catch (Exception e) {
-
-            return value;
-        }
-    }
-
-    // =========================================================
-    // MAIN THREAD CALLBACKS
-    // =========================================================
 
     private static void postSuccess(
-            @NonNull PostsCallback callback,
-            List<CulturePost> posts
+            @NonNull CommentsCallback callback,
+            List<PostComment> comments
     ) {
 
         MAIN.post(() ->
-                callback.onSuccess(posts)
+                callback.onSuccess(comments)
+        );
+    }
+
+    private static void postError(
+            @NonNull CommentsCallback callback,
+            String message
+    ) {
+
+        MAIN.post(() ->
+                callback.onError(message)
         );
     }
 
@@ -820,7 +675,7 @@ public final class CulturePostSupabaseHelper {
     }
 
     private static void postError(
-            @NonNull PostsCallback callback,
+            @NonNull ActionCallback callback,
             String message
     ) {
 
@@ -829,13 +684,46 @@ public final class CulturePostSupabaseHelper {
         );
     }
 
-    private static void postError(
-            @NonNull ActionCallback callback,
-            String message
-    ) {
+    public static class PostComment {
 
-        MAIN.post(() ->
-                callback.onError(message)
-        );
+        private final String id;
+        private final String authorUid;
+        private final String author;
+        private final String text;
+        private final String createdAt;
+
+        public PostComment(
+                String id,
+                String authorUid,
+                String author,
+                String text,
+                String createdAt
+        ) {
+            this.id = id;
+            this.authorUid = authorUid;
+            this.author = author;
+            this.text = text;
+            this.createdAt = createdAt;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getAuthorUid() {
+            return authorUid;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getCreatedAt() {
+            return createdAt;
+        }
     }
 }
