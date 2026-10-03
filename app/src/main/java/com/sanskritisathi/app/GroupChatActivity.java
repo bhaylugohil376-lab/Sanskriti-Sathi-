@@ -19,6 +19,7 @@ public class GroupChatActivity extends AppCompatActivity {
     private Button sendButton;
 
     private GroupChatAdapter adapter;
+
     private final List<GroupMessage> messageList =
             new ArrayList<>();
 
@@ -46,38 +47,52 @@ public class GroupChatActivity extends AppCompatActivity {
                 layoutManager
         );
 
-        adapter = new GroupChatAdapter(messageList);
+        adapter =
+                new GroupChatAdapter(messageList);
 
         groupMessagesRecyclerView.setAdapter(adapter);
 
         loadMessages();
 
-        sendButton.setOnClickListener(v -> sendMessage());
+        sendButton.setOnClickListener(
+                v -> sendMessage()
+        );
     }
+
+    // =========================================================
+    // LOAD MESSAGES
+    // =========================================================
 
     private void loadMessages() {
 
-        GroupChatFirebaseHelper.getMessages(
-                new GroupChatFirebaseHelper.MessagesCallback() {
+        GroupChatSupabaseHelper.getMessages(
+                this,
+                new GroupChatSupabaseHelper.MessagesCallback() {
 
                     @Override
                     public void onSuccess(
                             List<GroupMessage> messages) {
 
                         messageList.clear();
-                        messageList.addAll(messages);
+
+                        if (messages != null) {
+                            messageList.addAll(messages);
+                        }
 
                         adapter.notifyDataSetChanged();
 
                         if (!messageList.isEmpty()) {
-                            groupMessagesRecyclerView.scrollToPosition(
-                                    messageList.size() - 1
-                            );
+
+                            groupMessagesRecyclerView
+                                    .scrollToPosition(
+                                            messageList.size() - 1
+                                    );
                         }
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message) {
 
                         Toast.makeText(
                                 GroupChatActivity.this,
@@ -89,10 +104,15 @@ public class GroupChatActivity extends AppCompatActivity {
         );
     }
 
+    // =========================================================
+    // SEND MESSAGE
+    // =========================================================
+
     private void sendMessage() {
 
         String message =
-                messageInput.getText()
+                messageInput
+                        .getText()
                         .toString()
                         .trim();
 
@@ -109,9 +129,10 @@ public class GroupChatActivity extends AppCompatActivity {
 
         sendButton.setEnabled(false);
 
-        GroupChatFirebaseHelper.sendMessage(
+        GroupChatSupabaseHelper.sendMessage(
+                this,
                 message,
-                new GroupChatFirebaseHelper.ActionCallback() {
+                new GroupChatSupabaseHelper.ActionCallback() {
 
                     @Override
                     public void onSuccess() {
@@ -124,7 +145,8 @@ public class GroupChatActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message) {
 
                         sendButton.setEnabled(true);
 
@@ -136,5 +158,17 @@ public class GroupChatActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    // =========================================================
+    // CLEANUP
+    // =========================================================
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Supabase helper uses a shared executor.
+        // No Firebase listener cleanup required.
     }
 }
