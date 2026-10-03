@@ -8,7 +8,9 @@
     android:paddingStart="12dp"
     android:paddingEnd="12dp"
     android:paddingTop="8dp"
-    android:paddingBottom="8dp">
+    android:paddingBottom="8dp"
+    android:background="#FFFFFF"
+>
 
     <TextView
         android:id="@+id/groupMessageUsername"
