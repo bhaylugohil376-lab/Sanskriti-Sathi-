@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFDF7"
+    android:clipToPadding="false"
+>
+ <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="18dp">
+  <TextView android:id="@+id/backButton" android:layout_width="48dp" android:layout_height="48dp" android:gravity="center" android:text="‹" android:textSize="34sp" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Professional Dashboard" android:textSize="24sp" android:textStyle="bold" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="22dp" android:text="Insights" android:textSize="18sp" android:textStyle="bold" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:text="Profile views   4,523    ↑ 12%\nReach              32.1K    ↑ 18%\nContent interactions  2,346    ↑ 24%" android:textSize="17sp" android:textColor="#5B4636" android:lineSpacingExtra="8dp"/>
+  <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="26dp" android:text="Your tools" android:textSize="18sp" android:textStyle="bold" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="60dp" android:gravity="center_vertical" android:text="📣  Ad tools" android:textSize="16sp" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="60dp" android:gravity="center_vertical" android:text="🏆  Creator rewards" android:textSize="16sp" android:textColor="#3B2117"/>
+  <TextView android:layout_width="match_parent" android:layout_height="60dp" android:gravity="center_vertical" android:text="₹  Monetization" android:textSize="16sp" android:textColor="#3B2117"/>
+ </LinearLayout>
+</ScrollView>
