@@ -3,7 +3,8 @@ package com.sanskritisathi.app;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,24 +15,24 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import java.net.URLEncoder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class FollowSupabaseHelper {
 
-    private static final String TABLE = "follows";
-
-    private static final ExecutorService EXECUTOR =
-            Executors.newCachedThreadPool();
-
-    private static final Handler MAIN_HANDLER =
-            new Handler(Looper.getMainLooper());
-
     private FollowSupabaseHelper() {
     }
+
+    private static final String FOLLOW_TABLE = "follows";
+    private static final String USERS_TABLE = "users";
+
+    private static final ExecutorService EXECUTOR =
+            Executors.newSingleThreadExecutor();
+
+    private static final Handler MAIN =
+            new Handler(Looper.getMainLooper());
 
     public interface ActionCallback {
         void onSuccess();
@@ -43,11 +44,6 @@ public final class FollowSupabaseHelper {
         void onError(String message);
     }
 
-    public interface CountCallback {
-        void onResult(int count);
-        void onError(String message);
-    }
-
     // =========================================================
     // CHECK FOLLOWING
     // =========================================================
@@ -55,15 +51,28 @@ public final class FollowSupabaseHelper {
     public static void checkFollowing(
             Context context,
             String targetUid,
-            StatusCallback callback) {
+            @NonNull StatusCallback callback
+    ) {
 
-        if (context == null) {
-            postStatusError(callback, "Context missing.");
+        String currentUid =
+                SupabaseAuthManager.getUserId(context);
+
+        if (currentUid == null ||
+                currentUid.trim().isEmpty()) {
+
+            callback.onError("Pehle Login karein.");
             return;
         }
 
-        if (TextUtils.isEmpty(targetUid)) {
-            postStatusError(callback, "User profile nahi mili.");
+        if (targetUid == null ||
+                targetUid.trim().isEmpty()) {
+
+            callback.onError("User profile nahi mili.");
+            return;
+        }
+
+        if (currentUid.equals(targetUid)) {
+            callback.onResult(false);
             return;
         }
 
@@ -73,66 +82,42 @@ public final class FollowSupabaseHelper {
 
             try {
 
-                String currentUid =
-                        SupabaseAuthManager.getUserId(context);
-
-                String token =
-                        SupabaseAuthManager.getAccessToken(context);
-
-                if (TextUtils.isEmpty(currentUid)
-                        || TextUtils.isEmpty(token)) {
-
-                    postStatusError(
-                            callback,
-                            "Pehle Login karein."
-                    );
-                    return;
-                }
-
-                if (currentUid.equals(targetUid)) {
-
-                    postStatusResult(
-                            callback,
-                            false
-                    );
-                    return;
-                }
-
-                String url =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/"
-                                + TABLE
-                                + "?select=id"
-                                + "&follower_id=eq."
+                String query =
+                        "follower_id=eq."
                                 + encode(currentUid)
                                 + "&following_id=eq."
                                 + encode(targetUid)
-                                + "&limit=1";
+                                + "&select=id&limit=1";
+
+                URL url = new URL(
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + FOLLOW_TABLE
+                                + "?"
+                                + query
+                );
 
                 connection =
-                        openConnection(
-                                url,
-                                "GET",
-                                token
-                        );
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
+
+                addHeaders(connection);
 
                 int code =
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(
-                                connection,
-                                code
-                        );
+                        readResponse(connection, code);
 
                 if (code < 200 || code >= 300) {
 
                     postStatusError(
                             callback,
-                            parseError(
-                                    response,
-                                    "Follow status check failed."
-                            )
+                            "Follow status check nahi hua."
                     );
                     return;
                 }
@@ -149,10 +134,7 @@ public final class FollowSupabaseHelper {
 
                 postStatusError(
                         callback,
-                        safeMessage(
-                                e,
-                                "Follow status check failed."
-                        )
+                        "Follow status check nahi hua."
                 );
 
             } finally {
@@ -171,68 +153,63 @@ public final class FollowSupabaseHelper {
     public static void followUser(
             Context context,
             String targetUid,
-            ActionCallback callback) {
+            @NonNull ActionCallback callback
+    ) {
 
-        if (context == null) {
-            postActionError(callback, "Context missing.");
+        String currentUid =
+                SupabaseAuthManager.getUserId(context);
+
+        if (currentUid == null ||
+                currentUid.trim().isEmpty()) {
+
+            callback.onError("Pehle Login karein.");
             return;
         }
 
-        if (TextUtils.isEmpty(targetUid)) {
-            postActionError(
-                    callback,
-                    "User profile nahi mili."
+        if (targetUid == null ||
+                targetUid.trim().isEmpty()) {
+
+            callback.onError("User profile nahi mili.");
+            return;
+        }
+
+        if (currentUid.equals(targetUid)) {
+
+            callback.onError(
+                    "Apne aap ko follow nahi kar sakte."
             );
             return;
         }
 
         EXECUTOR.execute(() -> {
 
-            HttpURLConnection connection = null;
-
             try {
 
-                String currentUid =
-                        SupabaseAuthManager.getUserId(context);
+                boolean alreadyFollowing =
+                        checkFollowingSync(
+                                currentUid,
+                                targetUid
+                        );
 
-                String token =
-                        SupabaseAuthManager.getAccessToken(context);
-
-                if (TextUtils.isEmpty(currentUid)
-                        || TextUtils.isEmpty(token)) {
-
-                    postActionError(
-                            callback,
-                            "Pehle Login karein."
-                    );
+                if (alreadyFollowing) {
+                    postSuccess(callback);
                     return;
                 }
 
-                if (currentUid.equals(targetUid)) {
+                boolean targetExists =
+                        userExistsSync(targetUid);
 
-                    postActionError(
+                if (!targetExists) {
+
+                    postError(
                             callback,
-                            "Apne aap ko follow nahi kar sakte."
+                            "User profile available nahi hai."
                     );
-                    return;
-                }
-
-                if (isFollowingSync(
-                        currentUid,
-                        targetUid,
-                        token)) {
-
-                    postActionSuccess(callback);
                     return;
                 }
 
                 JSONObject body =
                         new JSONObject();
-
-                body.put(
-                        "id",
-                        UUID.randomUUID().toString()
-                );
 
                 body.put(
                         "follower_id",
@@ -244,73 +221,50 @@ public final class FollowSupabaseHelper {
                         targetUid
                 );
 
-                String url =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/"
-                                + TABLE;
-
-                connection =
-                        openConnection(
-                                url,
-                                "POST",
-                                token
-                        );
-
-                connection.setDoOutput(true);
-
-                connection.setRequestProperty(
-                        "Content-Type",
-                        "application/json"
-                );
-
-                connection.setRequestProperty(
-                        "Prefer",
-                        "return=minimal"
-                );
-
-                writeBody(
-                        connection,
-                        body.toString()
+                body.put(
+                        "created_at",
+                        java.time.Instant
+                                .now()
+                                .toString()
                 );
 
                 int code =
-                        connection.getResponseCode();
-
-                String response =
-                        readResponse(
-                                connection,
-                                code
+                        postJson(
+                                FOLLOW_TABLE,
+                                body
                         );
 
-                if (code < 200 || code >= 300) {
+                if (code >= 200 && code < 300) {
 
-                    postActionError(
-                            callback,
-                            parseError(
-                                    response,
-                                    "Follow nahi hua."
-                            )
+                    updateUserCount(
+                            currentUid,
+                            "following",
+                            1
                     );
-                    return;
-                }
 
-                postActionSuccess(callback);
+                    updateUserCount(
+                            targetUid,
+                            "followers",
+                            1
+                    );
+
+                    postSuccess(callback);
+
+                } else {
+
+                    postError(
+                            callback,
+                            "Follow nahi hua."
+                    );
+                }
 
             } catch (Exception e) {
 
-                postActionError(
+                postError(
                         callback,
-                        safeMessage(
-                                e,
-                                "Follow nahi hua."
-                        )
+                        "Follow nahi hua: "
+                                + safeMessage(e)
                 );
-
-            } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
             }
         });
     }
@@ -322,18 +276,29 @@ public final class FollowSupabaseHelper {
     public static void unfollowUser(
             Context context,
             String targetUid,
-            ActionCallback callback) {
+            @NonNull ActionCallback callback
+    ) {
 
-        if (context == null) {
-            postActionError(callback, "Context missing.");
+        String currentUid =
+                SupabaseAuthManager.getUserId(context);
+
+        if (currentUid == null ||
+                currentUid.trim().isEmpty()) {
+
+            callback.onError("Pehle Login karein.");
             return;
         }
 
-        if (TextUtils.isEmpty(targetUid)) {
-            postActionError(
-                    callback,
-                    "User profile nahi mili."
-            );
+        if (targetUid == null ||
+                targetUid.trim().isEmpty()) {
+
+            callback.onError("User profile nahi mili.");
+            return;
+        }
+
+        if (currentUid.equals(targetUid)) {
+
+            callback.onError("Invalid user.");
             return;
         }
 
@@ -343,78 +308,63 @@ public final class FollowSupabaseHelper {
 
             try {
 
-                String currentUid =
-                        SupabaseAuthManager.getUserId(context);
-
-                String token =
-                        SupabaseAuthManager.getAccessToken(context);
-
-                if (TextUtils.isEmpty(currentUid)
-                        || TextUtils.isEmpty(token)) {
-
-                    postActionError(
-                            callback,
-                            "Pehle Login karein."
-                    );
-                    return;
-                }
-
-                if (currentUid.equals(targetUid)) {
-
-                    postActionError(
-                            callback,
-                            "Invalid user."
-                    );
-                    return;
-                }
-
-                String url =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/"
-                                + TABLE
-                                + "?follower_id=eq."
+                String query =
+                        "follower_id=eq."
                                 + encode(currentUid)
                                 + "&following_id=eq."
                                 + encode(targetUid);
 
-                connection =
-                        openConnection(
-                                url,
-                                "DELETE",
-                                token
+                URL url =
+                        new URL(
+                                SupabaseConfig.PROJECT_URL
+                                        + "/rest/v1/"
+                                        + FOLLOW_TABLE
+                                        + "?"
+                                        + query
                         );
+
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod("DELETE");
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
+
+                addHeaders(connection);
 
                 int code =
                         connection.getResponseCode();
 
-                String response =
-                        readResponse(
-                                connection,
-                                code
-                        );
+                if (code >= 200 && code < 300) {
 
-                if (code < 200 || code >= 300) {
-
-                    postActionError(
-                            callback,
-                            parseError(
-                                    response,
-                                    "Unfollow nahi hua."
-                            )
+                    updateUserCount(
+                            currentUid,
+                            "following",
+                            -1
                     );
-                    return;
-                }
 
-                postActionSuccess(callback);
+                    updateUserCount(
+                            targetUid,
+                            "followers",
+                            -1
+                    );
+
+                    postSuccess(callback);
+
+                } else {
+
+                    postError(
+                            callback,
+                            "Unfollow nahi hua."
+                    );
+                }
 
             } catch (Exception e) {
 
-                postActionError(
+                postError(
                         callback,
-                        safeMessage(
-                                e,
-                                "Unfollow nahi hua."
-                        )
+                        "Unfollow nahi hua."
                 );
 
             } finally {
@@ -427,170 +377,28 @@ public final class FollowSupabaseHelper {
     }
 
     // =========================================================
-    // FOLLOWERS COUNT
+    // SYNC FOLLOW CHECK
     // =========================================================
 
-    public static void getFollowersCount(
-            Context context,
-            String userUid,
-            CountCallback callback) {
-
-        getCount(
-                context,
-                "following_id",
-                userUid,
-                callback
-        );
-    }
-
-    // =========================================================
-    // FOLLOWING COUNT
-    // =========================================================
-
-    public static void getFollowingCount(
-            Context context,
-            String userUid,
-            CountCallback callback) {
-
-        getCount(
-                context,
-                "follower_id",
-                userUid,
-                callback
-        );
-    }
-
-    private static void getCount(
-            Context context,
-            String field,
-            String userUid,
-            CountCallback callback) {
-
-        if (context == null
-                || TextUtils.isEmpty(userUid)) {
-
-            postCountError(
-                    callback,
-                    "Invalid user."
-            );
-            return;
-        }
-
-        EXECUTOR.execute(() -> {
-
-            HttpURLConnection connection = null;
-
-            try {
-
-                String token =
-                        SupabaseAuthManager.getAccessToken(context);
-
-                if (TextUtils.isEmpty(token)) {
-
-                    postCountError(
-                            callback,
-                            "Pehle Login karein."
-                    );
-                    return;
-                }
-
-                String url =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/"
-                                + TABLE
-                                + "?select=id"
-                                + "&"
-                                + field
-                                + "=eq."
-                                + encode(userUid);
-
-                connection =
-                        openConnection(
-                                url,
-                                "GET",
-                                token
-                        );
-
-                int code =
-                        connection.getResponseCode();
-
-                String response =
-                        readResponse(
-                                connection,
-                                code
-                        );
-
-                if (code < 200 || code >= 300) {
-
-                    postCountError(
-                            callback,
-                            parseError(
-                                    response,
-                                    "Count load failed."
-                            )
-                    );
-                    return;
-                }
-
-                JSONArray array =
-                        new JSONArray(response);
-
-                postCountResult(
-                        callback,
-                        array.length()
-                );
-
-            } catch (Exception e) {
-
-                postCountError(
-                        callback,
-                        safeMessage(
-                                e,
-                                "Count load failed."
-                        )
-                );
-
-            } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
-            }
-        });
-    }
-
-    // =========================================================
-    // INTERNAL CHECK
-    // =========================================================
-
-    private static boolean isFollowingSync(
+    private static boolean checkFollowingSync(
             String followerUid,
-            String followingUid,
-            String token)
-            throws Exception {
+            String followingUid
+    ) throws Exception {
 
-        String url =
-                SupabaseConfig.PROJECT_URL
-                        + "/rest/v1/"
-                        + TABLE
-                        + "?select=id"
-                        + "&follower_id=eq."
+        String query =
+                "follower_id=eq."
                         + encode(followerUid)
                         + "&following_id=eq."
                         + encode(followingUid)
-                        + "&limit=1";
+                        + "&select=id&limit=1";
 
         HttpURLConnection connection =
-                null;
+                openGet(
+                        FOLLOW_TABLE,
+                        query
+                );
 
         try {
-
-            connection =
-                    openConnection(
-                            url,
-                            "GET",
-                            token
-                    );
 
             int code =
                     connection.getResponseCode();
@@ -612,34 +420,294 @@ public final class FollowSupabaseHelper {
 
         } finally {
 
-            if (connection != null) {
-                connection.disconnect();
-            }
+            connection.disconnect();
         }
     }
 
     // =========================================================
-    // CONNECTION
+    // USER EXISTS
     // =========================================================
 
-    private static HttpURLConnection openConnection(
-            String urlString,
-            String method,
-            String token)
-            throws Exception {
+    private static boolean userExistsSync(
+            String uid
+    ) throws Exception {
+
+        String query =
+                "id=eq."
+                        + encode(uid)
+                        + "&select=id&limit=1";
+
+        HttpURLConnection connection =
+                openGet(
+                        USERS_TABLE,
+                        query
+                );
+
+        try {
+
+            int code =
+                    connection.getResponseCode();
+
+            String response =
+                    readResponse(
+                            connection,
+                            code
+                    );
+
+            if (code < 200 || code >= 300) {
+                return false;
+            }
+
+            JSONArray array =
+                    new JSONArray(response);
+
+            return array.length() > 0;
+
+        } finally {
+
+            connection.disconnect();
+        }
+    }
+
+    // =========================================================
+    // UPDATE USER COUNTER
+    // =========================================================
+
+    private static void updateUserCount(
+            String uid,
+            String field,
+            int difference
+    ) {
+
+        try {
+
+            int current =
+                    getUserCount(
+                            uid,
+                            field
+                    );
+
+            int updated =
+                    Math.max(
+                            0,
+                            current + difference
+                    );
+
+            JSONObject body =
+                    new JSONObject();
+
+            body.put(
+                    field,
+                    updated
+            );
+
+            patchUser(
+                    uid,
+                    body
+            );
+
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static int getUserCount(
+            String uid,
+            String field
+    ) throws Exception {
+
+        String query =
+                "id=eq."
+                        + encode(uid)
+                        + "&select="
+                        + field
+                        + "&limit=1";
+
+        HttpURLConnection connection =
+                openGet(
+                        USERS_TABLE,
+                        query
+                );
+
+        try {
+
+            int code =
+                    connection.getResponseCode();
+
+            String response =
+                    readResponse(
+                            connection,
+                            code
+                    );
+
+            if (code < 200 || code >= 300) {
+                return 0;
+            }
+
+            JSONArray array =
+                    new JSONArray(response);
+
+            if (array.length() == 0) {
+                return 0;
+            }
+
+            JSONObject user =
+                    array.getJSONObject(0);
+
+            return user.optInt(
+                    field,
+                    0
+            );
+
+        } finally {
+
+            connection.disconnect();
+        }
+    }
+
+    private static void patchUser(
+            String uid,
+            JSONObject body
+    ) throws Exception {
 
         URL url =
-                new URL(urlString);
+                new URL(
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + USERS_TABLE
+                                + "?id=eq."
+                                + encode(uid)
+                );
 
         HttpURLConnection connection =
                 (HttpURLConnection)
                         url.openConnection();
 
-        connection.setRequestMethod(method);
+        try {
 
-        connection.setConnectTimeout(30000);
+            connection.setRequestMethod("PATCH");
+            connection.setDoOutput(true);
+            connection.setConnectTimeout(15000);
+            connection.setReadTimeout(20000);
 
-        connection.setReadTimeout(60000);
+            addHeaders(connection);
+
+            connection.setRequestProperty(
+                    "Prefer",
+                    "return=minimal"
+            );
+
+            byte[] data =
+                    body.toString()
+                            .getBytes(
+                                    StandardCharsets.UTF_8
+                            );
+
+            try (OutputStream output =
+                         connection.getOutputStream()) {
+
+                output.write(data);
+            }
+
+            connection.getResponseCode();
+
+        } finally {
+
+            connection.disconnect();
+        }
+    }
+
+    // =========================================================
+    // POST JSON
+    // =========================================================
+
+    private static int postJson(
+            String table,
+            JSONObject body
+    ) throws Exception {
+
+        URL url =
+                new URL(
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + table
+                );
+
+        HttpURLConnection connection =
+                (HttpURLConnection)
+                        url.openConnection();
+
+        try {
+
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setConnectTimeout(15000);
+            connection.setReadTimeout(20000);
+
+            addHeaders(connection);
+
+            connection.setRequestProperty(
+                    "Prefer",
+                    "return=minimal"
+            );
+
+            byte[] data =
+                    body.toString()
+                            .getBytes(
+                                    StandardCharsets.UTF_8
+                            );
+
+            try (OutputStream output =
+                         connection.getOutputStream()) {
+
+                output.write(data);
+            }
+
+            return connection.getResponseCode();
+
+        } finally {
+
+            connection.disconnect();
+        }
+    }
+
+    // =========================================================
+    // GET
+    // =========================================================
+
+    private static HttpURLConnection openGet(
+            String table,
+            String query
+    ) throws Exception {
+
+        URL url =
+                new URL(
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + table
+                                + "?"
+                                + query
+                );
+
+        HttpURLConnection connection =
+                (HttpURLConnection)
+                        url.openConnection();
+
+        connection.setRequestMethod("GET");
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(20000);
+
+        addHeaders(connection);
+
+        return connection;
+    }
+
+    // =========================================================
+    // HEADERS
+    // =========================================================
+
+    private static void addHeaders(
+            HttpURLConnection connection
+    ) {
 
         connection.setRequestProperty(
                 "apikey",
@@ -648,37 +716,19 @@ public final class FollowSupabaseHelper {
 
         connection.setRequestProperty(
                 "Authorization",
-                "Bearer " + token
+                "Bearer "
+                        + SupabaseConfig.PUBLISHABLE_KEY
+        );
+
+        connection.setRequestProperty(
+                "Content-Type",
+                "application/json"
         );
 
         connection.setRequestProperty(
                 "Accept",
                 "application/json"
         );
-
-        return connection;
-    }
-
-    // =========================================================
-    // BODY
-    // =========================================================
-
-    private static void writeBody(
-            HttpURLConnection connection,
-            String body)
-            throws Exception {
-
-        OutputStream output =
-                connection.getOutputStream();
-
-        output.write(
-                body.getBytes(
-                        StandardCharsets.UTF_8
-                )
-        );
-
-        output.flush();
-        output.close();
     }
 
     // =========================================================
@@ -687,192 +737,107 @@ public final class FollowSupabaseHelper {
 
     private static String readResponse(
             HttpURLConnection connection,
-            int responseCode)
-            throws Exception {
+            int code
+    ) throws Exception {
 
-        InputStream input;
+        InputStream stream =
+                code >= 200 && code < 400
+                        ? connection.getInputStream()
+                        : connection.getErrorStream();
 
-        if (responseCode >= 400) {
-            input = connection.getErrorStream();
-        } else {
-            input = connection.getInputStream();
-        }
-
-        if (input == null) {
+        if (stream == null) {
             return "";
         }
 
-        BufferedReader reader =
-                new BufferedReader(
-                        new InputStreamReader(
-                                input,
-                                StandardCharsets.UTF_8
-                        )
-                );
-
-        StringBuilder result =
+        StringBuilder builder =
                 new StringBuilder();
 
-        String line;
+        try (BufferedReader reader =
+                     new BufferedReader(
+                             new InputStreamReader(
+                                     stream,
+                                     StandardCharsets.UTF_8
+                             )
+                     )) {
 
-        while ((line = reader.readLine()) != null) {
-            result.append(line);
+            String line;
+
+            while ((line = reader.readLine())
+                    != null) {
+
+                builder.append(line);
+            }
         }
 
-        reader.close();
-
-        return result.toString();
+        return builder.toString();
     }
 
     // =========================================================
-    // ERROR PARSER
-    // =========================================================
-
-    private static String parseError(
-            String response,
-            String fallback) {
-
-        if (TextUtils.isEmpty(response)) {
-            return fallback;
-        }
-
-        try {
-
-            JSONObject json =
-                    new JSONObject(response);
-
-            String message =
-                    json.optString(
-                            "message",
-                            ""
-                    );
-
-            if (!TextUtils.isEmpty(message)) {
-                return message;
-            }
-
-            message =
-                    json.optString(
-                            "error",
-                            ""
-                    );
-
-            if (!TextUtils.isEmpty(message)) {
-                return message;
-            }
-
-            message =
-                    json.optString(
-                            "details",
-                            ""
-                    );
-
-            if (!TextUtils.isEmpty(message)) {
-                return message;
-            }
-
-        } catch (Exception ignored) {
-        }
-
-        return response;
-    }
-
-    private static String safeMessage(
-            Exception e,
-            String fallback) {
-
-        if (e == null) {
-            return fallback;
-        }
-
-        String message =
-                e.getMessage();
-
-        return TextUtils.isEmpty(message)
-                ? fallback
-                : message;
-    }
-
-    // =========================================================
-    // ENCODE
+    // HELPERS
     // =========================================================
 
     private static String encode(
-            String value)
-            throws Exception {
+            String value
+    ) {
 
-        return URLEncoder.encode(
-                value,
-                "UTF-8"
-        );
+        try {
+
+            return URLEncoder.encode(
+                    value,
+                    StandardCharsets.UTF_8.name()
+            );
+
+        } catch (Exception e) {
+
+            return value;
+        }
     }
 
-    // =========================================================
-    // CALLBACKS
-    // =========================================================
+    private static String safeMessage(
+            Exception e
+    ) {
 
-    private static void postActionSuccess(
-            ActionCallback callback) {
+        return e.getMessage() == null
+                ? e.getClass().getSimpleName()
+                : e.getMessage();
+    }
 
-        if (callback == null) return;
+    private static void postSuccess(
+            ActionCallback callback
+    ) {
 
-        MAIN_HANDLER.post(
+        MAIN.post(
                 callback::onSuccess
         );
     }
 
-    private static void postActionError(
+    private static void postError(
             ActionCallback callback,
-            String message) {
+            String message
+    ) {
 
-        if (callback == null) return;
-
-        MAIN_HANDLER.post(() ->
-                callback.onError(message)
+        MAIN.post(
+                () -> callback.onError(message)
         );
     }
 
     private static void postStatusResult(
             StatusCallback callback,
-            boolean result) {
+            boolean following
+    ) {
 
-        if (callback == null) return;
-
-        MAIN_HANDLER.post(() ->
-                callback.onResult(result)
+        MAIN.post(
+                () -> callback.onResult(following)
         );
     }
 
     private static void postStatusError(
             StatusCallback callback,
-            String message) {
+            String message
+    ) {
 
-        if (callback == null) return;
-
-        MAIN_HANDLER.post(() ->
-                callback.onError(message)
-        );
-    }
-
-    private static void postCountResult(
-            CountCallback callback,
-            int count) {
-
-        if (callback == null) return;
-
-        MAIN_HANDLER.post(() ->
-                callback.onResult(count)
-        );
-    }
-
-    private static void postCountError(
-            CountCallback callback,
-            String message) {
-
-        if (callback == null) return;
-
-        MAIN_HANDLER.post(() ->
-                callback.onError(message)
+        MAIN.post(
+                () -> callback.onError(message)
         );
     }
 }
