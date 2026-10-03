@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="#FFF8E1">
+    android:background="#FFFDF7"
+    android:clipToPadding="false"
+>
 
     <LinearLayout
         android:layout_width="match_parent"
