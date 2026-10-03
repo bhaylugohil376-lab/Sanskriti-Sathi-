@@ -5,8 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFF8F0"
-    android:fitsSystemWindows="true">
+    android:background="#FFFDF7"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="false"
+>
 
     <LinearLayout
         android:layout_width="match_parent"
