@@ -48,12 +48,13 @@ public class CultureActivity extends AppCompatActivity {
 
     private void loadPosts() {
 
-        CulturePostFirebaseHelper.getPublicPosts(
-                new CulturePostFirebaseHelper.PostsCallback() {
+        CulturePostSupabaseHelper.getPublicPosts(
+                new CulturePostSupabaseHelper.PostsCallback() {
 
                     @Override
                     public void onSuccess(
-                            List<CulturePost> posts) {
+                            List<CulturePost> posts
+                    ) {
 
                         culturePostList.clear();
 
@@ -75,7 +76,8 @@ public class CultureActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(
-                            String message) {
+                            String message
+                    ) {
 
                         Toast.makeText(
                                 CultureActivity.this,
@@ -91,10 +93,6 @@ public class CultureActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        /*
-         * Post create/delete ke baad Culture feed
-         * automatically refresh ho jayegi.
-         */
         if (culturePostAdapter != null) {
             loadPosts();
         }
