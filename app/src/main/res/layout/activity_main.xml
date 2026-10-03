@@ -4,8 +4,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0F111A"
-    android:fitsSystemWindows="true">
+    android:background="#FFFDF7"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="false"
+>
 
     <!-- =========================
          TOP BAR
@@ -16,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="58dp"
         android:layout_alignParentTop="true"
-        android:background="#0F111A"
+        android:background="#FFFFFF"
         android:paddingStart="14dp"
         android:paddingEnd="14dp">
 
@@ -34,7 +36,7 @@
             android:paddingStart="4dp"
             android:paddingEnd="12dp"
             android:text="+"
-            android:textColor="#FFFFFF"
+            android:textColor="#3B2117"
             android:textSize="28sp"
             android:textStyle="normal" />
 
@@ -47,7 +49,7 @@
             android:layout_centerInParent="true"
             android:gravity="center"
             android:text="Sanskriti Sathi"
-            android:textColor="#E5A93C"
+            android:textColor="#D96B27"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -65,7 +67,7 @@
             android:paddingStart="12dp"
             android:paddingEnd="4dp"
             android:text="♡"
-            android:textColor="#FFFFFF"
+            android:textColor="#3B2117"
             android:textSize="30sp" />
 
     </RelativeLayout>
@@ -126,14 +128,14 @@
                         <FrameLayout
                             android:layout_width="62dp"
                             android:layout_height="62dp"
-                            android:background="#292D3A">
+                            android:background="#FFF3E0">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
                                 android:text="+"
-                                android:textColor="#FFFFFF"
+                                android:textColor="#3B2117"
                                 android:textSize="25sp" />
 
                         </FrameLayout>
@@ -143,7 +145,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Your Story"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#3B2117"
                             android:textSize="11sp" />
 
                     </LinearLayout>
@@ -165,14 +167,14 @@
                         <FrameLayout
                             android:layout_width="62dp"
                             android:layout_height="62dp"
-                            android:background="#292D3A">
+                            android:background="#FFF3E0">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
                                 android:text="T"
-                                android:textColor="#E5A93C"
+                                android:textColor="#D96B27"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
 
@@ -183,7 +185,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Temples"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#3B2117"
                             android:textSize="11sp" />
 
                     </LinearLayout>
@@ -205,14 +207,14 @@
                         <FrameLayout
                             android:layout_width="62dp"
                             android:layout_height="62dp"
-                            android:background="#292D3A">
+                            android:background="#FFF3E0">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
                                 android:text="R"
-                                android:textColor="#E5A93C"
+                                android:textColor="#D96B27"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
 
@@ -223,7 +225,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Raja"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#3B2117"
                             android:textSize="11sp" />
 
                     </LinearLayout>
@@ -245,14 +247,14 @@
                         <FrameLayout
                             android:layout_width="62dp"
                             android:layout_height="62dp"
-                            android:background="#292D3A">
+                            android:background="#FFF3E0">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
                                 android:text="D"
-                                android:textColor="#E5A93C"
+                                android:textColor="#D96B27"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
 
@@ -263,7 +265,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Devi Devta"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#3B2117"
                             android:textSize="11sp" />
 
                     </LinearLayout>
@@ -284,14 +286,14 @@
                         <FrameLayout
                             android:layout_width="62dp"
                             android:layout_height="62dp"
-                            android:background="#292D3A">
+                            android:background="#FFF3E0">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
                                 android:text="G"
-                                android:textColor="#E5A93C"
+                                android:textColor="#D96B27"
                                 android:textSize="20sp"
                                 android:textStyle="bold" />
 
@@ -302,7 +304,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Gita"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#3B2117"
                             android:textSize="11sp" />
 
                     </LinearLayout>
@@ -338,7 +340,7 @@
         android:layout_width="match_parent"
         android:layout_height="62dp"
         android:layout_alignParentBottom="true"
-        android:background="#151824"
+        android:background="#FFFFFF"
         android:gravity="center"
         android:orientation="horizontal"
         android:paddingTop="2dp"
