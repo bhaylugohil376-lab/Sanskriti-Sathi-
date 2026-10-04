@@ -48,11 +48,13 @@ public class PostCommentAdapter
             @NonNull CommentViewHolder holder,
             int position
     ) {
+
         PostCommentsActivity.PostComment comment =
                 commentList.get(position);
 
         String author = comment.getAuthor();
         String text = comment.getText();
+        String createdAt = comment.getCreatedAt();
 
         holder.authorText.setText(
                 author == null || author.trim().isEmpty()
@@ -61,32 +63,69 @@ public class PostCommentAdapter
         );
 
         holder.commentText.setText(
-                text == null
-                        ? ""
-                        : text
+                text == null ? "" : text
         );
 
-        if (comment.getCreatedAt() != null) {
+        holder.timeText.setText(
+                formatTime(createdAt)
+        );
+    }
+
+    private String formatTime(String createdAt) {
+
+        if (createdAt == null ||
+                createdAt.trim().isEmpty()) {
+
+            return "Just now";
+        }
+
+        try {
+
+            String value = createdAt.trim();
+
+            if (value.endsWith("Z")) {
+                value = value.substring(
+                        0,
+                        value.length() - 1
+                );
+            }
+
+            if (value.contains(".")) {
+                value = value.substring(
+                        0,
+                        value.indexOf(".")
+                );
+            }
+
+            SimpleDateFormat inputFormat =
+                    new SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm:ss",
+                            Locale.US
+                    );
+
+            inputFormat.setLenient(false);
 
             Date date =
-                    comment.getCreatedAt()
-                            .toDate();
+                    inputFormat.parse(value);
 
-            holder.timeText.setText(
-                    new SimpleDateFormat(
-                            "dd MMM, hh:mm a",
-                            Locale.getDefault()
-                    ).format(date)
-            );
+            if (date == null) {
+                return "Just now";
+            }
 
-        } else {
+            return new SimpleDateFormat(
+                    "dd MMM, hh:mm a",
+                    Locale.getDefault()
+            ).format(date);
 
-            holder.timeText.setText("Just now");
+        } catch (Exception e) {
+
+            return "Just now";
         }
     }
 
     @Override
     public int getItemCount() {
+
         return commentList == null
                 ? 0
                 : commentList.size();
@@ -99,20 +138,25 @@ public class PostCommentAdapter
         TextView commentText;
         TextView timeText;
 
-        CommentViewHolder(@NonNull View itemView) {
+        CommentViewHolder(
+                @NonNull View itemView
+        ) {
             super(itemView);
 
-            authorText = itemView.findViewById(
-                    R.id.commentAuthor
-            );
+            authorText =
+                    itemView.findViewById(
+                            R.id.commentAuthor
+                    );
 
-            commentText = itemView.findViewById(
-                    R.id.commentText
-            );
+            commentText =
+                    itemView.findViewById(
+                            R.id.commentText
+                    );
 
-            timeText = itemView.findViewById(
-                    R.id.commentTime
-            );
+            timeText =
+                    itemView.findViewById(
+                            R.id.commentTime
+                    );
         }
     }
 }
