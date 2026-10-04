@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,8 +15,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.io.ByteArrayOutputStream;
 
 public class StoryUploadActivity extends AppCompatActivity {
 
@@ -32,51 +29,72 @@ public class StoryUploadActivity extends AppCompatActivity {
 
     private Uri selectedImageUri;
 
-    private StoryFirebaseHelper firebaseHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_story_upload);
 
-        selectedImage = findViewById(R.id.selectedStoryImage);
-        captionInput = findViewById(R.id.storyCaptionInput);
-        visibilityGroup = findViewById(R.id.visibilityGroup);
-        selectedFileText = findViewById(R.id.selectedFileText);
+        selectedImage =
+                findViewById(R.id.selectedStoryImage);
 
-        Button galleryButton = findViewById(R.id.galleryButton);
-        Button cameraButton = findViewById(R.id.cameraButton);
-        uploadButton = findViewById(R.id.uploadStoryButton);
+        captionInput =
+                findViewById(R.id.storyCaptionInput);
 
-        firebaseHelper = new StoryFirebaseHelper();
+        visibilityGroup =
+                findViewById(R.id.visibilityGroup);
 
-        galleryButton.setOnClickListener(v -> openGallery());
+        selectedFileText =
+                findViewById(R.id.selectedFileText);
 
-        cameraButton.setOnClickListener(v -> openCamera());
+        Button galleryButton =
+                findViewById(R.id.galleryButton);
 
-        uploadButton.setOnClickListener(v -> uploadStory());
+        Button cameraButton =
+                findViewById(R.id.cameraButton);
+
+        uploadButton =
+                findViewById(R.id.uploadStoryButton);
+
+        galleryButton.setOnClickListener(
+                v -> openGallery()
+        );
+
+        cameraButton.setOnClickListener(
+                v -> openCamera()
+        );
+
+        uploadButton.setOnClickListener(
+                v -> uploadStory()
+        );
     }
 
     private void openGallery() {
 
-        Intent intent = new Intent(Intent.ACTION_PICK);
+        Intent intent =
+                new Intent(Intent.ACTION_PICK);
 
         intent.setDataAndType(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 "image/*"
         );
 
-        startActivityForResult(intent, PICK_IMAGE);
+        startActivityForResult(
+                intent,
+                PICK_IMAGE
+        );
     }
 
     private void openCamera() {
 
-        Intent intent = new Intent(
-                MediaStore.ACTION_IMAGE_CAPTURE
-        );
+        Intent intent =
+                new Intent(
+                        MediaStore.ACTION_IMAGE_CAPTURE
+                );
 
-        if (intent.resolveActivity(getPackageManager()) != null) {
+        if (intent.resolveActivity(
+                getPackageManager()
+        ) != null) {
 
             startActivityForResult(
                     intent,
@@ -97,7 +115,8 @@ public class StoryUploadActivity extends AppCompatActivity {
     protected void onActivityResult(
             int requestCode,
             int resultCode,
-            Intent data) {
+            Intent data
+    ) {
 
         super.onActivityResult(
                 requestCode,
@@ -107,7 +126,6 @@ public class StoryUploadActivity extends AppCompatActivity {
 
         if (resultCode != Activity.RESULT_OK ||
                 data == null) {
-
             return;
         }
 
@@ -120,18 +138,18 @@ public class StoryUploadActivity extends AppCompatActivity {
                 selectedImageUri = uri;
 
                 selectedImage.setImageURI(
-                        selectedImageUri
+                        uri
                 );
 
                 selectedFileText.setText(
                         "Gallery photo selected ✓"
                 );
             }
-        }
 
-        else if (requestCode == CAMERA_REQUEST) {
+        } else if (requestCode == CAMERA_REQUEST) {
 
-            Bundle extras = data.getExtras();
+            Bundle extras =
+                    data.getExtras();
 
             if (extras == null) {
                 return;
@@ -142,7 +160,9 @@ public class StoryUploadActivity extends AppCompatActivity {
 
             if (bitmap != null) {
 
-                selectedImage.setImageBitmap(bitmap);
+                selectedImage.setImageBitmap(
+                        bitmap
+                );
 
                 selectedImageUri =
                         bitmapToUri(bitmap);
@@ -154,7 +174,9 @@ public class StoryUploadActivity extends AppCompatActivity {
         }
     }
 
-    private Uri bitmapToUri(Bitmap bitmap) {
+    private Uri bitmapToUri(
+            Bitmap bitmap
+    ) {
 
         String path =
                 MediaStore.Images.Media.insertImage(
@@ -185,7 +207,8 @@ public class StoryUploadActivity extends AppCompatActivity {
         }
 
         int selectedId =
-                visibilityGroup.getCheckedRadioButtonId();
+                visibilityGroup
+                        .getCheckedRadioButtonId();
 
         if (selectedId == -1) {
 
@@ -202,83 +225,78 @@ public class StoryUploadActivity extends AppCompatActivity {
                 findViewById(selectedId);
 
         String visibilityText =
-                visibilityButton.getText().toString();
+                visibilityButton
+                        .getText()
+                        .toString();
 
-        String visibility;
-
-        if (visibilityText.contains("Followers")) {
-            visibility = "Followers";
-        } else {
-            visibility = "Public";
-        }
+        String visibility =
+                visibilityText.contains("Followers")
+                        ? "Followers"
+                        : "Public";
 
         String caption =
-                captionInput.getText()
+                captionInput
+                        .getText()
                         .toString()
                         .trim();
 
         if (caption.isEmpty()) {
-            caption = "Meri Sanskriti Story 🇮🇳";
+            caption =
+                    "Meri Sanskriti Story 🇮🇳";
         }
 
         setUploading(true);
 
-        firebaseHelper.uploadStory(
+        StorySupabaseHelper.uploadStory(
+                this,
                 selectedImageUri,
                 caption,
                 visibility,
-                new StoryFirebaseHelper.UploadCallback() {
+                new StorySupabaseHelper.ActionCallback() {
 
                     @Override
-                    public void onSuccess(String storyId) {
+                    public void onSuccess() {
 
-                        runOnUiThread(() -> {
+                        setUploading(false);
 
-                            setUploading(false);
+                        Toast.makeText(
+                                StoryUploadActivity.this,
+                                "Story publish ho gayi ✓",
+                                Toast.LENGTH_LONG
+                        ).show();
 
-                            Toast.makeText(
-                                    StoryUploadActivity.this,
-                                    "Story publish ho gayi ✓",
-                                    Toast.LENGTH_LONG
-                            ).show();
-
-                            finish();
-                        });
+                        finish();
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message
+                    ) {
 
-                        runOnUiThread(() -> {
+                        setUploading(false);
 
-                            setUploading(false);
-
-                            Toast.makeText(
-                                    StoryUploadActivity.this,
-                                    message,
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        });
+                        Toast.makeText(
+                                StoryUploadActivity.this,
+                                message,
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 }
         );
     }
 
-    private void setUploading(boolean uploading) {
+    private void setUploading(
+            boolean uploading
+    ) {
 
-        uploadButton.setEnabled(!uploading);
+        uploadButton.setEnabled(
+                !uploading
+        );
 
-        if (uploading) {
-
-            uploadButton.setText(
-                    "Uploading..."
-            );
-
-        } else {
-
-            uploadButton.setText(
-                    "➕ Publish Story"
-            );
-        }
+        uploadButton.setText(
+                uploading
+                        ? "Uploading..."
+                        : "➕ Publish Story"
+        );
     }
 }
