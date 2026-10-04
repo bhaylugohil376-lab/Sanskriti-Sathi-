@@ -12,16 +12,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.storage.FirebaseStorage;
-
 import java.util.List;
 
-public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHolder> {
+public class StoryAdapter
+        extends RecyclerView.Adapter<StoryAdapter.StoryViewHolder> {
 
     private final Context context;
     private final List<Story> storyList;
 
-    public StoryAdapter(Context context, List<Story> storyList) {
+    public StoryAdapter(
+            Context context,
+            List<Story> storyList
+    ) {
         this.context = context;
         this.storyList = storyList;
     }
@@ -30,10 +32,15 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHol
     @Override
     public StoryViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent,
-            int viewType) {
+            int viewType
+    ) {
 
         View view = LayoutInflater.from(context)
-                .inflate(R.layout.item_story, parent, false);
+                .inflate(
+                        R.layout.item_story,
+                        parent,
+                        false
+                );
 
         return new StoryViewHolder(view);
     }
@@ -41,88 +48,101 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHol
     @Override
     public void onBindViewHolder(
             @NonNull StoryViewHolder holder,
-            int position) {
+            int position
+    ) {
 
         Story story = storyList.get(position);
 
-        holder.username.setText(story.getUsername());
+        holder.username.setText(
+                story.getUsername() == null ||
+                        story.getUsername().trim().isEmpty()
+                        ? "Sanskriti User"
+                        : story.getUsername()
+        );
 
-        // Orange Story ring
-        GradientDrawable ring = new GradientDrawable();
-        ring.setShape(GradientDrawable.OVAL);
+        // =====================================================
+        // STORY RING
+        // =====================================================
+
+        GradientDrawable ring =
+                new GradientDrawable();
+
+        ring.setShape(
+                GradientDrawable.OVAL
+        );
+
         ring.setStroke(
                 dpToPx(3),
                 0xFFFF9800
         );
 
-        holder.profileImage.setBackground(ring);
+        holder.profileImage.setBackground(
+                ring
+        );
+
+        // =====================================================
+        // STORY IMAGE
+        // =====================================================
+
+        String imageUrl =
+                story.getStoryImage();
 
         /*
-         * Firebase Story image.
+         * Firebase Storage removed.
          *
-         * Agar Firebase URL hai to Storage se image
-         * download karke Story thumbnail mein show hogi.
+         * Supabase/public image URL ko direct ImageView
+         * mein load karne ke liye project mein existing
+         * image-loading library/helper use ki ja sakti hai.
+         *
+         * Abhi fallback drawable set kiya hai taaki
+         * Firebase dependency na rahe.
          */
-        String imageUrl = story.getStoryImage();
+
+        holder.profileImage.setImageResource(
+                R.drawable.icon_foreground
+        );
+
+        /*
+         * Agar storyImage local drawable name hai,
+         * use drawable se load karo.
+         */
 
         if (imageUrl != null &&
-                (imageUrl.startsWith("http://") ||
-                 imageUrl.startsWith("https://"))) {
+                !imageUrl.trim().isEmpty() &&
+                !imageUrl.startsWith("http://") &&
+                !imageUrl.startsWith("https://")) {
 
-            FirebaseStorage.getInstance()
-                    .getReferenceFromUrl(imageUrl)
-                    .getBytes(2 * 1024 * 1024)
-                    .addOnSuccessListener(bytes -> {
-
-                        android.graphics.Bitmap bitmap =
-                                android.graphics.BitmapFactory
-                                        .decodeByteArray(
-                                                bytes,
-                                                0,
-                                                bytes.length
-                                        );
-
-                        if (bitmap != null) {
-                            holder.profileImage
-                                    .setImageBitmap(bitmap);
-                        }
-                    })
-                    .addOnFailureListener(e ->
-                            holder.profileImage.setImageResource(
-                                    R.drawable.icon_foreground
-                            )
-                    );
-
-        } else {
-
-            // Local/default profile image
             int resourceId =
                     getDrawableResource(imageUrl);
 
             if (resourceId != 0) {
+
                 holder.profileImage.setImageResource(
                         resourceId
                 );
-            } else {
-                holder.profileImage.setImageResource(
-                        R.drawable.icon_foreground
-                );
             }
         }
+
+        // =====================================================
+        // OPEN STORY
+        // =====================================================
 
         holder.itemView.setOnClickListener(v -> {
 
             int adapterPosition =
                     holder.getBindingAdapterPosition();
 
-            if (adapterPosition == RecyclerView.NO_POSITION) {
+            if (adapterPosition ==
+                    RecyclerView.NO_POSITION) {
+
                 return;
             }
 
-            Intent intent = new Intent(
-                    context,
-                    StoryActivity.class
-            );
+            Intent intent =
+                    new Intent(
+                            context,
+                            StoryActivity.class
+                    );
 
             intent.putExtra(
                     "story_position",
@@ -133,48 +153,79 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHol
         });
     }
 
-    private int getDrawableResource(String name) {
+    // =========================================================
+    // DRAWABLE
+    // =========================================================
 
-        if (name == null || name.isEmpty()) {
+    private int getDrawableResource(
+            String name
+    ) {
+
+        if (name == null ||
+                name.trim().isEmpty()) {
+
             return 0;
         }
 
-        return context.getResources().getIdentifier(
-                name,
-                "drawable",
-                context.getPackageName()
-        );
+        return context.getResources()
+                .getIdentifier(
+                        name,
+                        "drawable",
+                        context.getPackageName()
+                );
     }
+
+    // =========================================================
+    // DP → PX
+    // =========================================================
 
     private int dpToPx(int dp) {
 
         return Math.round(
-                dp * context.getResources()
-                        .getDisplayMetrics()
-                        .density
+                dp *
+                        context.getResources()
+                                .getDisplayMetrics()
+                                .density
         );
     }
 
+    // =========================================================
+    // COUNT
+    // =========================================================
+
     @Override
     public int getItemCount() {
-        return storyList.size();
+
+        return storyList == null
+                ? 0
+                : storyList.size();
     }
 
-    static class StoryViewHolder extends RecyclerView.ViewHolder {
+    // =========================================================
+    // VIEW HOLDER
+    // =========================================================
+
+    static class StoryViewHolder
+            extends RecyclerView.ViewHolder {
 
         ImageView profileImage;
         TextView username;
 
-        StoryViewHolder(@NonNull View itemView) {
+        StoryViewHolder(
+                @NonNull View itemView
+        ) {
+
             super(itemView);
 
-            profileImage = itemView.findViewById(
-                    R.id.storyProfileImage
-            );
+            profileImage =
+                    itemView.findViewById(
+                            R.id.storyProfileImage
+                    );
 
-            username = itemView.findViewById(
-                    R.id.storyUsername
-            );
+            username =
+                    itemView.findViewById(
+                            R.id.storyUsername
+                    );
         }
     }
 }
