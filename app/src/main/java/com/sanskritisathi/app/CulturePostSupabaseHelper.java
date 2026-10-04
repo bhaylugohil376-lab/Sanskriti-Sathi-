@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,31 +33,23 @@ public final class CulturePostSupabaseHelper {
     private CulturePostSupabaseHelper() {
     }
 
-    // =========================================================
-    // CALLBACKS
-    // =========================================================
-
     public interface PostsCallback {
         void onSuccess(List<CulturePost> posts);
-
         void onError(String message);
     }
 
     public interface ActionCallback {
         void onSuccess();
-
         void onError(String message);
     }
 
     public interface LikeCallback {
         void onSuccess();
-
         void onError(String message);
     }
 
     public interface LikeStatusCallback {
         void onResult(boolean liked);
-
         void onError(String message);
     }
 
@@ -69,14 +60,12 @@ public final class CulturePostSupabaseHelper {
     public static void getPublicPosts(
             @NonNull PostsCallback callback
     ) {
-
         EXECUTOR.execute(() -> {
 
             HttpURLConnection connection = null;
 
             try {
-
-                String url =
+                String urlString =
                         SupabaseConfig.PROJECT_URL
                                 + "/rest/v1/"
                                 + TABLE
@@ -85,55 +74,44 @@ public final class CulturePostSupabaseHelper {
                                 + "&order=created_at.desc"
                                 + "&limit=100";
 
-                connection =
-                        openConnection(
-                                url,
-                                "GET"
-                        );
+                connection = openConnection(
+                        urlString,
+                        "GET"
+                );
 
-                int code =
-                        connection.getResponseCode();
+                int code = connection.getResponseCode();
 
                 String response =
-                        readResponse(
-                                connection,
-                                code
-                        );
+                        readResponse(connection, code);
 
                 if (code < 200 || code >= 300) {
-
                     postError(
                             callback,
                             cleanError(response)
                     );
-
                     return;
                 }
 
                 JSONArray array =
                         new JSONArray(response);
 
-                List<CulturePost> result =
+                List<CulturePost> posts =
                         new ArrayList<>();
 
-                for (int i = 0;
-                     i < array.length();
-                     i++) {
+                for (int i = 0; i < array.length(); i++) {
+
+                    JSONObject json =
+                            array.getJSONObject(i);
 
                     CulturePost post =
-                            jsonToCulturePost(
-                                    array.getJSONObject(i)
-                            );
+                            jsonToCulturePost(json);
 
                     if (post != null) {
-                        result.add(post);
+                        posts.add(post);
                     }
                 }
 
-                postSuccess(
-                        callback,
-                        result
-                );
+                postSuccess(callback, posts);
 
             } catch (Exception e) {
 
@@ -159,20 +137,13 @@ public final class CulturePostSupabaseHelper {
     private static CulturePost jsonToCulturePost(
             JSONObject json
     ) {
-
         try {
 
             String id =
-                    json.optString(
-                            "id",
-                            ""
-                    );
+                    json.optString("id", "");
 
             String authorUid =
-                    json.optString(
-                            "author_uid",
-                            ""
-                    );
+                    json.optString("author_uid", "");
 
             String author =
                     json.optString(
@@ -181,22 +152,13 @@ public final class CulturePostSupabaseHelper {
                     );
 
             String category =
-                    json.optString(
-                            "category",
-                            ""
-                    );
+                    json.optString("category", "");
 
             String caption =
-                    json.optString(
-                            "caption",
-                            ""
-                    );
+                    json.optString("caption", "");
 
             String imageUrl =
-                    json.optString(
-                            "image_url",
-                            ""
-                    );
+                    json.optString("image_url", "");
 
             String visibility =
                     json.optString(
@@ -204,10 +166,19 @@ public final class CulturePostSupabaseHelper {
                             "Public"
                     );
 
-            String createdAt =
-                    json.optString(
-                            "created_at",
-                            ""
+            /*
+             * Supabase created_at normally comes as:
+             * 2026-09-30T10:20:30.000Z
+             *
+             * CulturePost currently stores createdAt as long,
+             * so convert ISO timestamp to epoch millis.
+             */
+            long createdAt =
+                    parseCreatedAt(
+                            json.optString(
+                                    "created_at",
+                                    ""
+                            )
                     );
 
             int likes =
@@ -246,9 +217,36 @@ public final class CulturePostSupabaseHelper {
             );
 
         } catch (Exception e) {
-
             return null;
         }
+    }
+
+    // =========================================================
+    // CREATED AT PARSER
+    // =========================================================
+
+    private static long parseCreatedAt(
+            String value
+    ) {
+
+        if (TextUtils.isEmpty(value)) {
+            return 0L;
+        }
+
+        try {
+
+            if (android.os.Build.VERSION.SDK_INT >=
+                    android.os.Build.VERSION_CODES.O) {
+
+                return java.time.Instant
+                        .parse(value)
+                        .toEpochMilli();
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        return 0L;
     }
 
     // =========================================================
@@ -269,25 +267,18 @@ public final class CulturePostSupabaseHelper {
 
         connection.setRequestMethod(method);
 
-        connection.setConnectTimeout(
-                15000
-        );
-
-        connection.setReadTimeout(
-                20000
-        );
+        connection.setConnectTimeout(15000);
+        connection.setReadTimeout(20000);
 
         connection.setRequestProperty(
                 "apikey",
                 SupabaseConfig.PUBLISHABLE_KEY
         );
 
-        String token =
-                SupabaseConfig.PUBLISHABLE_KEY;
-
         connection.setRequestProperty(
                 "Authorization",
-                "Bearer " + token
+                "Bearer "
+                        + SupabaseConfig.PUBLISHABLE_KEY
         );
 
         connection.setRequestProperty(
@@ -340,7 +331,6 @@ public final class CulturePostSupabaseHelper {
                     (line = reader.readLine())
                             != null
             ) {
-
                 result.append(line);
             }
         }
@@ -415,28 +405,7 @@ public final class CulturePostSupabaseHelper {
     }
 
     // =========================================================
-    // ENCODE
-    // =========================================================
-
-    private static String encode(
-            String value
-    ) {
-
-        try {
-
-            return URLEncoder.encode(
-                    value,
-                    StandardCharsets.UTF_8.name()
-            );
-
-        } catch (Exception e) {
-
-            return value;
-        }
-    }
-
-    // =========================================================
-    // CALLBACK - SUCCESS
+    // CALLBACK SUCCESS
     // =========================================================
 
     private static void postSuccess(
@@ -450,7 +419,7 @@ public final class CulturePostSupabaseHelper {
     }
 
     // =========================================================
-    // CALLBACK - ERROR
+    // CALLBACK ERROR
     // =========================================================
 
     private static void postError(
@@ -459,7 +428,11 @@ public final class CulturePostSupabaseHelper {
     ) {
 
         MAIN.post(
-                () -> callback.onError(message)
+                () -> callback.onError(
+                        TextUtils.isEmpty(message)
+                                ? "Posts load failed."
+                                : message
+                )
         );
     }
 }
