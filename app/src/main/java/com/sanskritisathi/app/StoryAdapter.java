@@ -12,6 +12,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 public class StoryAdapter
@@ -34,7 +36,6 @@ public class StoryAdapter
             @NonNull ViewGroup parent,
             int viewType
     ) {
-
         View view = LayoutInflater.from(context)
                 .inflate(
                         R.layout.item_story,
@@ -60,10 +61,7 @@ public class StoryAdapter
                         : story.getUsername()
         );
 
-        // =====================================================
-        // STORY RING
-        // =====================================================
-
+        // Story ring
         GradientDrawable ring =
                 new GradientDrawable();
 
@@ -76,57 +74,48 @@ public class StoryAdapter
                 0xFFFF9800
         );
 
-        holder.profileImage.setBackground(
-                ring
-        );
+        holder.profileImage.setBackground(ring);
 
-        // =====================================================
-        // STORY IMAGE
-        // =====================================================
-
-        String imageUrl =
-                story.getStoryImage();
-
-        /*
-         * Firebase Storage removed.
-         *
-         * Supabase/public image URL ko direct ImageView
-         * mein load karne ke liye project mein existing
-         * image-loading library/helper use ki ja sakti hai.
-         *
-         * Abhi fallback drawable set kiya hai taaki
-         * Firebase dependency na rahe.
-         */
-
+        // Default image
         holder.profileImage.setImageResource(
                 R.drawable.icon_foreground
         );
 
-        /*
-         * Agar storyImage local drawable name hai,
-         * use drawable se load karo.
-         */
+        String imageUrl =
+                story.getStoryImage();
 
+        // Supabase/public image URL
         if (imageUrl != null &&
-                !imageUrl.trim().isEmpty() &&
-                !imageUrl.startsWith("http://") &&
-                !imageUrl.startsWith("https://")) {
+                !imageUrl.trim().isEmpty()) {
 
-            int resourceId =
-                    getDrawableResource(imageUrl);
+            if (imageUrl.startsWith("http://") ||
+                    imageUrl.startsWith("https://")) {
 
-            if (resourceId != 0) {
+                Glide.with(context)
+                        .load(imageUrl)
+                        .placeholder(
+                                R.drawable.icon_foreground
+                        )
+                        .error(
+                                R.drawable.icon_foreground
+                        )
+                        .into(holder.profileImage);
 
-                holder.profileImage.setImageResource(
-                        resourceId
-                );
+            } else {
+
+                int resourceId =
+                        getDrawableResource(imageUrl);
+
+                if (resourceId != 0) {
+
+                    holder.profileImage.setImageResource(
+                            resourceId
+                    );
+                }
             }
         }
 
-        // =====================================================
-        // OPEN STORY
-        // =====================================================
-
+        // Open Story
         holder.itemView.setOnClickListener(v -> {
 
             int adapterPosition =
@@ -134,7 +123,6 @@ public class StoryAdapter
 
             if (adapterPosition ==
                     RecyclerView.NO_POSITION) {
-
                 return;
             }
 
@@ -152,10 +140,6 @@ public class StoryAdapter
             context.startActivity(intent);
         });
     }
-
-    // =========================================================
-    // DRAWABLE
-    // =========================================================
 
     private int getDrawableResource(
             String name
@@ -175,10 +159,6 @@ public class StoryAdapter
                 );
     }
 
-    // =========================================================
-    // DP → PX
-    // =========================================================
-
     private int dpToPx(int dp) {
 
         return Math.round(
@@ -189,10 +169,6 @@ public class StoryAdapter
         );
     }
 
-    // =========================================================
-    // COUNT
-    // =========================================================
-
     @Override
     public int getItemCount() {
 
@@ -200,10 +176,6 @@ public class StoryAdapter
                 ? 0
                 : storyList.size();
     }
-
-    // =========================================================
-    // VIEW HOLDER
-    // =========================================================
 
     static class StoryViewHolder
             extends RecyclerView.ViewHolder {
@@ -214,7 +186,6 @@ public class StoryAdapter
         StoryViewHolder(
                 @NonNull View itemView
         ) {
-
             super(itemView);
 
             profileImage =
