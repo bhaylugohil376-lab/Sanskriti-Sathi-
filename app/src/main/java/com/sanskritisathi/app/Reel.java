@@ -1,49 +1,25 @@
 package com.sanskritisathi.app;
 
-import com.google.gson.annotations.SerializedName;
-
 public class Reel {
 
-    @SerializedName("id")
     private String id;
-
-    @SerializedName("user_id")
     private String userId;
-
-    @SerializedName("username")
     private String username;
-
-    @SerializedName("video_url")
     private String videoUrl;
-
-    @SerializedName("thumbnail_url")
     private String thumbnailUrl;
-
-    @SerializedName("caption")
     private String caption;
-
-    @SerializedName("visibility")
     private String visibility;
 
-    @SerializedName("created_at")
     private long createdAt;
 
-    @SerializedName("likes")
     private int likes;
-
-    @SerializedName("comments")
     private int comments;
-
-    @SerializedName("views")
     private int views;
 
-    @SerializedName("liked")
     private boolean liked;
-
-    @SerializedName("own_reel")
     private boolean ownReel;
 
-    // MANDATORY DEFAULT CONSTRUCTOR FOR GSON / SUPABASE PARSING
+    // Required empty constructor
     public Reel() {
     }
 
@@ -60,8 +36,8 @@ public class Reel {
             int comments,
             int views,
             boolean liked,
-            boolean ownReel) {
-
+            boolean ownReel
+    ) {
         this.id = id;
         this.userId = userId;
         this.username = username;
@@ -70,9 +46,9 @@ public class Reel {
         this.caption = caption;
         this.visibility = visibility;
         this.createdAt = createdAt;
-        this.likes = likes;
-        this.comments = comments;
-        this.views = views;
+        this.likes = Math.max(0, likes);
+        this.comments = Math.max(0, comments);
+        this.views = Math.max(0, views);
         this.liked = liked;
         this.ownReel = ownReel;
     }
