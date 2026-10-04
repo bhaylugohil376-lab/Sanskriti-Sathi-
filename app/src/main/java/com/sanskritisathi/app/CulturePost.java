@@ -24,9 +24,7 @@ public class CulturePost {
         // Required empty constructor
     }
 
-    /*
-     * Existing local/static post constructor
-     */
+    // Local/static post
     public CulturePost(
             String author,
             String category,
@@ -39,20 +37,9 @@ public class CulturePost {
         this.caption = caption;
         this.profileImageResId = profileImageResId;
         this.postImageResId = postImageResId;
-
-        this.likeCount = 0;
-        this.commentCount = 0;
-        this.liked = false;
-        this.saved = false;
     }
 
-    /*
-     * Compatibility constructor
-     *
-     * Used by CulturePostData:
-     * author, category, caption,
-     * likeCount, profileImageResId, postImageResId
-     */
+    // Compatibility constructor
     public CulturePost(
             String author,
             String category,
@@ -65,18 +52,11 @@ public class CulturePost {
         this.category = category;
         this.caption = caption;
         this.likeCount = likeCount;
-        this.commentCount = 0;
-
         this.profileImageResId = profileImageResId;
         this.postImageResId = postImageResId;
-
-        this.liked = false;
-        this.saved = false;
     }
 
-    /*
-     * Basic constructor
-     */
+    // Supabase constructor
     public CulturePost(
             String id,
             String authorUid,
@@ -96,22 +76,11 @@ public class CulturePost {
         this.visibility = visibility;
         this.createdAt = createdAt;
 
-        this.likeCount = 0;
-        this.commentCount = 0;
-
-        this.profileImageResId =
-                R.drawable.icon_foreground;
-
-        this.postImageResId =
-                R.drawable.icon_foreground;
-
-        this.liked = false;
-        this.saved = false;
+        this.profileImageResId = R.drawable.icon_foreground;
+        this.postImageResId = R.drawable.icon_foreground;
     }
 
-    /*
-     * Full constructor
-     */
+    // Full constructor
     public CulturePost(
             String id,
             String authorUid,
@@ -213,7 +182,7 @@ public class CulturePost {
     }
 
     public void setLikeCount(int likeCount) {
-        this.likeCount = likeCount;
+        this.likeCount = Math.max(0, likeCount);
     }
 
     public int getCommentCount() {
@@ -221,7 +190,7 @@ public class CulturePost {
     }
 
     public void setCommentCount(int commentCount) {
-        this.commentCount = commentCount;
+        this.commentCount = Math.max(0, commentCount);
     }
 
     public int getProfileImageResId() {
@@ -240,9 +209,7 @@ public class CulturePost {
         this.postImageResId = postImageResId;
     }
 
-    /*
-     * Compatibility method for older adapter/code.
-     */
+    // Old adapter compatibility
     public int getImageResId() {
         return postImageResId;
     }
