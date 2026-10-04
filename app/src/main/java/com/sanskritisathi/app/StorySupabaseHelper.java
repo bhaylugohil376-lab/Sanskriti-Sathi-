@@ -2,7 +2,6 @@ package com.sanskritisathi.app;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
@@ -35,18 +34,25 @@ public final class StorySupabaseHelper {
     private static final ExecutorService EXECUTOR =
             Executors.newSingleThreadExecutor();
 
+    // =========================================================
+    // CALLBACKS
+    // =========================================================
+
     public interface StoriesCallback {
         void onSuccess(List<Story> stories);
+
         void onError(String message);
     }
 
     public interface ActionCallback {
         void onSuccess();
+
         void onError(String message);
     }
 
     public interface LikeCheckCallback {
         void onResult(boolean liked);
+
         void onError(String message);
     }
 
@@ -73,24 +79,24 @@ public final class StorySupabaseHelper {
                                 + "&order=created_at.desc"
                                 + "&limit=100";
 
-                connection =
-                        openConnection(
-                                url,
-                                "GET",
-                                getToken(context)
-                        );
+                connection = openConnection(
+                        url,
+                        "GET",
+                        getToken(context)
+                );
 
-                int code =
-                        connection.getResponseCode();
+                int code = connection.getResponseCode();
 
                 String response =
                         readResponse(connection, code);
 
                 if (code < 200 || code >= 300) {
+
                     postError(
                             callback,
                             cleanError(response)
                     );
+
                     return;
                 }
 
@@ -110,7 +116,9 @@ public final class StorySupabaseHelper {
                                     context
                             );
 
-                    if (story != null) {
+                    if (story != null &&
+                            !story.isExpired()) {
+
                         result.add(story);
                     }
                 }
@@ -148,7 +156,11 @@ public final class StorySupabaseHelper {
     ) {
 
         if (TextUtils.isEmpty(storyId)) {
-            callback.onError("Invalid Story.");
+
+            callback.onError(
+                    "Invalid Story."
+            );
+
             return;
         }
 
@@ -196,11 +208,18 @@ public final class StorySupabaseHelper {
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(connection, code);
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                if (code >= 200 && code < 300) {
+                if (code >= 200 &&
+                        code < 300) {
+
                     postSuccess(callback);
+
                 } else {
+
                     postError(
                             callback,
                             cleanError(response)
@@ -235,7 +254,9 @@ public final class StorySupabaseHelper {
     ) {
 
         String uid =
-                SupabaseAuthManager.getUserId(context);
+                SupabaseAuthManager.getUserId(
+                        context
+                );
 
         if (TextUtils.isEmpty(uid) ||
                 TextUtils.isEmpty(storyId)) {
@@ -271,25 +292,28 @@ public final class StorySupabaseHelper {
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(connection, code);
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                if (code < 200 || code >= 300) {
+                if (code < 200 ||
+                        code >= 300) {
+
                     postLikeError(
                             callback,
                             cleanError(response)
                     );
+
                     return;
                 }
 
                 JSONArray array =
                         new JSONArray(response);
 
-                boolean liked =
-                        array.length() > 0;
-
                 postLikeResult(
                         callback,
-                        liked
+                        array.length() > 0
                 );
 
             } catch (Exception e) {
@@ -320,15 +344,25 @@ public final class StorySupabaseHelper {
     ) {
 
         String uid =
-                SupabaseAuthManager.getUserId(context);
+                SupabaseAuthManager.getUserId(
+                        context
+                );
 
         if (TextUtils.isEmpty(uid)) {
-            callback.onError("Please login first.");
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
         if (TextUtils.isEmpty(storyId)) {
-            callback.onError("Invalid Story.");
+
+            callback.onError(
+                    "Invalid Story."
+            );
+
             return;
         }
 
@@ -400,11 +434,18 @@ public final class StorySupabaseHelper {
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(connection, code);
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                if (code >= 200 && code < 300) {
+                if (code >= 200 &&
+                        code < 300) {
+
                     postSuccess(callback);
+
                 } else {
+
                     postError(
                             callback,
                             cleanError(response)
@@ -440,20 +481,34 @@ public final class StorySupabaseHelper {
     ) {
 
         String uid =
-                SupabaseAuthManager.getUserId(context);
+                SupabaseAuthManager.getUserId(
+                        context
+                );
 
         if (TextUtils.isEmpty(uid)) {
-            callback.onError("Please login first.");
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
         if (TextUtils.isEmpty(storyId)) {
-            callback.onError("Invalid Story.");
+
+            callback.onError(
+                    "Invalid Story."
+            );
+
             return;
         }
 
         if (TextUtils.isEmpty(text)) {
-            callback.onError("Reply likhein.");
+
+            callback.onError(
+                    "Reply likhein."
+            );
+
             return;
         }
 
@@ -509,11 +564,18 @@ public final class StorySupabaseHelper {
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(connection, code);
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                if (code >= 200 && code < 300) {
+                if (code >= 200 &&
+                        code < 300) {
+
                     postSuccess(callback);
+
                 } else {
+
                     postError(
                             callback,
                             cleanError(response)
@@ -548,15 +610,25 @@ public final class StorySupabaseHelper {
     ) {
 
         String uid =
-                SupabaseAuthManager.getUserId(context);
+                SupabaseAuthManager.getUserId(
+                        context
+                );
 
         if (TextUtils.isEmpty(uid)) {
-            callback.onError("Please login first.");
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
         if (TextUtils.isEmpty(storyId)) {
-            callback.onError("Invalid Story.");
+
+            callback.onError(
+                    "Invalid Story."
+            );
+
             return;
         }
 
@@ -586,11 +658,18 @@ public final class StorySupabaseHelper {
                         connection.getResponseCode();
 
                 String response =
-                        readResponse(connection, code);
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                if (code >= 200 && code < 300) {
+                if (code >= 200 &&
+                        code < 300) {
+
                     postSuccess(callback);
+
                 } else {
+
                     postError(
                             callback,
                             "Story delete failed: "
@@ -616,7 +695,7 @@ public final class StorySupabaseHelper {
     }
 
     // =========================================================
-    // JSON -> STORY
+    // JSON → STORY
     // =========================================================
 
     private static Story jsonToStory(
@@ -650,7 +729,16 @@ public final class StorySupabaseHelper {
                             )
                     );
 
-            String image =
+            String profileImage =
+                    json.optString(
+                            "profile_image",
+                            json.optString(
+                                    "profileImage",
+                                    ""
+                            )
+                    );
+
+            String storyImage =
                     json.optString(
                             "image_url",
                             json.optString(
@@ -666,6 +754,12 @@ public final class StorySupabaseHelper {
                     json.optString(
                             "caption",
                             ""
+                    );
+
+            String visibility =
+                    json.optString(
+                            "visibility",
+                            "Public"
                     );
 
             long createdAt =
@@ -685,27 +779,37 @@ public final class StorySupabaseHelper {
                             )
                     );
 
-            boolean own =
-                    ownerUid.equals(
-                            SupabaseAuthManager
-                                    .getUserId(context)
+            String currentUid =
+                    SupabaseAuthManager
+                            .getUserId(context);
+
+            boolean ownStory =
+                    !TextUtils.isEmpty(ownerUid)
+                            && ownerUid.equals(
+                            currentUid
                     );
 
             return new Story(
                     id,
-                    ownerUid,
                     username,
-                    image,
+                    profileImage,
+                    storyImage,
                     caption,
+                    visibility,
                     createdAt,
                     views,
-                    own
+                    ownStory
             );
 
         } catch (Exception e) {
+
             return null;
         }
     }
+
+    // =========================================================
+    // CREATED AT
+    // =========================================================
 
     private static long parseCreatedAt(
             String value
@@ -716,11 +820,13 @@ public final class StorySupabaseHelper {
         }
 
         try {
+
             return Instant
                     .parse(value)
                     .toEpochMilli();
 
         } catch (Exception ignored) {
+
             return 0L;
         }
     }
@@ -743,8 +849,14 @@ public final class StorySupabaseHelper {
                         url.openConnection();
 
         connection.setRequestMethod(method);
-        connection.setConnectTimeout(15000);
-        connection.setReadTimeout(20000);
+
+        connection.setConnectTimeout(
+                15000
+        );
+
+        connection.setReadTimeout(
+                20000
+        );
 
         connection.setRequestProperty(
                 "apikey",
@@ -769,6 +881,10 @@ public final class StorySupabaseHelper {
         return connection;
     }
 
+    // =========================================================
+    // TOKEN
+    // =========================================================
+
     private static String getToken(
             Context context
     ) {
@@ -778,11 +894,16 @@ public final class StorySupabaseHelper {
                         .getAccessToken(context);
 
         if (TextUtils.isEmpty(token)) {
+
             return SupabaseConfig.PUBLISHABLE_KEY;
         }
 
         return token;
     }
+
+    // =========================================================
+    // WRITE BODY
+    // =========================================================
 
     private static void writeBody(
             HttpURLConnection connection,
@@ -805,6 +926,10 @@ public final class StorySupabaseHelper {
             output.flush();
         }
     }
+
+    // =========================================================
+    // READ RESPONSE
+    // =========================================================
 
     private static String readResponse(
             HttpURLConnection connection,
@@ -842,6 +967,10 @@ public final class StorySupabaseHelper {
 
         return result.toString();
     }
+
+    // =========================================================
+    // ERROR
+    // =========================================================
 
     private static String cleanError(
             String response
@@ -916,12 +1045,9 @@ public final class StorySupabaseHelper {
             @NonNull ActionCallback callback
     ) {
 
-        android.os.Handler handler =
-                new android.os.Handler(
-                        android.os.Looper.getMainLooper()
-                );
-
-        handler.post(
+        new android.os.Handler(
+                android.os.Looper.getMainLooper()
+        ).post(
                 callback::onSuccess
         );
     }
@@ -931,12 +1057,9 @@ public final class StorySupabaseHelper {
             String message
     ) {
 
-        android.os.Handler handler =
-                new android.os.Handler(
-                        android.os.Looper.getMainLooper()
-                );
-
-        handler.post(
+        new android.os.Handler(
+                android.os.Looper.getMainLooper()
+        ).post(
                 () -> callback.onError(message)
         );
     }
@@ -946,12 +1069,9 @@ public final class StorySupabaseHelper {
             List<Story> stories
     ) {
 
-        android.os.Handler handler =
-                new android.os.Handler(
-                        android.os.Looper.getMainLooper()
-                );
-
-        handler.post(
+        new android.os.Handler(
+                android.os.Looper.getMainLooper()
+        ).post(
                 () -> callback.onSuccess(stories)
         );
     }
@@ -961,12 +1081,9 @@ public final class StorySupabaseHelper {
             String message
     ) {
 
-        android.os.Handler handler =
-                new android.os.Handler(
-                        android.os.Looper.getMainLooper()
-                );
-
-        handler.post(
+        new android.os.Handler(
+                android.os.Looper.getMainLooper()
+        ).post(
                 () -> callback.onError(message)
         );
     }
@@ -976,12 +1093,9 @@ public final class StorySupabaseHelper {
             boolean liked
     ) {
 
-        android.os.Handler handler =
-                new android.os.Handler(
-                        android.os.Looper.getMainLooper()
-                );
-
-        handler.post(
+        new android.os.Handler(
+                android.os.Looper.getMainLooper()
+        ).post(
                 () -> callback.onResult(liked)
         );
     }
@@ -991,12 +1105,9 @@ public final class StorySupabaseHelper {
             String message
     ) {
 
-        android.os.Handler handler =
-                new android.os.Handler(
-                        android.os.Looper.getMainLooper()
-                );
-
-        handler.post(
+        new android.os.Handler(
+                android.os.Looper.getMainLooper()
+        ).post(
                 () -> callback.onError(message)
         );
     }
