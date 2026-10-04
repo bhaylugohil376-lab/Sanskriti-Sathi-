@@ -61,52 +61,34 @@ public class StoryActivity extends AppCompatActivity {
         loadStories();
     }
 
+    // =========================================================
+    // INITIALIZE
+    // =========================================================
+
     private void initializeViews() {
 
-        storyImage =
-                findViewById(R.id.storyImage);
+        storyImage = findViewById(R.id.storyImage);
+        closeButton = findViewById(R.id.closeButton);
+        deleteButton = findViewById(R.id.deleteButton);
+        likeButton = findViewById(R.id.likeButton);
+        replyButton = findViewById(R.id.replyButton);
 
-        closeButton =
-                findViewById(R.id.closeButton);
+        usernameText = findViewById(R.id.usernameText);
+        timeText = findViewById(R.id.timeText);
+        viewsText = findViewById(R.id.viewsText);
+        captionText = findViewById(R.id.captionText);
+        progressBar = findViewById(R.id.storyProgress);
 
-        deleteButton =
-                findViewById(R.id.deleteButton);
+        closeButton.setOnClickListener(v -> finish());
 
-        likeButton =
-                findViewById(R.id.likeButton);
+        likeButton.setOnClickListener(v -> toggleLike());
 
-        replyButton =
-                findViewById(R.id.replyButton);
-
-        usernameText =
-                findViewById(R.id.usernameText);
-
-        timeText =
-                findViewById(R.id.timeText);
-
-        viewsText =
-                findViewById(R.id.viewsText);
-
-        captionText =
-                findViewById(R.id.captionText);
-
-        progressBar =
-                findViewById(R.id.storyProgress);
-
-        closeButton.setOnClickListener(
-                v -> finish()
+        replyButton.setOnClickListener(v ->
+                showReplyDialog()
         );
 
-        likeButton.setOnClickListener(
-                v -> toggleLike()
-        );
-
-        replyButton.setOnClickListener(
-                v -> showReplyDialog()
-        );
-
-        deleteButton.setOnClickListener(
-                v -> confirmDelete()
+        deleteButton.setOnClickListener(v ->
+                confirmDelete()
         );
     }
 
@@ -187,7 +169,7 @@ public class StoryActivity extends AppCompatActivity {
         currentStory =
                 stories.get(currentPosition);
 
-        liked = false;
+        liked = currentStory.isLiked();
 
         usernameText.setText(
                 safeText(
@@ -220,25 +202,21 @@ public class StoryActivity extends AppCompatActivity {
 
         deleteButton.setVisibility(
                 currentStory.isOwnStory()
-                        ? ImageButton.VISIBLE
-                        : ImageButton.GONE
+                        ? android.view.View.VISIBLE
+                        : android.view.View.GONE
         );
 
-        likeButton.setImageResource(
-                android.R.drawable.btn_star_big_off
-        );
+        updateLikeButton();
 
         loadStoryImage();
 
         addView();
 
-        checkLike();
-
         startProgress();
     }
 
     // =========================================================
-    // IMAGE
+    // STORY IMAGE
     // =========================================================
 
     private void loadStoryImage() {
@@ -250,7 +228,7 @@ public class StoryActivity extends AppCompatActivity {
                 imageUrl.trim().isEmpty()) {
 
             storyImage.setImageResource(
-                    android.R.drawable.ic_menu_gallery
+                    R.drawable.icon_foreground
             );
 
             return;
@@ -262,22 +240,21 @@ public class StoryActivity extends AppCompatActivity {
             Glide.with(this)
                     .load(imageUrl)
                     .placeholder(
-                            android.R.drawable.ic_menu_gallery
+                            R.drawable.icon_foreground
                     )
                     .error(
-                            android.R.drawable.ic_menu_gallery
+                            R.drawable.icon_foreground
                     )
                     .into(storyImage);
 
         } else {
 
             int resourceId =
-                    getResources()
-                            .getIdentifier(
-                                    imageUrl,
-                                    "drawable",
-                                    getPackageName()
-                            );
+                    getResources().getIdentifier(
+                            imageUrl,
+                            "drawable",
+                            getPackageName()
+                    );
 
             if (resourceId != 0) {
 
@@ -288,17 +265,21 @@ public class StoryActivity extends AppCompatActivity {
             } else {
 
                 storyImage.setImageResource(
-                        android.R.drawable.ic_menu_gallery
+                        R.drawable.icon_foreground
                 );
             }
         }
     }
 
     // =========================================================
-    // VIEW
+    // ADD VIEW
     // =========================================================
 
     private void addView() {
+
+        if (currentStory == null) {
+            return;
+        }
 
         StorySupabaseHelper.addStoryView(
                 this,
@@ -308,11 +289,8 @@ public class StoryActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess() {
 
-                        int views =
-                                currentStory.getViews();
-
                         currentStory.setViews(
-                                views + 1
+                                currentStory.getViews() + 1
                         );
 
                         viewsText.setText(
@@ -335,7 +313,11 @@ public class StoryActivity extends AppCompatActivity {
     // CHECK LIKE
     // =========================================================
 
-    private void checkLike() {
+    private void checkLikeStatus() {
+
+        if (currentStory == null) {
+            return;
+        }
 
         StorySupabaseHelper.checkStoryLike(
                 this,
@@ -348,17 +330,17 @@ public class StoryActivity extends AppCompatActivity {
 
                         liked = isLiked;
 
-                        likeButton.setImageResource(
-                                liked
-                                        ? android.R.drawable.btn_star_big_on
-                                        : android.R.drawable.btn_star_big_off
+                        currentStory.setLiked(
+                                isLiked
                         );
+
+                        updateLikeButton();
                     }
 
                     @Override
                     public void onError(
                             String message) {
-                        liked = false;
+                        // Keep current state.
                     }
                 }
         );
@@ -374,8 +356,22 @@ public class StoryActivity extends AppCompatActivity {
             return;
         }
 
-        boolean newState =
-                !liked;
+        String uid =
+                SupabaseAuthManager.getUserId(this);
+
+        if (uid == null ||
+                uid.trim().isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Please login first.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
+        boolean newState = !liked;
 
         likeButton.setEnabled(false);
 
@@ -390,13 +386,13 @@ public class StoryActivity extends AppCompatActivity {
 
                         liked = newState;
 
-                        likeButton.setImageResource(
-                                liked
-                                        ? android.R.drawable.btn_star_big_on
-                                        : android.R.drawable.btn_star_big_off
+                        currentStory.setLiked(
+                                newState
                         );
 
                         likeButton.setEnabled(true);
+
+                        updateLikeButton();
                     }
 
                     @Override
@@ -416,15 +412,68 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     // =========================================================
+    // LIKE BUTTON
+    // =========================================================
+
+    private void updateLikeButton() {
+
+        if (likeButton == null) {
+            return;
+        }
+
+        if (liked) {
+
+            likeButton.setImageResource(
+                    android.R.drawable.btn_star_big_on
+            );
+
+            likeButton.setContentDescription(
+                    "Unlike"
+            );
+
+        } else {
+
+            likeButton.setImageResource(
+                    android.R.drawable.btn_star_big_off
+            );
+
+            likeButton.setContentDescription(
+                    "Like"
+            );
+        }
+    }
+
+    // =========================================================
     // REPLY
     // =========================================================
 
     private void showReplyDialog() {
 
+        if (currentStory == null) {
+            return;
+        }
+
+        String uid =
+                SupabaseAuthManager.getUserId(this);
+
+        if (uid == null ||
+                uid.trim().isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Please login first.",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
         EditText input =
                 new EditText(this);
 
-        input.setHint("Reply likhein...");
+        input.setHint(
+                "Reply likhein..."
+        );
 
         input.setInputType(
                 InputType.TYPE_CLASS_TEXT |
@@ -437,9 +486,9 @@ public class StoryActivity extends AppCompatActivity {
         int padding =
                 (int) (
                         16 *
-                                getResources()
-                                        .getDisplayMetrics()
-                                        .density
+                        getResources()
+                                .getDisplayMetrics()
+                                .density
                 );
 
         input.setPadding(
@@ -464,7 +513,7 @@ public class StoryActivity extends AppCompatActivity {
                         .create();
 
         dialog.setOnShowListener(
-                ignored -> {
+                dialogInterface -> {
 
                     dialog.getButton(
                             AlertDialog.BUTTON_POSITIVE
@@ -487,7 +536,7 @@ public class StoryActivity extends AppCompatActivity {
                         if (text.length() > 1000) {
 
                             input.setError(
-                                    "Reply bahut lamba hai"
+                                    "Reply maximum 1000 characters"
                             );
 
                             return;
@@ -531,7 +580,7 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // DELETE CONFIRM
+    // DELETE CONFIRMATION
     // =========================================================
 
     private void confirmDelete() {
@@ -541,7 +590,7 @@ public class StoryActivity extends AppCompatActivity {
 
             Toast.makeText(
                     this,
-                    "Aap sirf apni Story delete kar sakte hain",
+                    "Aap sirf apni Story delete kar sakte hain.",
                     Toast.LENGTH_SHORT
             ).show();
 
@@ -566,7 +615,7 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // DELETE
+    // DELETE STORY
     // =========================================================
 
     private void deleteCurrentStory() {
@@ -623,7 +672,7 @@ public class StoryActivity extends AppCompatActivity {
 
         final int[] progress = {0};
 
-        Runnable progressRunnable =
+        final Runnable runnable =
                 new Runnable() {
 
                     @Override
@@ -631,9 +680,12 @@ public class StoryActivity extends AppCompatActivity {
 
                         progress[0]++;
 
-                        progressBar.setProgress(
-                                progress[0]
-                        );
+                        if (progressBar != null) {
+
+                            progressBar.setProgress(
+                                    progress[0]
+                            );
+                        }
 
                         if (progress[0] < 150) {
 
@@ -645,7 +697,7 @@ public class StoryActivity extends AppCompatActivity {
                     }
                 };
 
-        handler.post(progressRunnable);
+        handler.post(runnable);
 
         handler.postDelayed(
                 autoCloseRunnable,
@@ -658,7 +710,8 @@ public class StoryActivity extends AppCompatActivity {
     // =========================================================
 
     private String getTimeText(
-            long createdAt) {
+            long createdAt
+    ) {
 
         if (createdAt <= 0) {
             return "Just now";
@@ -700,7 +753,8 @@ public class StoryActivity extends AppCompatActivity {
 
     private String safeText(
             String value,
-            String fallback) {
+            String fallback
+    ) {
 
         if (value == null ||
                 value.trim().isEmpty()) {
