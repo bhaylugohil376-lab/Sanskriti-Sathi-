@@ -1,6 +1,7 @@
 package com.sanskritisathi.app;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -11,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -41,16 +43,19 @@ public final class StorySupabaseHelper {
 
     public interface StoriesCallback {
         void onSuccess(List<Story> stories);
+
         void onError(String message);
     }
 
     public interface ActionCallback {
         void onSuccess();
+
         void onError(String message);
     }
 
     public interface LikeCheckCallback {
         void onResult(boolean liked);
+
         void onError(String message);
     }
 
@@ -89,10 +94,12 @@ public final class StorySupabaseHelper {
                         readResponse(connection, code);
 
                 if (code < 200 || code >= 300) {
+
                     postError(
                             callback,
                             cleanError(response)
                     );
+
                     return;
                 }
 
@@ -140,6 +147,306 @@ public final class StorySupabaseHelper {
     }
 
     // =========================================================
+    // UPLOAD STORY
+    // =========================================================
+
+    public static void uploadStory(
+            Context context,
+            Uri imageUri,
+            String caption,
+            String visibility,
+            @NonNull ActionCallback callback
+    ) {
+
+        String uid =
+                SupabaseAuthManager.getUserId(context);
+
+        if (TextUtils.isEmpty(uid)) {
+
+            postError(
+                    callback,
+                    "Please login first."
+            );
+
+            return;
+        }
+
+        if (imageUri == null) {
+
+            postError(
+                    callback,
+                    "Please select an image."
+            );
+
+            return;
+        }
+
+        EXECUTOR.execute(() -> {
+
+            HttpURLConnection connection = null;
+
+            try {
+
+                // -------------------------------------------------
+                // READ IMAGE
+                // -------------------------------------------------
+
+                byte[] imageBytes;
+
+                try (
+                        InputStream input =
+                                context.getContentResolver()
+                                        .openInputStream(imageUri);
+
+                        ByteArrayOutputStream output =
+                                new ByteArrayOutputStream()
+                ) {
+
+                    if (input == null) {
+
+                        postError(
+                                callback,
+                                "Unable to read selected image."
+                        );
+
+                        return;
+                    }
+
+                    byte[] buffer =
+                            new byte[8192];
+
+                    int length;
+
+                    while (
+                            (length = input.read(buffer))
+                                    != -1
+                    ) {
+
+                        output.write(
+                                buffer,
+                                0,
+                                length
+                        );
+                    }
+
+                    imageBytes =
+                            output.toByteArray();
+                }
+
+                if (imageBytes.length == 0) {
+
+                    postError(
+                            callback,
+                            "Selected image is empty."
+                    );
+
+                    return;
+                }
+
+                // -------------------------------------------------
+                // FILE NAME
+                // -------------------------------------------------
+
+                String fileName =
+                        "story_"
+                                + uid
+                                + "_"
+                                + System.currentTimeMillis()
+                                + ".jpg";
+
+                String storagePath =
+                        "stories/"
+                                + fileName;
+
+                // -------------------------------------------------
+                // SUPABASE STORAGE UPLOAD
+                // Bucket = stories
+                // -------------------------------------------------
+
+                String uploadUrl =
+                        SupabaseConfig.PROJECT_URL
+                                + "/storage/v1/object/"
+                                + storagePath;
+
+                connection =
+                        openConnection(
+                                uploadUrl,
+                                "POST",
+                                getToken(context)
+                        );
+
+                connection.setDoOutput(true);
+
+                connection.setRequestProperty(
+                        "Content-Type",
+                        "image/jpeg"
+                );
+
+                connection.setRequestProperty(
+                        "x-upsert",
+                        "true"
+                );
+
+                try (
+                        OutputStream output =
+                                connection.getOutputStream()
+                ) {
+
+                    output.write(imageBytes);
+                    output.flush();
+                }
+
+                int uploadCode =
+                        connection.getResponseCode();
+
+                String uploadResponse =
+                        readResponse(
+                                connection,
+                                uploadCode
+                        );
+
+                connection.disconnect();
+                connection = null;
+
+                if (uploadCode < 200 ||
+                        uploadCode >= 300) {
+
+                    postError(
+                            callback,
+                            "Image upload failed: "
+                                    + cleanError(uploadResponse)
+                    );
+
+                    return;
+                }
+
+                // -------------------------------------------------
+                // PUBLIC IMAGE URL
+                // -------------------------------------------------
+
+                String imageUrl =
+                        SupabaseConfig.PROJECT_URL
+                                + "/storage/v1/object/public/"
+                                + storagePath;
+
+                // -------------------------------------------------
+                // USERNAME
+                // -------------------------------------------------
+
+                String username =
+                        "Sanskriti User";
+
+                // -------------------------------------------------
+                // STORY TABLE INSERT
+                // -------------------------------------------------
+
+                JSONObject body =
+                        new JSONObject();
+
+                body.put(
+                        "owner_uid",
+                        uid
+                );
+
+                body.put(
+                        "username",
+                        username
+                );
+
+                body.put(
+                        "profile_image",
+                        ""
+                );
+
+                body.put(
+                        "image_url",
+                        imageUrl
+                );
+
+                body.put(
+                        "caption",
+                        caption == null
+                                ? ""
+                                : caption.trim()
+                );
+
+                body.put(
+                        "visibility",
+                        TextUtils.isEmpty(visibility)
+                                ? "Public"
+                                : visibility
+                );
+
+                body.put(
+                        "views",
+                        0
+                );
+
+                String insertUrl =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + STORIES_TABLE;
+
+                connection =
+                        openConnection(
+                                insertUrl,
+                                "POST",
+                                getToken(context)
+                        );
+
+                connection.setDoOutput(true);
+
+                connection.setRequestProperty(
+                        "Prefer",
+                        "return=minimal"
+                );
+
+                writeBody(
+                        connection,
+                        body.toString()
+                );
+
+                int insertCode =
+                        connection.getResponseCode();
+
+                String insertResponse =
+                        readResponse(
+                                connection,
+                                insertCode
+                        );
+
+                if (insertCode >= 200 &&
+                        insertCode < 300) {
+
+                    postSuccess(callback);
+
+                } else {
+
+                    postError(
+                            callback,
+                            "Story save failed: "
+                                    + cleanError(insertResponse)
+                    );
+                }
+
+            } catch (Exception e) {
+
+                postError(
+                        callback,
+                        "Story upload failed: "
+                                + safeMessage(e)
+                );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
+    // =========================================================
     // ADD VIEW
     // =========================================================
 
@@ -150,10 +457,12 @@ public final class StorySupabaseHelper {
     ) {
 
         if (TextUtils.isEmpty(storyId)) {
+
             postError(
                     callback,
                     "Invalid Story."
             );
+
             return;
         }
 
@@ -171,11 +480,12 @@ public final class StorySupabaseHelper {
                                 + "&id=eq."
                                 + encode(storyId);
 
-                connection = openConnection(
-                        getUrl,
-                        "GET",
-                        getToken(context)
-                );
+                connection =
+                        openConnection(
+                                getUrl,
+                                "GET",
+                                getToken(context)
+                        );
 
                 int getCode =
                         connection.getResponseCode();
@@ -241,11 +551,12 @@ public final class StorySupabaseHelper {
                         newViews
                 );
 
-                connection = openConnection(
-                        patchUrl,
-                        "PATCH",
-                        getToken(context)
-                );
+                connection =
+                        openConnection(
+                                patchUrl,
+                                "PATCH",
+                                getToken(context)
+                        );
 
                 connection.setDoOutput(true);
 
@@ -339,11 +650,12 @@ public final class StorySupabaseHelper {
                                 + encode(uid)
                                 + "&limit=1";
 
-                connection = openConnection(
-                        url,
-                        "GET",
-                        getToken(context)
-                );
+                connection =
+                        openConnection(
+                                url,
+                                "GET",
+                                getToken(context)
+                        );
 
                 int code =
                         connection.getResponseCode();
@@ -404,18 +716,22 @@ public final class StorySupabaseHelper {
                 SupabaseAuthManager.getUserId(context);
 
         if (TextUtils.isEmpty(uid)) {
+
             postError(
                     callback,
                     "Please login first."
             );
+
             return;
         }
 
         if (TextUtils.isEmpty(storyId)) {
+
             postError(
                     callback,
                     "Invalid Story."
             );
+
             return;
         }
 
@@ -445,11 +761,12 @@ public final class StorySupabaseHelper {
                                     + "/rest/v1/"
                                     + LIKES_TABLE;
 
-                    connection = openConnection(
-                            url,
-                            "POST",
-                            getToken(context)
-                    );
+                    connection =
+                            openConnection(
+                                    url,
+                                    "POST",
+                                    getToken(context)
+                            );
 
                     connection.setDoOutput(true);
 
@@ -474,11 +791,12 @@ public final class StorySupabaseHelper {
                                     + "&user_id=eq."
                                     + encode(uid);
 
-                    connection = openConnection(
-                            url,
-                            "DELETE",
-                            getToken(context)
-                    );
+                    connection =
+                            openConnection(
+                                    url,
+                                    "DELETE",
+                                    getToken(context)
+                            );
                 }
 
                 int code =
@@ -535,26 +853,32 @@ public final class StorySupabaseHelper {
                 SupabaseAuthManager.getUserId(context);
 
         if (TextUtils.isEmpty(uid)) {
+
             postError(
                     callback,
                     "Please login first."
             );
+
             return;
         }
 
         if (TextUtils.isEmpty(storyId)) {
+
             postError(
                     callback,
                     "Invalid Story."
             );
+
             return;
         }
 
         if (TextUtils.isEmpty(text)) {
+
             postError(
                     callback,
                     "Reply likhein."
             );
+
             return;
         }
 
@@ -562,10 +886,12 @@ public final class StorySupabaseHelper {
                 text.trim();
 
         if (finalText.length() > 1000) {
+
             postError(
                     callback,
                     "Reply maximum 1000 characters."
             );
+
             return;
         }
 
@@ -598,11 +924,12 @@ public final class StorySupabaseHelper {
                                 + "/rest/v1/"
                                 + REPLIES_TABLE;
 
-                connection = openConnection(
-                        url,
-                        "POST",
-                        getToken(context)
-                );
+                connection =
+                        openConnection(
+                                url,
+                                "POST",
+                                getToken(context)
+                        );
 
                 connection.setDoOutput(true);
 
@@ -669,18 +996,22 @@ public final class StorySupabaseHelper {
                 SupabaseAuthManager.getUserId(context);
 
         if (TextUtils.isEmpty(uid)) {
+
             postError(
                     callback,
                     "Please login first."
             );
+
             return;
         }
 
         if (TextUtils.isEmpty(storyId)) {
+
             postError(
                     callback,
                     "Invalid Story."
             );
+
             return;
         }
 
@@ -699,11 +1030,12 @@ public final class StorySupabaseHelper {
                                 + "&owner_uid=eq."
                                 + encode(uid);
 
-                connection = openConnection(
-                        url,
-                        "DELETE",
-                        getToken(context)
-                );
+                connection =
+                        openConnection(
+                                url,
+                                "DELETE",
+                                getToken(context)
+                        );
 
                 int code =
                         connection.getResponseCode();
@@ -746,7 +1078,7 @@ public final class StorySupabaseHelper {
     }
 
     // =========================================================
-    // JSON → STORY
+    // JSON -> STORY
     // =========================================================
 
     private static Story jsonToStory(
@@ -970,8 +1302,10 @@ public final class StorySupabaseHelper {
                 data.length
         );
 
-        try (OutputStream output =
-                     connection.getOutputStream()) {
+        try (
+                OutputStream output =
+                        connection.getOutputStream()
+        ) {
 
             output.write(data);
             output.flush();
@@ -999,18 +1333,22 @@ public final class StorySupabaseHelper {
         StringBuilder result =
                 new StringBuilder();
 
-        try (BufferedReader reader =
-                     new BufferedReader(
-                             new InputStreamReader(
-                                     stream,
-                                     StandardCharsets.UTF_8
-                             )
-                     )) {
+        try (
+                BufferedReader reader =
+                        new BufferedReader(
+                                new InputStreamReader(
+                                        stream,
+                                        StandardCharsets.UTF_8
+                                )
+                        )
+        ) {
 
             String line;
 
-            while ((line = reader.readLine())
-                    != null) {
+            while (
+                    (line = reader.readLine())
+                            != null
+            ) {
 
                 result.append(line);
             }
@@ -1056,11 +1394,25 @@ public final class StorySupabaseHelper {
                 return error;
             }
 
+            String hint =
+                    json.optString(
+                            "hint",
+                            ""
+                    );
+
+            if (!TextUtils.isEmpty(hint)) {
+                return hint;
+            }
+
         } catch (Exception ignored) {
         }
 
         return response;
     }
+
+    // =========================================================
+    // SAFE MESSAGE
+    // =========================================================
 
     private static String safeMessage(
             Exception e
@@ -1070,6 +1422,10 @@ public final class StorySupabaseHelper {
                 ? e.getClass().getSimpleName()
                 : e.getMessage();
     }
+
+    // =========================================================
+    // ENCODE
+    // =========================================================
 
     private static String encode(
             String value
@@ -1089,7 +1445,7 @@ public final class StorySupabaseHelper {
     }
 
     // =========================================================
-    // CALLBACK HELPERS
+    // CALLBACK - ACTION SUCCESS
     // =========================================================
 
     private static void postSuccess(
@@ -1101,6 +1457,10 @@ public final class StorySupabaseHelper {
         );
     }
 
+    // =========================================================
+    // CALLBACK - ACTION ERROR
+    // =========================================================
+
     private static void postError(
             @NonNull ActionCallback callback,
             String message
@@ -1110,6 +1470,10 @@ public final class StorySupabaseHelper {
                 () -> callback.onError(message)
         );
     }
+
+    // =========================================================
+    // CALLBACK - STORIES SUCCESS
+    // =========================================================
 
     private static void postSuccess(
             @NonNull StoriesCallback callback,
@@ -1121,6 +1485,10 @@ public final class StorySupabaseHelper {
         );
     }
 
+    // =========================================================
+    // CALLBACK - STORIES ERROR
+    // =========================================================
+
     private static void postError(
             @NonNull StoriesCallback callback,
             String message
@@ -1131,6 +1499,10 @@ public final class StorySupabaseHelper {
         );
     }
 
+    // =========================================================
+    // CALLBACK - LIKE RESULT
+    // =========================================================
+
     private static void postLikeResult(
             @NonNull LikeCheckCallback callback,
             boolean liked
@@ -1140,6 +1512,10 @@ public final class StorySupabaseHelper {
                 () -> callback.onResult(liked)
         );
     }
+
+    // =========================================================
+    // CALLBACK - LIKE ERROR
+    // =========================================================
 
     private static void postLikeError(
             @NonNull LikeCheckCallback callback,
