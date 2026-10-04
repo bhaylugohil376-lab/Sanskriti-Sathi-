@@ -14,27 +14,31 @@
         android:scaleType="centerCrop"
         android:contentDescription="Story image" />
 
-    <!-- Dark overlay -->
+    <!-- Instagram-style dark gradient/overlay -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#33000000" />
+        android:background="#40000000" />
 
-    <!-- Top section -->
+    <!-- TOP AREA -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:paddingStart="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="10dp">
 
-        <!-- Progress -->
+        <!-- Story progress -->
         <ProgressBar
             android:id="@+id/storyProgress"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
+            android:layout_height="3dp"
             android:max="150"
-            android:progress="0" />
+            android:progress="0"
+            android:progressTint="#FFFFFF"
+            android:progressBackgroundTint="#66FFFFFF" />
 
         <!-- Header -->
         <LinearLayout
@@ -44,6 +48,18 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <!-- Profile circle -->
+            <ImageView
+                android:id="@+id/storyProfileImage"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="9dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/icon_foreground"
+                android:background="@drawable/bg_story_profile"
+                android:contentDescription="Profile" />
+
+            <!-- Username + time -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -56,34 +72,38 @@
                     android:layout_height="wrap_content"
                     android:text="Sanskriti User"
                     android:textColor="#FFFFFF"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
 
                 <TextView
                     android:id="@+id/timeText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="1dp"
                     android:text="Just now"
-                    android:textColor="#EEEEEE"
-                    android:textSize="12sp" />
+                    android:textColor="#DDFFFFFF"
+                    android:textSize="11sp" />
 
             </LinearLayout>
 
+            <!-- Delete -->
             <ImageButton
                 android:id="@+id/deleteButton"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Delete Story"
                 android:src="@android:drawable/ic_menu_delete"
                 android:tint="#FFFFFF"
                 android:visibility="gone" />
 
+            <!-- Close -->
             <ImageButton
                 android:id="@+id/closeButton"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Close"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
@@ -93,7 +113,7 @@
 
     </LinearLayout>
 
-    <!-- Caption -->
+    <!-- CAPTION -->
     <TextView
         android:id="@+id/captionText"
         android:layout_width="match_parent"
@@ -101,18 +121,26 @@
         android:layout_gravity="bottom"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="110dp"
+        android:layout_marginBottom="105dp"
+        android:gravity="center"
         android:text=""
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        android:visibility="visible" />
+        android:textStyle="normal"
+        android:lineSpacingExtra="2dp"
+        android:shadowColor="#99000000"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="4" />
 
-    <!-- Bottom controls -->
+    <!-- BOTTOM CONTROLS -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_margin="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="18dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -128,16 +156,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="👁"
-                android:textSize="20sp" />
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/viewsText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="5dp"
                 android:text="0"
                 android:textColor="#FFFFFF"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -145,8 +174,8 @@
         <!-- Like -->
         <ImageButton
             android:id="@+id/likeButton"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Like Story"
             android:src="@android:drawable/btn_star_big_off"
@@ -155,8 +184,8 @@
         <!-- Reply -->
         <ImageButton
             android:id="@+id/replyButton"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Reply"
             android:src="@android:drawable/ic_menu_send"
