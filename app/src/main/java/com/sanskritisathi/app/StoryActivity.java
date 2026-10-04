@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.InputType;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -15,9 +14,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.storage.FirebaseStorage;
+import com.bumptech.glide.Glide;
 
-import java.io.IOException;
 import java.util.List;
 
 public class StoryActivity extends AppCompatActivity {
@@ -33,8 +31,6 @@ public class StoryActivity extends AppCompatActivity {
     private TextView viewsText;
     private TextView captionText;
     private ProgressBar progressBar;
-
-    private StoryFirebaseHelper firebaseHelper;
 
     private List<Story> stories;
     private int currentPosition = 0;
@@ -56,9 +52,6 @@ public class StoryActivity extends AppCompatActivity {
 
         initializeViews();
 
-        firebaseHelper =
-                new StoryFirebaseHelper();
-
         currentPosition =
                 getIntent().getIntExtra(
                         "story_position",
@@ -67,10 +60,6 @@ public class StoryActivity extends AppCompatActivity {
 
         loadStories();
     }
-
-    // =========================================================
-    // INITIALIZE
-    // =========================================================
 
     private void initializeViews() {
 
@@ -104,31 +93,32 @@ public class StoryActivity extends AppCompatActivity {
         progressBar =
                 findViewById(R.id.storyProgress);
 
-        closeButton.setOnClickListener(v ->
-                finish()
+        closeButton.setOnClickListener(
+                v -> finish()
         );
 
-        likeButton.setOnClickListener(v ->
-                toggleLike()
+        likeButton.setOnClickListener(
+                v -> toggleLike()
         );
 
-        replyButton.setOnClickListener(v ->
-                showReplyDialog()
+        replyButton.setOnClickListener(
+                v -> showReplyDialog()
         );
 
-        deleteButton.setOnClickListener(v ->
-                confirmDelete()
+        deleteButton.setOnClickListener(
+                v -> confirmDelete()
         );
     }
 
     // =========================================================
-    // LOAD FIREBASE STORIES
+    // LOAD STORIES
     // =========================================================
 
     private void loadStories() {
 
-        firebaseHelper.getActiveStories(
-                new StoryFirebaseHelper.StoriesCallback() {
+        StorySupabaseHelper.getActiveStories(
+                this,
+                new StorySupabaseHelper.StoriesCallback() {
 
                     @Override
                     public void onSuccess(
@@ -175,19 +165,21 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // SHOW CURRENT STORY
+    // SHOW STORY
     // =========================================================
 
     private void showCurrentStory() {
 
         if (stories == null ||
                 stories.isEmpty()) {
+
             finish();
             return;
         }
 
         if (currentPosition < 0 ||
                 currentPosition >= stories.size()) {
+
             finish();
             return;
         }
@@ -198,16 +190,25 @@ public class StoryActivity extends AppCompatActivity {
         liked = false;
 
         usernameText.setText(
-                currentStory.getUsername()
+                safeText(
+                        currentStory.getUsername(),
+                        "Sanskriti User"
+                )
         );
 
         captionText.setText(
-                currentStory.getCaption()
+                safeText(
+                        currentStory.getCaption(),
+                        ""
+                )
         );
 
         viewsText.setText(
                 String.valueOf(
-                        currentStory.getViews()
+                        Math.max(
+                                0,
+                                currentStory.getViews()
+                        )
                 )
         );
 
@@ -219,8 +220,8 @@ public class StoryActivity extends AppCompatActivity {
 
         deleteButton.setVisibility(
                 currentStory.isOwnStory()
-                        ? View.VISIBLE
-                        : View.GONE
+                        ? ImageButton.VISIBLE
+                        : ImageButton.GONE
         );
 
         likeButton.setImageResource(
@@ -231,20 +232,22 @@ public class StoryActivity extends AppCompatActivity {
 
         addView();
 
+        checkLike();
+
         startProgress();
     }
 
     // =========================================================
-    // LOAD STORY IMAGE
+    // IMAGE
     // =========================================================
 
     private void loadStoryImage() {
 
-        String image =
+        String imageUrl =
                 currentStory.getStoryImage();
 
-        if (image == null ||
-                image.trim().isEmpty()) {
+        if (imageUrl == null ||
+                imageUrl.trim().isEmpty()) {
 
             storyImage.setImageResource(
                     android.R.drawable.ic_menu_gallery
@@ -253,44 +256,25 @@ public class StoryActivity extends AppCompatActivity {
             return;
         }
 
-        if (image.startsWith("http://") ||
-                image.startsWith("https://")) {
+        if (imageUrl.startsWith("http://") ||
+                imageUrl.startsWith("https://")) {
 
-            FirebaseStorage
-                    .getInstance()
-                    .getReferenceFromUrl(image)
-                    .getBytes(5 * 1024 * 1024)
-                    .addOnSuccessListener(bytes -> {
-
-                        android.graphics.Bitmap bitmap =
-                                android.graphics.BitmapFactory
-                                        .decodeByteArray(
-                                                bytes,
-                                                0,
-                                                bytes.length
-                                        );
-
-                        if (bitmap != null) {
-                            storyImage.setImageBitmap(
-                                    bitmap
-                            );
-                        }
-
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(
-                                    StoryActivity.this,
-                                    "Story image load nahi hui",
-                                    Toast.LENGTH_SHORT
-                            ).show()
-                    );
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(
+                            android.R.drawable.ic_menu_gallery
+                    )
+                    .error(
+                            android.R.drawable.ic_menu_gallery
+                    )
+                    .into(storyImage);
 
         } else {
 
             int resourceId =
                     getResources()
                             .getIdentifier(
-                                    image,
+                                    imageUrl,
                                     "drawable",
                                     getPackageName()
                             );
@@ -311,23 +295,24 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // UNIQUE VIEW
+    // VIEW
     // =========================================================
 
     private void addView() {
 
-        firebaseHelper.addStoryView(
+        StorySupabaseHelper.addStoryView(
+                this,
                 currentStory.getId(),
-                new StoryFirebaseHelper.ActionCallback() {
+                new StorySupabaseHelper.ActionCallback() {
 
                     @Override
                     public void onSuccess() {
 
-                        int oldViews =
+                        int views =
                                 currentStory.getViews();
 
                         currentStory.setViews(
-                                oldViews + 1
+                                views + 1
                         );
 
                         viewsText.setText(
@@ -340,8 +325,40 @@ public class StoryActivity extends AppCompatActivity {
                     @Override
                     public void onError(
                             String message) {
-                        // View failure ko user ko disturb
-                        // nahi karna.
+                        // View failure intentionally ignored.
+                    }
+                }
+        );
+    }
+
+    // =========================================================
+    // CHECK LIKE
+    // =========================================================
+
+    private void checkLike() {
+
+        StorySupabaseHelper.checkStoryLike(
+                this,
+                currentStory.getId(),
+                new StorySupabaseHelper.LikeCheckCallback() {
+
+                    @Override
+                    public void onResult(
+                            boolean isLiked) {
+
+                        liked = isLiked;
+
+                        likeButton.setImageResource(
+                                liked
+                                        ? android.R.drawable.btn_star_big_on
+                                        : android.R.drawable.btn_star_big_off
+                        );
+                    }
+
+                    @Override
+                    public void onError(
+                            String message) {
+                        liked = false;
                     }
                 }
         );
@@ -353,35 +370,33 @@ public class StoryActivity extends AppCompatActivity {
 
     private void toggleLike() {
 
-        liked = !liked;
+        if (currentStory == null) {
+            return;
+        }
 
-        final boolean newLikeState =
-                liked;
+        boolean newState =
+                !liked;
 
         likeButton.setEnabled(false);
 
-        firebaseHelper.toggleStoryLike(
+        StorySupabaseHelper.toggleStoryLike(
+                this,
                 currentStory.getId(),
-                newLikeState,
-                new StoryFirebaseHelper.ActionCallback() {
+                newState,
+                new StorySupabaseHelper.ActionCallback() {
 
                     @Override
                     public void onSuccess() {
 
+                        liked = newState;
+
+                        likeButton.setImageResource(
+                                liked
+                                        ? android.R.drawable.btn_star_big_on
+                                        : android.R.drawable.btn_star_big_off
+                        );
+
                         likeButton.setEnabled(true);
-
-                        if (newLikeState) {
-
-                            likeButton.setImageResource(
-                                    android.R.drawable.btn_star_big_on
-                            );
-
-                        } else {
-
-                            likeButton.setImageResource(
-                                    android.R.drawable.btn_star_big_off
-                            );
-                        }
                     }
 
                     @Override
@@ -389,8 +404,6 @@ public class StoryActivity extends AppCompatActivity {
                             String message) {
 
                         likeButton.setEnabled(true);
-
-                        liked = !newLikeState;
 
                         Toast.makeText(
                                 StoryActivity.this,
@@ -411,9 +424,7 @@ public class StoryActivity extends AppCompatActivity {
         EditText input =
                 new EditText(this);
 
-        input.setHint(
-                "Reply likhein..."
-        );
+        input.setHint("Reply likhein...");
 
         input.setInputType(
                 InputType.TYPE_CLASS_TEXT |
@@ -424,10 +435,12 @@ public class StoryActivity extends AppCompatActivity {
         input.setMaxLines(4);
 
         int padding =
-                (int) (16 *
-                        getResources()
-                                .getDisplayMetrics()
-                                .density);
+                (int) (
+                        16 *
+                                getResources()
+                                        .getDisplayMetrics()
+                                        .density
+                );
 
         input.setPadding(
                 padding,
@@ -451,7 +464,7 @@ public class StoryActivity extends AppCompatActivity {
                         .create();
 
         dialog.setOnShowListener(
-                dialogInterface -> {
+                ignored -> {
 
                     dialog.getButton(
                             AlertDialog.BUTTON_POSITIVE
@@ -471,10 +484,20 @@ public class StoryActivity extends AppCompatActivity {
                             return;
                         }
 
-                        firebaseHelper.addStoryReply(
+                        if (text.length() > 1000) {
+
+                            input.setError(
+                                    "Reply bahut lamba hai"
+                            );
+
+                            return;
+                        }
+
+                        StorySupabaseHelper.addStoryReply(
+                                this,
                                 currentStory.getId(),
                                 text,
-                                new StoryFirebaseHelper.ActionCallback() {
+                                new StorySupabaseHelper.ActionCallback() {
 
                                     @Override
                                     public void onSuccess() {
@@ -508,7 +531,7 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // DELETE CONFIRMATION
+    // DELETE CONFIRM
     // =========================================================
 
     private void confirmDelete() {
@@ -543,24 +566,22 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // DELETE STORY
+    // DELETE
     // =========================================================
 
     private void deleteCurrentStory() {
 
-        String imagePath =
-                getStoragePath(
-                        currentStory.getStoryImage()
-                );
+        if (currentStory == null) {
+            return;
+        }
 
-        firebaseHelper.deleteStory(
+        StorySupabaseHelper.deleteStory(
+                this,
                 currentStory.getId(),
-                imagePath,
-                new StoryFirebaseHelper.UploadCallback() {
+                new StorySupabaseHelper.ActionCallback() {
 
                     @Override
-                    public void onSuccess(
-                            String storyId) {
+                    public void onSuccess() {
 
                         Toast.makeText(
                                 StoryActivity.this,
@@ -586,111 +607,45 @@ public class StoryActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    // FIREBASE STORAGE PATH
-    // =========================================================
-
-    private String getStoragePath(
-            String imageUrl) {
-
-        if (imageUrl == null ||
-                imageUrl.trim().isEmpty()) {
-            return "";
-        }
-
-        try {
-
-            android.net.Uri uri =
-                    android.net.Uri.parse(
-                            imageUrl
-                    );
-
-            String path =
-                    uri.getPath();
-
-            if (path == null) {
-                return "";
-            }
-
-            if (path.startsWith("/v0/b/")) {
-
-                int oIndex =
-                        path.indexOf(
-                                "/o/"
-                        );
-
-                if (oIndex != -1) {
-
-                    path =
-                            path.substring(
-                                    oIndex + 3
-                            );
-                }
-            }
-
-            return path
-                    .replace(
-                            "%2F",
-                            "/"
-                    )
-                    .replace(
-                            "%20",
-                            " "
-                    );
-
-        } catch (Exception e) {
-
-            return "";
-        }
-    }
-
-    // =========================================================
-    // PROGRESS / AUTO CLOSE
+    // PROGRESS
     // =========================================================
 
     private void startProgress() {
+
+        handler.removeCallbacksAndMessages(null);
 
         if (progressBar == null) {
             return;
         }
 
+        progressBar.setMax(150);
         progressBar.setProgress(0);
 
-        progressBar.post(() -> {
+        final int[] progress = {0};
 
-            progressBar.setMax(150);
+        Runnable progressRunnable =
+                new Runnable() {
 
-            final int[] progress =
-                    {0};
+                    @Override
+                    public void run() {
 
-            final Runnable runnable =
-                    new Runnable() {
+                        progress[0]++;
 
-                        @Override
-                        public void run() {
+                        progressBar.setProgress(
+                                progress[0]
+                        );
 
-                            progress[0]++;
+                        if (progress[0] < 150) {
 
-                            progressBar.setProgress(
-                                    progress[0]
+                            handler.postDelayed(
+                                    this,
+                                    100
                             );
-
-                            if (progress[0] < 150) {
-
-                                handler.postDelayed(
-                                        this,
-                                        100
-                                );
-
-                            }
                         }
-                    };
+                    }
+                };
 
-            handler.removeCallbacksAndMessages(
-                    null
-            );
-
-            handler.post(runnable);
-        });
+        handler.post(progressRunnable);
 
         handler.postDelayed(
                 autoCloseRunnable,
@@ -705,9 +660,17 @@ public class StoryActivity extends AppCompatActivity {
     private String getTimeText(
             long createdAt) {
 
+        if (createdAt <= 0) {
+            return "Just now";
+        }
+
         long difference =
                 System.currentTimeMillis()
                         - createdAt;
+
+        if (difference < 0) {
+            return "Just now";
+        }
 
         long minutes =
                 difference /
@@ -729,6 +692,23 @@ public class StoryActivity extends AppCompatActivity {
         }
 
         return "24h+";
+    }
+
+    // =========================================================
+    // SAFE TEXT
+    // =========================================================
+
+    private String safeText(
+            String value,
+            String fallback) {
+
+        if (value == null ||
+                value.trim().isEmpty()) {
+
+            return fallback;
+        }
+
+        return value;
     }
 
     // =========================================================
