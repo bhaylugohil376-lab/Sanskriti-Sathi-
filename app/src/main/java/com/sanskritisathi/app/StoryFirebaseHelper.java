@@ -1,24 +1,40 @@
 package com.sanskritisathi.app;
 
+import android.content.Context;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 
-import com.google.firebase.Timestamp;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Transaction;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+import androidx.annotation.NonNull;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class StoryFirebaseHelper {
+public final class StorySupabaseHelper {
+
+    private static final String TABLE = "stories";
+
+    private static final ExecutorService EXECUTOR =
+            Executors.newSingleThreadExecutor();
+
+    private static final Handler MAIN =
+            new Handler(Looper.getMainLooper());
+
+    private StorySupabaseHelper() {
+    }
 
     public interface UploadCallback {
         void onSuccess(String storyId);
@@ -35,448 +51,650 @@ public class StoryFirebaseHelper {
         void onError(String message);
     }
 
-    private final FirebaseAuth auth;
-    private final FirebaseFirestore firestore;
-    private final FirebaseStorage storage;
-
-    public StoryFirebaseHelper() {
-        auth = FirebaseAuth.getInstance();
-        firestore = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
-    }
-
     // =========================================================
     // UPLOAD STORY
     // =========================================================
 
-    public void uploadStory(
+    public static void uploadStory(
+            Context context,
             Uri imageUri,
             String caption,
             String visibility,
-            UploadCallback callback) {
+            UploadCallback callback
+    ) {
 
-        if (auth.getCurrentUser() == null) {
-            callback.onError("Please login first");
+        if (context == null) {
+            callback.onError("Context missing.");
             return;
         }
 
         if (imageUri == null) {
-            callback.onError("Story image select karein");
+            callback.onError("Story image select karein.");
             return;
         }
 
-        String uid = auth.getCurrentUser().getUid();
+        String uid =
+                SupabaseAuthManager.getUserId(context);
 
-        String storyId = firestore
-                .collection("stories")
-                .document()
-                .getId();
+        if (uid == null || uid.trim().isEmpty()) {
+            callback.onError("Please login first.");
+            return;
+        }
 
-        StorageReference imageReference = storage
-                .getReference()
-                .child("stories")
-                .child(uid)
-                .child(storyId + ".jpg");
+        B2MediaHelper.uploadImage(
+                context,
+                imageUri,
+                "stories",
+                new B2MediaHelper.UploadCallback() {
 
-        imageReference
-                .putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        imageReference.getDownloadUrl()
-                                .addOnSuccessListener(downloadUri ->
-                                        saveStoryDocument(
-                                                storyId,
-                                                uid,
-                                                downloadUri.toString(),
-                                                caption,
-                                                visibility,
-                                                callback
-                                        )
-                                )
-                                .addOnFailureListener(e ->
-                                        callback.onError(
-                                                "Image URL create nahi hui: "
-                                                        + e.getMessage()
-                                        )
-                                )
-                )
-                .addOnFailureListener(e ->
+                    @Override
+                    public void onProgress(int progress) {
+                    }
+
+                    @Override
+                    public void onSuccess(String fileName) {
+
+                        saveStory(
+                                context,
+                                uid,
+                                fileName,
+                                caption,
+                                visibility,
+                                callback
+                        );
+                    }
+
+                    @Override
+                    public void onError(String message) {
+
                         callback.onError(
-                                "Story upload failed: "
-                                        + e.getMessage()
-                        )
-                );
+                                message == null
+                                        ? "Story image upload failed."
+                                        : message
+                        );
+                    }
+                }
+        );
     }
 
-    private void saveStoryDocument(
-            String storyId,
+    private static void saveStory(
+            Context context,
             String uid,
-            String imageUrl,
+            String fileName,
             String caption,
             String visibility,
-            UploadCallback callback) {
+            UploadCallback callback
+    ) {
 
-        Map<String, Object> story = new HashMap<>();
+        EXECUTOR.execute(() -> {
 
-        story.put("storyId", storyId);
-        story.put("ownerUid", uid);
-        story.put("imageUrl", imageUrl);
-        story.put(
-                "caption",
-                caption != null ? caption : ""
-        );
-        story.put(
-                "visibility",
-                visibility != null
-                        ? visibility
-                        : "Public"
-        );
-        story.put("createdAt", FieldValue.serverTimestamp());
-        story.put("views", 0L);
-        story.put("likes", 0L);
+            HttpURLConnection connection = null;
 
-        firestore
-                .collection("stories")
-                .document(storyId)
-                .set(story)
-                .addOnSuccessListener(unused ->
-                        callback.onSuccess(storyId)
-                )
-                .addOnFailureListener(e ->
-                        callback.onError(
-                                "Story database mein save nahi hui: "
-                                        + e.getMessage()
+            try {
+
+                JSONObject body = new JSONObject();
+
+                body.put("owner_uid", uid);
+                body.put("image_file", fileName);
+                body.put(
+                        "caption",
+                        caption == null
+                                ? ""
+                                : caption.trim()
+                );
+                body.put(
+                        "visibility",
+                        "Followers".equalsIgnoreCase(
+                                visibility
+                        )
+                                ? "Followers"
+                                : "Public"
+                );
+                body.put("views", 0);
+                body.put("likes", 0);
+
+                URL url = new URL(
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + TABLE
+                );
+
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod("POST");
+                connection.setDoOutput(true);
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(30000);
+
+                addHeaders(
+                        connection,
+                        context
+                );
+
+                connection.setRequestProperty(
+                        "Prefer",
+                        "return=representation"
+                );
+
+                byte[] data =
+                        body.toString()
+                                .getBytes(
+                                        StandardCharsets.UTF_8
+                                );
+
+                connection.setFixedLengthStreamingMode(
+                        data.length
+                );
+
+                try (OutputStream output =
+                             connection.getOutputStream()) {
+
+                    output.write(data);
+                }
+
+                int code =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
+
+                if (code < 200 || code >= 300) {
+
+                    postError(
+                            callback,
+                            "Story save nahi hui: "
+                                    + cleanError(response)
+                    );
+
+                    return;
+                }
+
+                JSONArray array =
+                        new JSONArray(response);
+
+                String storyId = "";
+
+                if (array.length() > 0) {
+
+                    JSONObject result =
+                            array.getJSONObject(0);
+
+                    storyId =
+                            result.optString(
+                                    "id",
+                                    ""
+                            );
+                }
+
+                final String finalStoryId =
+                        storyId;
+
+                MAIN.post(() ->
+                        callback.onSuccess(
+                                finalStoryId
                         )
                 );
+
+            } catch (Exception e) {
+
+                postError(
+                        callback,
+                        "Story save error: "
+                                + safeMessage(e)
+                );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
     }
 
     // =========================================================
     // LOAD ACTIVE STORIES
     // =========================================================
 
-    public void getActiveStories(StoriesCallback callback) {
+    public static void getActiveStories(
+            Context context,
+            @NonNull StoriesCallback callback
+    ) {
 
-        if (auth.getCurrentUser() == null) {
-            callback.onError("Please login first");
+        String uid =
+                SupabaseAuthManager.getUserId(context);
+
+        if (uid == null || uid.trim().isEmpty()) {
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
-        long twentyFourHoursAgo =
-                System.currentTimeMillis()
-                        - (24L * 60L * 60L * 1000L);
+        EXECUTOR.execute(() -> {
 
-        Timestamp cutoff = new Timestamp(
-                new Date(twentyFourHoursAgo)
-        );
+            HttpURLConnection connection = null;
 
-        firestore
-                .collection("stories")
-                .whereGreaterThan("createdAt", cutoff)
-                .get()
-                .addOnSuccessListener(snapshot -> {
+            try {
 
-                    List<Story> result =
-                            new ArrayList<>();
+                long cutoff =
+                        System.currentTimeMillis()
+                                - 24L * 60L * 60L * 1000L;
 
-                    for (DocumentSnapshot doc :
-                            snapshot.getDocuments()) {
+                String query =
+                        "created_at=gte."
+                                + encode(
+                                java.time.Instant
+                                        .ofEpochMilli(cutoff)
+                                        .toString()
+                        )
+                                + "&order=created_at.desc"
+                                + "&limit=100";
 
-                        String id =
-                                doc.getString("storyId");
-
-                        String uid =
-                                doc.getString("ownerUid");
-
-                        String imageUrl =
-                                doc.getString("imageUrl");
-
-                        String caption =
-                                doc.getString("caption");
-
-                        String visibility =
-                                doc.getString("visibility");
-
-                        Timestamp timestamp =
-                                doc.getTimestamp("createdAt");
-
-                        long createdAt =
-                                timestamp != null
-                                        ? timestamp
-                                        .toDate()
-                                        .getTime()
-                                        : System.currentTimeMillis();
-
-                        Long viewsValue =
-                                doc.getLong("views");
-
-                        int views =
-                                viewsValue != null
-                                        ? viewsValue.intValue()
-                                        : 0;
-
-                        if (id == null ||
-                                imageUrl == null) {
-                            continue;
-                        }
-
-                        boolean ownStory =
-                                uid != null &&
-                                uid.equals(
-                                        auth.getCurrentUser()
-                                                .getUid()
-                                );
-
-                        Story story = new Story(
-                                id,
-                                uid != null
-                                        ? uid
-                                        : "Sanskriti User",
-                                "",
-                                imageUrl,
-                                caption != null
-                                        ? caption
-                                        : "",
-                                visibility != null
-                                        ? visibility
-                                        : "Public",
-                                createdAt,
-                                views,
-                                ownStory
+                URL url =
+                        new URL(
+                                SupabaseConfig.PROJECT_URL
+                                        + "/rest/v1/"
+                                        + TABLE
+                                        + "?"
+                                        + query
                         );
 
-                        result.add(story);
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
+
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(30000);
+
+                addHeaders(
+                        connection,
+                        context
+                );
+
+                int code =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
+
+                if (code < 200 || code >= 300) {
+
+                    postError(
+                            callback,
+                            "Stories load nahi hui: "
+                                    + cleanError(response)
+                    );
+
+                    return;
+                }
+
+                JSONArray array =
+                        new JSONArray(response);
+
+                List<Story> stories =
+                        new ArrayList<>();
+
+                for (int i = 0;
+                     i < array.length();
+                     i++) {
+
+                    JSONObject json =
+                            array.getJSONObject(i);
+
+                    Story story =
+                            jsonToStory(
+                                    context,
+                                    json,
+                                    uid
+                            );
+
+                    if (story != null) {
+                        stories.add(story);
                     }
+                }
 
-                    callback.onSuccess(result);
-
-                })
-                .addOnFailureListener(e ->
-                        callback.onError(
-                                "Stories load nahi hui: "
-                                        + e.getMessage()
+                MAIN.post(() ->
+                        callback.onSuccess(
+                                stories
                         )
                 );
+
+            } catch (Exception e) {
+
+                postError(
+                        callback,
+                        "Stories load error: "
+                                + safeMessage(e)
+                );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
+    private static Story jsonToStory(
+            Context context,
+            JSONObject json,
+            String currentUid
+    ) {
+
+        try {
+
+            String id =
+                    json.optString(
+                            "id",
+                            ""
+                    );
+
+            String ownerUid =
+                    json.optString(
+                            "owner_uid",
+                            ""
+                    );
+
+            String fileName =
+                    json.optString(
+                            "image_file",
+                            ""
+                    );
+
+            String caption =
+                    json.optString(
+                            "caption",
+                            ""
+                    );
+
+            String visibility =
+                    json.optString(
+                            "visibility",
+                            "Public"
+                    );
+
+            long createdAt =
+                    parseTime(
+                            json.optString(
+                                    "created_at",
+                                    ""
+                            )
+                    );
+
+            int views =
+                    json.optInt(
+                            "views",
+                            0
+                    );
+
+            if (id.isEmpty() ||
+                    fileName.isEmpty()) {
+
+                return null;
+            }
+
+            String username =
+                    "Sanskriti User";
+
+            boolean ownStory =
+                    ownerUid.equals(currentUid);
+
+            Story story =
+                    new Story(
+                            id,
+                            username,
+                            "",
+                            "",
+                            caption,
+                            visibility,
+                            createdAt,
+                            Math.max(0, views),
+                            ownStory
+                    );
+
+            // B2 URL async resolve baad mein adapter/activity
+            // se kiya ja sakta hai. File name temporarily
+            // story image field mein rakha gaya hai.
+            story.setLiked(false);
+
+            return story;
+
+        } catch (Exception e) {
+
+            return null;
+        }
     }
 
     // =========================================================
-    // UNIQUE STORY VIEW
+    // UNIQUE VIEW
     // =========================================================
 
-    public void addStoryView(
+    public static void addStoryView(
+            Context context,
             String storyId,
-            ActionCallback callback) {
-
-        if (auth.getCurrentUser() == null) {
-            if (callback != null) {
-                callback.onError("Please login first");
-            }
-            return;
-        }
+            ActionCallback callback
+    ) {
 
         String uid =
-                auth.getCurrentUser().getUid();
+                SupabaseAuthManager.getUserId(context);
 
-        DocumentReference storyRef =
-                firestore
-                        .collection("stories")
-                        .document(storyId);
-
-        DocumentReference viewRef =
-                storyRef
-                        .collection("views")
-                        .document(uid);
-
-        firestore.runTransaction(
-                transaction -> {
-
-                    DocumentSnapshot storySnapshot =
-                            transaction.get(storyRef);
-
-                    DocumentSnapshot viewSnapshot =
-                            transaction.get(viewRef);
-
-                    if (!storySnapshot.exists()) {
-                        throw new IllegalStateException(
-                                "Story nahi mili"
-                        );
-                    }
-
-                    // Already viewed
-                    if (viewSnapshot.exists()) {
-                        return null;
-                    }
-
-                    Map<String, Object> viewData =
-                            new HashMap<>();
-
-                    viewData.put(
-                            "userId",
-                            uid
-                    );
-
-                    viewData.put(
-                            "createdAt",
-                            FieldValue.serverTimestamp()
-                    );
-
-                    transaction.set(
-                            viewRef,
-                            viewData
-                    );
-
-                    Long currentViews =
-                            storySnapshot.getLong("views");
-
-                    long newViews =
-                            currentViews != null
-                                    ? currentViews + 1
-                                    : 1;
-
-                    transaction.update(
-                            storyRef,
-                            "views",
-                            newViews
-                    );
-
-                    return null;
-                }
-        )
-        .addOnSuccessListener(unused -> {
-
-            if (callback != null) {
-                callback.onSuccess();
-            }
-
-        })
-        .addOnFailureListener(e -> {
+        if (uid == null || uid.trim().isEmpty()) {
 
             if (callback != null) {
                 callback.onError(
-                        "View update failed: "
-                                + e.getMessage()
+                        "Please login first."
                 );
             }
 
+            return;
+        }
+
+        if (storyId == null ||
+                storyId.trim().isEmpty()) {
+
+            if (callback != null) {
+                callback.onError(
+                        "Story ID missing."
+                );
+            }
+
+            return;
+        }
+
+        EXECUTOR.execute(() -> {
+
+            try {
+
+                // Unique view table:
+                // story_views
+                //
+                // columns:
+                // story_id
+                // user_id
+
+                JSONObject body =
+                        new JSONObject();
+
+                body.put(
+                        "story_id",
+                        storyId
+                );
+
+                body.put(
+                        "user_id",
+                        uid
+                );
+
+                postJson(
+                        context,
+                        "story_views",
+                        body
+                );
+
+                MAIN.post(() -> {
+
+                    if (callback != null) {
+                        callback.onSuccess();
+                    }
+                });
+
+            } catch (Exception e) {
+
+                MAIN.post(() -> {
+
+                    if (callback != null) {
+                        callback.onError(
+                                safeMessage(e)
+                        );
+                    }
+                });
+            }
         });
     }
 
     // =========================================================
-    // UNIQUE LIKE / UNLIKE
+    // LIKE / UNLIKE
     // =========================================================
 
-    public void toggleStoryLike(
+    public static void toggleStoryLike(
+            Context context,
             String storyId,
             boolean like,
-            ActionCallback callback) {
+            ActionCallback callback
+    ) {
 
-        if (auth.getCurrentUser() == null) {
-            if (callback != null) {
-                callback.onError("Please login first");
-            }
+        String uid =
+                SupabaseAuthManager.getUserId(context);
+
+        if (uid == null || uid.trim().isEmpty()) {
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
-        String uid =
-                auth.getCurrentUser().getUid();
+        if (storyId == null ||
+                storyId.trim().isEmpty()) {
 
-        DocumentReference storyRef =
-                firestore
-                        .collection("stories")
-                        .document(storyId);
+            callback.onError(
+                    "Story ID missing."
+            );
 
-        DocumentReference likeRef =
-                storyRef
-                        .collection("likes")
-                        .document(uid);
+            return;
+        }
 
-        firestore.runTransaction(
-                transaction -> {
+        EXECUTOR.execute(() -> {
 
-                    DocumentSnapshot storySnapshot =
-                            transaction.get(storyRef);
+            HttpURLConnection connection = null;
 
-                    DocumentSnapshot likeSnapshot =
-                            transaction.get(likeRef);
+            try {
 
-                    if (!storySnapshot.exists()) {
-                        throw new IllegalStateException(
-                                "Story nahi mili"
+                if (like) {
+
+                    JSONObject body =
+                            new JSONObject();
+
+                    body.put(
+                            "story_id",
+                            storyId
+                    );
+
+                    body.put(
+                            "user_id",
+                            uid
+                    );
+
+                    postJson(
+                            context,
+                            "story_likes",
+                            body
+                    );
+
+                } else {
+
+                    URL url =
+                            new URL(
+                                    SupabaseConfig.PROJECT_URL
+                                            + "/rest/v1/story_likes"
+                                            + "?story_id=eq."
+                                            + encode(storyId)
+                                            + "&user_id=eq."
+                                            + encode(uid)
+                            );
+
+                    connection =
+                            (HttpURLConnection)
+                                    url.openConnection();
+
+                    connection.setRequestMethod(
+                            "DELETE"
+                    );
+
+                    connection.setConnectTimeout(
+                            15000
+                    );
+
+                    connection.setReadTimeout(
+                            30000
+                    );
+
+                    addHeaders(
+                            connection,
+                            context
+                    );
+
+                    int code =
+                            connection.getResponseCode();
+
+                    String response =
+                            readResponse(
+                                    connection,
+                                    code
+                            );
+
+                    if (code < 200 ||
+                            code >= 300) {
+
+                        throw new Exception(
+                                cleanError(response)
                         );
                     }
-
-                    Long currentLikes =
-                            storySnapshot.getLong("likes");
-
-                    long likes =
-                            currentLikes != null
-                                    ? currentLikes
-                                    : 0;
-
-                    if (like) {
-
-                        // Already liked
-                        if (!likeSnapshot.exists()) {
-
-                            Map<String, Object> likeData =
-                                    new HashMap<>();
-
-                            likeData.put(
-                                    "userId",
-                                    uid
-                            );
-
-                            likeData.put(
-                                    "createdAt",
-                                    FieldValue.serverTimestamp()
-                            );
-
-                            transaction.set(
-                                    likeRef,
-                                    likeData
-                            );
-
-                            transaction.update(
-                                    storyRef,
-                                    "likes",
-                                    likes + 1
-                            );
-                        }
-
-                    } else {
-
-                        // Unlike only if like exists
-                        if (likeSnapshot.exists()) {
-
-                            transaction.delete(
-                                    likeRef
-                            );
-
-                            transaction.update(
-                                    storyRef,
-                                    "likes",
-                                    Math.max(0, likes - 1)
-                            );
-                        }
-                    }
-
-                    return null;
                 }
-        )
-        .addOnSuccessListener(unused -> {
 
-            if (callback != null) {
-                callback.onSuccess();
-            }
-
-        })
-        .addOnFailureListener(e -> {
-
-            if (callback != null) {
-                callback.onError(
-                        "Like update failed: "
-                                + e.getMessage()
+                MAIN.post(
+                        callback::onSuccess
                 );
-            }
 
+            } catch (Exception e) {
+
+                MAIN.post(() ->
+                        callback.onError(
+                                "Like update failed: "
+                                        + safeMessage(e)
+                        )
+                );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
         });
     }
 
@@ -484,167 +702,439 @@ public class StoryFirebaseHelper {
     // STORY REPLY
     // =========================================================
 
-    public void addStoryReply(
+    public static void addStoryReply(
+            Context context,
             String storyId,
             String replyText,
-            ActionCallback callback) {
+            ActionCallback callback
+    ) {
 
-        if (auth.getCurrentUser() == null) {
-            if (callback != null) {
-                callback.onError("Please login first");
-            }
+        String uid =
+                SupabaseAuthManager.getUserId(context);
+
+        if (uid == null || uid.trim().isEmpty()) {
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
         if (replyText == null ||
                 replyText.trim().isEmpty()) {
 
-            if (callback != null) {
-                callback.onError(
-                        "Reply empty nahi ho sakta"
-                );
-            }
+            callback.onError(
+                    "Reply empty nahi ho sakta."
+            );
+
             return;
         }
 
-        String text = replyText.trim();
+        String text =
+                replyText.trim();
 
         if (text.length() > 500) {
-            if (callback != null) {
-                callback.onError(
-                        "Reply 500 characters se kam hona chahiye"
-                );
-            }
+
+            callback.onError(
+                    "Reply 500 characters se kam hona chahiye."
+            );
+
             return;
         }
 
-        String uid =
-                auth.getCurrentUser().getUid();
+        EXECUTOR.execute(() -> {
 
-        Map<String, Object> reply =
-                new HashMap<>();
+            try {
 
-        reply.put(
-                "userId",
-                uid
-        );
+                JSONObject body =
+                        new JSONObject();
 
-        reply.put(
-                "text",
-                text
-        );
+                body.put(
+                        "story_id",
+                        storyId
+                );
 
-        reply.put(
-                "createdAt",
-                FieldValue.serverTimestamp()
-        );
+                body.put(
+                        "user_id",
+                        uid
+                );
 
-        firestore
-                .collection("stories")
-                .document(storyId)
-                .collection("replies")
-                .add(reply)
-                .addOnSuccessListener(documentReference -> {
+                body.put(
+                        "text",
+                        text
+                );
 
-                    if (callback != null) {
-                        callback.onSuccess();
-                    }
+                postJson(
+                        context,
+                        "story_replies",
+                        body
+                );
 
-                })
-                .addOnFailureListener(e -> {
+                MAIN.post(
+                        callback::onSuccess
+                );
 
-                    if (callback != null) {
+            } catch (Exception e) {
+
+                MAIN.post(() ->
                         callback.onError(
                                 "Reply send nahi hui: "
-                                        + e.getMessage()
-                        );
-                    }
-
-                });
+                                        + safeMessage(e)
+                        )
+                );
+            }
+        });
     }
 
     // =========================================================
     // DELETE STORY
     // =========================================================
 
-    public void deleteStory(
+    public static void deleteStory(
+            Context context,
             String storyId,
-            String imagePath,
-            UploadCallback callback) {
+            ActionCallback callback
+    ) {
 
-        if (auth.getCurrentUser() == null) {
-            callback.onError("Please login first");
+        String uid =
+                SupabaseAuthManager.getUserId(context);
+
+        if (uid == null || uid.trim().isEmpty()) {
+
+            callback.onError(
+                    "Please login first."
+            );
+
             return;
         }
 
-        String uid =
-                auth.getCurrentUser().getUid();
+        EXECUTOR.execute(() -> {
 
-        firestore
-                .collection("stories")
-                .document(storyId)
-                .get()
-                .addOnSuccessListener(document -> {
+            HttpURLConnection connection = null;
 
-                    if (!document.exists()) {
-                        callback.onError(
-                                "Story nahi mili"
+            try {
+
+                URL url =
+                        new URL(
+                                SupabaseConfig.PROJECT_URL
+                                        + "/rest/v1/"
+                                        + TABLE
+                                        + "?id=eq."
+                                        + encode(storyId)
+                                        + "&owner_uid=eq."
+                                        + encode(uid)
                         );
-                        return;
-                    }
 
-                    String ownerUid =
-                            document.getString("ownerUid");
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
 
-                    if (ownerUid == null ||
-                            !ownerUid.equals(uid)) {
+                connection.setRequestMethod(
+                        "DELETE"
+                );
 
-                        callback.onError(
-                                "Aap sirf apni Story delete kar sakte hain"
+                connection.setConnectTimeout(
+                        15000
+                );
+
+                connection.setReadTimeout(
+                        30000
+                );
+
+                addHeaders(
+                        connection,
+                        context
+                );
+
+                int code =
+                        connection.getResponseCode();
+
+                String response =
+                        readResponse(
+                                connection,
+                                code
                         );
-                        return;
-                    }
 
-                    firestore
-                            .collection("stories")
-                            .document(storyId)
-                            .delete()
-                            .addOnSuccessListener(unused -> {
+                if (code >= 200 &&
+                        code < 300) {
 
-                                if (imagePath == null ||
-                                        imagePath.trim().isEmpty()) {
+                    MAIN.post(
+                            callback::onSuccess
+                    );
 
-                                    callback.onSuccess(
-                                            storyId
-                                    );
-                                    return;
-                                }
+                } else {
 
-                                StorageReference imageReference =
-                                        storage
-                                                .getReference()
-                                                .child(imagePath);
-
-                                imageReference
-                                        .delete()
-                                        .addOnCompleteListener(task ->
-                                                callback.onSuccess(
-                                                        storyId
-                                                )
-                                        );
-                            })
-                            .addOnFailureListener(e ->
-                                    callback.onError(
-                                            "Story delete failed: "
-                                                    + e.getMessage()
+                    MAIN.post(() ->
+                            callback.onError(
+                                    "Story delete failed: "
+                                            + cleanError(
+                                            response
                                     )
-                            );
-                })
-                .addOnFailureListener(e ->
+                            )
+                    );
+                }
+
+            } catch (Exception e) {
+
+                MAIN.post(() ->
                         callback.onError(
-                                "Story check failed: "
-                                        + e.getMessage()
+                                "Story delete error: "
+                                        + safeMessage(e)
                         )
                 );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
+    }
+
+    // =========================================================
+    // HTTP
+    // =========================================================
+
+    private static void postJson(
+            Context context,
+            String table,
+            JSONObject body
+    ) throws Exception {
+
+        URL url =
+                new URL(
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/"
+                                + table
+                );
+
+        HttpURLConnection connection =
+                (HttpURLConnection)
+                        url.openConnection();
+
+        try {
+
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setConnectTimeout(15000);
+            connection.setReadTimeout(30000);
+
+            addHeaders(
+                    connection,
+                    context
+            );
+
+            connection.setRequestProperty(
+                    "Prefer",
+                    "return=minimal"
+            );
+
+            byte[] data =
+                    body.toString()
+                            .getBytes(
+                                    StandardCharsets.UTF_8
+                            );
+
+            connection.setFixedLengthStreamingMode(
+                    data.length
+            );
+
+            try (OutputStream output =
+                         connection.getOutputStream()) {
+
+                output.write(data);
+            }
+
+            int code =
+                    connection.getResponseCode();
+
+            String response =
+                    readResponse(
+                            connection,
+                            code
+                    );
+
+            if (code < 200 || code >= 300) {
+
+                throw new Exception(
+                        cleanError(response)
+                );
+            }
+
+        } finally {
+
+            connection.disconnect();
+        }
+    }
+
+    private static void addHeaders(
+            HttpURLConnection connection,
+            Context context
+    ) {
+
+        connection.setRequestProperty(
+                "apikey",
+                SupabaseConfig.PUBLISHABLE_KEY
+        );
+
+        String token =
+                SupabaseAuthManager.getAccessToken(
+                        context
+                );
+
+        if (token == null ||
+                token.trim().isEmpty()) {
+
+            token =
+                    SupabaseConfig.PUBLISHABLE_KEY;
+        }
+
+        connection.setRequestProperty(
+                "Authorization",
+                "Bearer " + token
+        );
+
+        connection.setRequestProperty(
+                "Accept",
+                "application/json"
+        );
+
+        connection.setRequestProperty(
+                "Content-Type",
+                "application/json"
+        );
+    }
+
+    private static String readResponse(
+            HttpURLConnection connection,
+            int code
+    ) throws Exception {
+
+        InputStream stream =
+                code >= 400
+                        ? connection.getErrorStream()
+                        : connection.getInputStream();
+
+        if (stream == null) {
+            return "";
+        }
+
+        StringBuilder result =
+                new StringBuilder();
+
+        try (BufferedReader reader =
+                     new BufferedReader(
+                             new InputStreamReader(
+                                     stream,
+                                     StandardCharsets.UTF_8
+                             )
+                     )) {
+
+            String line;
+
+            while ((line = reader.readLine())
+                    != null) {
+
+                result.append(line);
+            }
+        }
+
+        return result.toString();
+    }
+
+    private static String cleanError(
+            String response
+    ) {
+
+        if (response == null ||
+                response.trim().isEmpty()) {
+
+            return "Server error";
+        }
+
+        try {
+
+            JSONObject json =
+                    new JSONObject(response);
+
+            String message =
+                    json.optString(
+                            "message",
+                            ""
+                    );
+
+            if (!message.isEmpty()) {
+                return message;
+            }
+
+            return json.optString(
+                    "error",
+                    response
+            );
+
+        } catch (Exception ignored) {
+
+            return response;
+        }
+    }
+
+    private static String safeMessage(
+            Exception e
+    ) {
+
+        return e.getMessage() == null
+                ? e.getClass().getSimpleName()
+                : e.getMessage();
+    }
+
+    private static long parseTime(
+            String value
+    ) {
+
+        if (value == null ||
+                value.trim().isEmpty()) {
+
+            return System.currentTimeMillis();
+        }
+
+        try {
+
+            return java.time.Instant
+                    .parse(value)
+                    .toEpochMilli();
+
+        } catch (Exception e) {
+
+            return System.currentTimeMillis();
+        }
+    }
+
+    private static String encode(
+            String value
+    ) {
+
+        try {
+
+            return URLEncoder.encode(
+                    value,
+                    StandardCharsets.UTF_8.name()
+            );
+
+        } catch (Exception e) {
+
+            return value;
+        }
+    }
+
+    private static void postError(
+            StoriesCallback callback,
+            String message
+    ) {
+
+        MAIN.post(() ->
+                callback.onError(message)
+        );
     }
 }
