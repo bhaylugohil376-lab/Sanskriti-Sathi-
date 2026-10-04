@@ -8,10 +8,22 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.bumptech.glide.Glide;
 
-public class UserProfileActivity extends AppCompatActivity {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class UserProfileActivity
+        extends AppCompatActivity {
 
     private ImageView profileImage;
     private TextView nameText;
@@ -24,36 +36,60 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private TextView followButton;
 
-    private FirebaseFirestore firestore;
-    private FirebaseAuth auth;
-
     private String userUid;
+
     private boolean isFollowing = false;
     private boolean actionRunning = false;
 
+    private final ExecutorService executor =
+            Executors.newSingleThreadExecutor();
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(
+            Bundle savedInstanceState
+    ) {
+
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_user_profile);
+        setContentView(
+                R.layout.activity_user_profile
+        );
 
-        firestore = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
+        profileImage =
+                findViewById(R.id.profileImage);
 
-        profileImage = findViewById(R.id.profileImage);
-        nameText = findViewById(R.id.nameText);
-        usernameText = findViewById(R.id.usernameText);
-        bioText = findViewById(R.id.bioText);
+        nameText =
+                findViewById(R.id.nameText);
 
-        postsCountText = findViewById(R.id.postsCountText);
-        followersCountText = findViewById(R.id.followersCountText);
-        followingCountText = findViewById(R.id.followingCountText);
+        usernameText =
+                findViewById(R.id.usernameText);
 
-        followButton = findViewById(R.id.followButton);
+        bioText =
+                findViewById(R.id.bioText);
 
-        userUid = getIntent().getStringExtra("user_uid");
+        postsCountText =
+                findViewById(R.id.postsCountText);
+
+        followersCountText =
+                findViewById(
+                        R.id.followersCountText
+                );
+
+        followingCountText =
+                findViewById(
+                        R.id.followingCountText
+                );
+
+        followButton =
+                findViewById(R.id.followButton);
+
+        userUid =
+                getIntent().getStringExtra(
+                        "user_uid"
+                );
 
         if (TextUtils.isEmpty(userUid)) {
+
             Toast.makeText(
                     this,
                     "User profile nahi mili.",
@@ -67,122 +103,227 @@ public class UserProfileActivity extends AppCompatActivity {
         loadUserProfile();
         checkFollowStatus();
 
-        followButton.setOnClickListener(v -> toggleFollow());
+        followButton.setOnClickListener(
+                v -> toggleFollow()
+        );
     }
+
+    // =========================================================
+    // LOAD PROFILE FROM SUPABASE
+    // =========================================================
 
     private void loadUserProfile() {
 
-        firestore.collection("users")
-                .document(userUid)
-                .get()
-                .addOnSuccessListener(document -> {
+        executor.execute(() -> {
 
-                    if (!document.exists()) {
+            HttpURLConnection connection = null;
 
-                        Toast.makeText(
-                                UserProfileActivity.this,
-                                "User profile available nahi hai.",
-                                Toast.LENGTH_SHORT
-                        ).show();
+            try {
 
-                        return;
-                    }
+                String urlString =
+                        SupabaseConfig.PROJECT_URL
+                                + "/rest/v1/users"
+                                + "?select=*"
+                                + "&id=eq."
+                                + encode(userUid)
+                                + "&limit=1";
 
-                    String name =
-                            document.getString("name");
+                URL url =
+                        new URL(urlString);
 
-                    String username =
-                            document.getString("username");
+                connection =
+                        (HttpURLConnection)
+                                url.openConnection();
 
-                    String bio =
-                            document.getString("bio");
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(15000);
+                connection.setReadTimeout(20000);
 
-                    if (!TextUtils.isEmpty(name)) {
-                        nameText.setText(name);
-                    } else {
-                        nameText.setText("Sanskriti Sathi User");
-                    }
+                addHeaders(connection);
 
-                    if (!TextUtils.isEmpty(username)) {
+                int code =
+                        connection.getResponseCode();
 
-                        if (username.startsWith("@")) {
-                            usernameText.setText(username);
-                        } else {
-                            usernameText.setText("@" + username);
-                        }
+                String response =
+                        readResponse(
+                                connection,
+                                code
+                        );
 
-                    } else {
-                        usernameText.setText("@user");
-                    }
+                if (code < 200 ||
+                        code >= 300) {
 
-                    if (!TextUtils.isEmpty(bio)) {
-                        bioText.setText(bio);
-                    } else {
-                        bioText.setText(
+                    postToast(
+                            "Profile load nahi hui."
+                    );
+
+                    return;
+                }
+
+                JSONArray array =
+                        new JSONArray(response);
+
+                if (array.length() == 0) {
+
+                    postToast(
+                            "User profile available nahi hai."
+                    );
+
+                    return;
+                }
+
+                JSONObject user =
+                        array.getJSONObject(0);
+
+                String name =
+                        user.optString(
+                                "name",
+                                "Sanskriti Sathi User"
+                        );
+
+                String username =
+                        user.optString(
+                                "username",
+                                "user"
+                        );
+
+                String bio =
+                        user.optString(
+                                "bio",
                                 "Apni Sanskriti se judein."
+                        );
+
+                String imageUrl =
+                        user.optString(
+                                "profileImageUrl",
+                                user.optString(
+                                        "profile_image",
+                                        ""
+                                )
+                        );
+
+                int posts =
+                        Math.max(
+                                0,
+                                user.optInt(
+                                        "posts",
+                                        0
+                                )
+                        );
+
+                int followers =
+                        Math.max(
+                                0,
+                                user.optInt(
+                                        "followers",
+                                        0
+                                )
+                        );
+
+                int following =
+                        Math.max(
+                                0,
+                                user.optInt(
+                                        "following",
+                                        0
+                                )
+                        );
+
+                runOnUiThread(() -> {
+
+                    nameText.setText(
+                            TextUtils.isEmpty(name)
+                                    ? "Sanskriti Sathi User"
+                                    : name
+                    );
+
+                    if (username.startsWith("@")) {
+                        usernameText.setText(
+                                username
+                        );
+                    } else {
+                        usernameText.setText(
+                                "@" + username
                         );
                     }
 
-                    Long posts =
-                            document.getLong("posts");
-
-                    Long followers =
-                            document.getLong("followers");
-
-                    Long following =
-                            document.getLong("following");
+                    bioText.setText(
+                            TextUtils.isEmpty(bio)
+                                    ? "Apni Sanskriti se judein."
+                                    : bio
+                    );
 
                     postsCountText.setText(
-                            String.valueOf(
-                                    posts != null ? posts : 0
-                            )
+                            String.valueOf(posts)
                     );
 
                     followersCountText.setText(
-                            String.valueOf(
-                                    followers != null ? followers : 0
-                            )
+                            String.valueOf(followers)
                     );
 
                     followingCountText.setText(
-                            String.valueOf(
-                                    following != null ? following : 0
-                            )
+                            String.valueOf(following)
                     );
 
-                    String imageUrl =
-                            document.getString("profileImageUrl");
+                    if (!TextUtils.isEmpty(
+                            imageUrl
+                    )) {
 
-                    if (!TextUtils.isEmpty(imageUrl)) {
-                        profileImage.setContentDescription(
-                                "User profile photo"
-                        );
+                        Glide.with(
+                                UserProfileActivity.this
+                        )
+                                .load(imageUrl)
+                                .placeholder(
+                                        R.drawable.icon_foreground
+                                )
+                                .error(
+                                        R.drawable.icon_foreground
+                                )
+                                .into(profileImage);
                     }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(
-                                UserProfileActivity.this,
-                                "Profile load nahi hui.",
-                                Toast.LENGTH_SHORT
-                        ).show()
+                });
+
+            } catch (Exception e) {
+
+                postToast(
+                        "Profile load nahi hui."
                 );
+
+            } finally {
+
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+        });
     }
+
+    // =========================================================
+    // CHECK FOLLOW
+    // =========================================================
 
     private void checkFollowStatus() {
 
-        FollowFirebaseHelper.checkFollowing(
+        FollowSupabaseHelper.checkFollowing(
+                this,
                 userUid,
-                new FollowFirebaseHelper.StatusCallback() {
+                new FollowSupabaseHelper.StatusCallback() {
 
                     @Override
-                    public void onResult(boolean following) {
+                    public void onResult(
+                            boolean following
+                    ) {
 
-                        isFollowing = following;
+                        isFollowing =
+                                following;
+
                         updateFollowButton();
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message
+                    ) {
 
                         Toast.makeText(
                                 UserProfileActivity.this,
@@ -193,6 +334,10 @@ public class UserProfileActivity extends AppCompatActivity {
                 }
         );
     }
+
+    // =========================================================
+    // TOGGLE
+    // =========================================================
 
     private void toggleFollow() {
 
@@ -207,15 +352,23 @@ public class UserProfileActivity extends AppCompatActivity {
         }
     }
 
+    // =========================================================
+    // FOLLOW
+    // =========================================================
+
     private void followUser() {
 
         actionRunning = true;
-        followButton.setEnabled(false);
-        followButton.setText("Following...");
 
-        FollowFirebaseHelper.followUser(
+        followButton.setEnabled(false);
+        followButton.setText(
+                "Following..."
+        );
+
+        FollowSupabaseHelper.followUser(
+                this,
                 userUid,
-                new FollowFirebaseHelper.ActionCallback() {
+                new FollowSupabaseHelper.ActionCallback() {
 
                     @Override
                     public void onSuccess() {
@@ -223,9 +376,11 @@ public class UserProfileActivity extends AppCompatActivity {
                         isFollowing = true;
                         actionRunning = false;
 
-                        followButton.setEnabled(true);
-                        updateFollowButton();
+                        followButton.setEnabled(
+                                true
+                        );
 
+                        updateFollowButton();
                         loadUserProfile();
 
                         Toast.makeText(
@@ -236,10 +391,15 @@ public class UserProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message
+                    ) {
 
                         actionRunning = false;
-                        followButton.setEnabled(true);
+
+                        followButton.setEnabled(
+                                true
+                        );
 
                         updateFollowButton();
 
@@ -253,15 +413,23 @@ public class UserProfileActivity extends AppCompatActivity {
         );
     }
 
+    // =========================================================
+    // UNFOLLOW
+    // =========================================================
+
     private void unfollowUser() {
 
         actionRunning = true;
-        followButton.setEnabled(false);
-        followButton.setText("Unfollowing...");
 
-        FollowFirebaseHelper.unfollowUser(
+        followButton.setEnabled(false);
+        followButton.setText(
+                "Unfollowing..."
+        );
+
+        FollowSupabaseHelper.unfollowUser(
+                this,
                 userUid,
-                new FollowFirebaseHelper.ActionCallback() {
+                new FollowSupabaseHelper.ActionCallback() {
 
                     @Override
                     public void onSuccess() {
@@ -269,9 +437,11 @@ public class UserProfileActivity extends AppCompatActivity {
                         isFollowing = false;
                         actionRunning = false;
 
-                        followButton.setEnabled(true);
-                        updateFollowButton();
+                        followButton.setEnabled(
+                                true
+                        );
 
+                        updateFollowButton();
                         loadUserProfile();
 
                         Toast.makeText(
@@ -282,10 +452,15 @@ public class UserProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onError(String message) {
+                    public void onError(
+                            String message
+                    ) {
 
                         actionRunning = false;
-                        followButton.setEnabled(true);
+
+                        followButton.setEnabled(
+                                true
+                        );
 
                         updateFollowButton();
 
@@ -299,12 +474,131 @@ public class UserProfileActivity extends AppCompatActivity {
         );
     }
 
+    // =========================================================
+    // BUTTON
+    // =========================================================
+
     private void updateFollowButton() {
 
-        if (isFollowing) {
-            followButton.setText("Following");
-        } else {
-            followButton.setText("Follow");
+        followButton.setText(
+                isFollowing
+                        ? "Following"
+                        : "Follow"
+        );
+    }
+
+    // =========================================================
+    // SUPABASE HEADERS
+    // =========================================================
+
+    private void addHeaders(
+            HttpURLConnection connection
+    ) {
+
+        String token =
+                SupabaseAuthManager
+                        .getAccessToken(this);
+
+        if (TextUtils.isEmpty(token)) {
+            token =
+                    SupabaseConfig.PUBLISHABLE_KEY;
         }
+
+        connection.setRequestProperty(
+                "apikey",
+                SupabaseConfig.PUBLISHABLE_KEY
+        );
+
+        connection.setRequestProperty(
+                "Authorization",
+                "Bearer " + token
+        );
+
+        connection.setRequestProperty(
+                "Accept",
+                "application/json"
+        );
+    }
+
+    // =========================================================
+    // RESPONSE
+    // =========================================================
+
+    private String readResponse(
+            HttpURLConnection connection,
+            int code
+    ) throws Exception {
+
+        InputStream stream =
+                code >= 200 && code < 400
+                        ? connection.getInputStream()
+                        : connection.getErrorStream();
+
+        if (stream == null) {
+            return "";
+        }
+
+        StringBuilder result =
+                new StringBuilder();
+
+        try (
+                BufferedReader reader =
+                        new BufferedReader(
+                                new InputStreamReader(
+                                        stream,
+                                        StandardCharsets.UTF_8
+                                )
+                        )
+        ) {
+
+            String line;
+
+            while ((line =
+                    reader.readLine()) != null) {
+
+                result.append(line);
+            }
+        }
+
+        return result.toString();
+    }
+
+    // =========================================================
+    // ENCODE
+    // =========================================================
+
+    private String encode(
+            String value
+    ) throws Exception {
+
+        return java.net.URLEncoder.encode(
+                value,
+                StandardCharsets.UTF_8.name()
+        );
+    }
+
+    // =========================================================
+    // TOAST
+    // =========================================================
+
+    private void postToast(
+            String message
+    ) {
+
+        runOnUiThread(() ->
+                Toast.makeText(
+                        UserProfileActivity.this,
+                        message,
+                        Toast.LENGTH_SHORT
+                ).show()
+        );
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        executor.shutdownNow();
+
+        super.onDestroy();
     }
 }
