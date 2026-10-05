@@ -1,16 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFDF7"
-    android:clipToPadding="false"
->
- <LinearLayout android:layout_width="match_parent" android:layout_height="60dp" android:gravity="center_vertical" android:paddingHorizontal="16dp">
-  <TextView android:id="@+id/backButton" android:layout_width="48dp" android:layout_height="48dp" android:gravity="center" android:text="‹" android:textSize="34sp" android:textColor="#3B2117"/>
-  <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Explore" android:textColor="#3B2117" android:textSize="21sp" android:textStyle="bold"/>
- </LinearLayout>
- <EditText android:layout_width="match_parent" android:layout_height="50dp" android:layout_margin="14dp" android:hint="Search categories..." android:singleLine="true" android:paddingHorizontal="16dp" android:background="#FFF3E0"/>
- <GridLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:columnCount="2" android:padding="10dp">
-  <TextView android:id="@+id/categoryCulture" android:layout_width="0dp" android:layout_height="110dp" android:layout_columnWeight="1" android:layout_margin="6dp" android:gravity="center" android:text="🏛️\nCulture" android:textSize="18sp" android:textColor="#3B2117" android:background="#FFE0B2"/>
-  <TextView android:id="@+id/categoryHistory" android:layout_width="0dp" android:layout_height="110dp" android:layout_columnWeight="1" android:layout_margin="6dp" android:gravity="center" android:text="📜\nHistory" android:textSize="18sp" android:textColor="#3B2117" android:background="#FFE0B2"/>
-  <TextView android:id="@+id/categoryKnowledge" android:layout_width="0dp" android:layout_height="110dp" android:layout_columnWeight="1" android:layout_margin="6dp" android:gravity="center" android:text="📖\nKnowledge" android:textSize="18sp" android:textColor="#3B2117" android:background="#FFE0B2"/>
-  <TextView android:id="@+id/categoryFestivals" android:layout_width="0dp" android:layout_height="110dp" android:layout_columnWeight="1" android:layout_margin="6dp" android:gravity="center" android:text="🪔\nFestivals" android:textSize="18sp" android:textColor="#3B2117" android:background="#FFE0B2"/>
- </GridLayout>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFDF7"
+    android:clipToPadding="false">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:id="@+id/backButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="‹"
+            android:textSize="34sp"
+            android:textColor="#3B2117"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Explore"
+            android:textColor="#3B2117"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:paddingStart="8dp" />
+
+    </LinearLayout>
+
+    <!-- Search -->
+    <EditText
+        android:id="@+id/searchInput"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="14dp"
+        android:background="#FFF0DC"
+        android:hint="🔍 Search categories..."
+        android:textColor="#3B2117"
+        android:textColorHint="#8D7568"
+        android:textSize="15sp"
+        android:singleLine="true"
+        android:inputType="text"
+        android:imeOptions="actionSearch"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp" />
+
+    <!-- Section title -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:text="Discover Sanskriti"
+        android:textColor="#3B2117"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Categories -->
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="10dp">
+
+        <!-- Culture -->
+        <TextView
+            android:id="@+id/categoryCulture"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:gravity="center"
+            android:text="🏛️&#10;Culture"
+            android:textColor="#3B2117"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#FFE0B2"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- History -->
+        <TextView
+            android:id="@+id/categoryHistory"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:gravity="center"
+            android:text="📜&#10;History"
+            android:textColor="#3B2117"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#FFE0B2"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- Knowledge -->
+        <TextView
+            android:id="@+id/categoryKnowledge"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:gravity="center"
+            android:text="📖&#10;Knowledge"
+            android:textColor="#3B2117"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#FFE0B2"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- Festivals -->
+        <TextView
+            android:id="@+id/categoryFestivals"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="6dp"
+            android:gravity="center"
+            android:text="🪔&#10;Festivals"
+            android:textColor="#3B2117"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:background="#FFE0B2"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </GridLayout>
+
 </LinearLayout>
