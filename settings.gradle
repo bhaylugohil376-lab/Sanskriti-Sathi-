@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SanskritiSathi"
+rootProject.name = "Sanskriti-Sathi"
 include(":app")
