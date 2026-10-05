@@ -14,54 +14,41 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
-        <!-- Welcome -->
+        <!-- Welcome / Launcher -->
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
         <!-- Main -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-
+        <activity android:name=".MainActivity" android:exported="false" />
         <activity android:name=".ExploreActivity" android:exported="false" />
         <activity android:name=".ProfessionalDashboardActivity" android:exported="false" />
         <activity android:name=".AudioSelectionActivity" android:exported="false" />
         <activity android:name=".FiltersActivity" android:exported="false" />
-        <activity android:name=".SearchActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".SearchActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".NotificationsActivity" android:exported="false" />
 
         <!-- Authentication -->
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ForgotPasswordActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".GoogleAuthActivity"
-            android:exported="false" />
+        <activity android:name=".LoginActivity" android:exported="false" />
+        <activity android:name=".RegisterActivity" android:exported="false" />
+        <activity android:name=".ForgotPasswordActivity" android:exported="false" />
+        <activity android:name=".GoogleAuthActivity" android:exported="false" />
 
         <activity
             android:name=".AuthCallbackActivity"
             android:exported="true">
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -70,75 +57,37 @@
                     android:host="auth"
                     android:path="/callback" />
             </intent-filter>
-
         </activity>
 
         <!-- Profile -->
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".MyProfileActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false" />
+        <activity android:name=".ProfileActivity" android:exported="false" />
+        <activity android:name=".MyProfileActivity" android:exported="false" />
+        <activity android:name=".SettingsActivity" android:exported="false" />
 
         <!-- Raja -->
-        <activity
-            android:name=".RajaActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".RajaDetailActivity"
-            android:exported="false" />
+        <activity android:name=".RajaActivity" android:exported="false" />
+        <activity android:name=".RajaDetailActivity" android:exported="false" />
 
         <!-- Temple -->
-        <activity
-            android:name=".TempleActivity"
-            android:exported="false" />
+        <activity android:name=".TempleActivity" android:exported="false" />
 
         <!-- Bhagavad Gita -->
-        <activity
-            android:name=".GitaActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".GitaDetailActivity"
-            android:exported="false" />
+        <activity android:name=".GitaActivity" android:exported="false" />
+        <activity android:name=".GitaDetailActivity" android:exported="false" />
 
         <!-- Devi Devta -->
-        <activity
-            android:name=".DeviDevtaActivity"
-            android:exported="false" />
+        <activity android:name=".DeviDevtaActivity" android:exported="false" />
 
         <!-- RSS -->
-        <activity
-            android:name=".RssActivity"
-            android:exported="false" />
+        <activity android:name=".RssActivity" android:exported="false" />
 
         <!-- About -->
-        <activity
-            android:name=".AboutActivity"
-            android:exported="false" />
+        <activity android:name=".AboutActivity" android:exported="false" />
 
-        <!-- Culture -->
-
-        <!-- Post -->
+        <!-- Posts -->
         <activity android:name=".PostUploadActivity" android:exported="false" />
 
-        <!-- Search -->
-
-        <!-- Notifications -->
-
-        <!-- Stories -->
-
-        <!-- ================================================= -->
-        <!-- REELS -->
-        <!-- ================================================= -->
-
+        <!-- Reels -->
         <activity
             android:name=".ReelActivity"
             android:exported="false"
