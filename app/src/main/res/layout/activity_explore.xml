@@ -1,232 +1,202 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#FFFDF8"
-    android:fitsSystemWindows="true">
-
-    <!-- TOP BAR -->
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="8dp"
-        android:paddingEnd="16dp"
-        android:background="#FFFFFF"
-        android:elevation="2dp">
-
-        <TextView
-            android:id="@+id/backButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:gravity="center"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:text="‹"
-            android:textColor="#33251F"
-            android:textSize="34sp"/>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Explore"
-            android:textColor="#D86B27"
-            android:textSize="21sp"
-            android:textStyle="bold"/>
-
-        <TextView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:gravity="center"
-            android:text="⌕"
-            android:textColor="#33251F"
-            android:textSize="27sp"/>
-
-    </LinearLayout>
-
-
-    <!-- SEARCH -->
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp"
-        android:background="#FFFFFF"
-        android:elevation="2dp">
-
-        <TextView
-            android:layout_width="32dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="🔍"
-            android:textSize="18sp"/>
-
-        <EditText
-            android:id="@+id/exploreSearchInput"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@null"
-            android:hint="Search Sanskriti..."
-            android:singleLine="true"
-            android:inputType="text"
-            android:textColor="#33251F"
-            android:textColorHint="#9B8175"
-            android:textSize="15sp"/>
-
-    </LinearLayout>
-
-
-    <!-- TITLE -->
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="22dp"
-        android:text="Discover"
-        android:textColor="#33251F"
-        android:textSize="19sp"
-        android:textStyle="bold"/>
-
-
-    <!-- CATEGORIES -->
-
-    <GridLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:columnCount="2"
-        android:padding="10dp">
-
-        <!-- CULTURE -->
-
-        <TextView
-            android:id="@+id/categoryCulture"
-            android:layout_width="0dp"
-            android:layout_height="125dp"
-            android:layout_columnWeight="1"
-            android:layout_margin="6dp"
-            android:gravity="center"
-            android:text="🏛️\n\nCulture"
-            android:textColor="#3B2117"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:background="#FFF0DD"/>
-
-
-        <!-- HISTORY -->
-
-        <TextView
-            android:id="@+id/categoryHistory"
-            android:layout_width="0dp"
-            android:layout_height="125dp"
-            android:layout_columnWeight="1"
-            android:layout_margin="6dp"
-            android:gravity="center"
-            android:text="📜\n\nHistory"
-            android:textColor="#3B2117"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:background="#FFF0DD"/>
-
-
-        <!-- KNOWLEDGE -->
-
-        <TextView
-            android:id="@+id/categoryKnowledge"
-            android:layout_width="0dp"
-            android:layout_height="125dp"
-            android:layout_columnWeight="1"
-            android:layout_margin="6dp"
-            android:gravity="center"
-            android:text="📖\n\nKnowledge"
-            android:textColor="#3B2117"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:background="#FFF0DD"/>
-
-
-        <!-- FESTIVALS -->
-
-        <TextView
-            android:id="@+id/categoryFestivals"
-            android:layout_width="0dp"
-            android:layout_height="125dp"
-            android:layout_columnWeight="1"
-            android:layout_margin="6dp"
-            android:gravity="center"
-            android:text="🪔\n\nFestivals"
-            android:textColor="#3B2117"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:background="#FFF0DD"/>
-
-    </GridLayout>
-
-
-    <!-- EXTRA SECTIONS -->
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="12dp"
-        android:text="More Sanskriti"
-        android:textColor="#33251F"
-        android:textSize="19sp"
-        android:textStyle="bold"/>
+    android:fitsSystemWindows="true"
+    android:fillViewport="true"
+    android:overScrollMode="never">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:paddingBottom="24dp">
+
+        <!-- TOP BAR -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="12dp"
+            android:background="#FFFFFF"
+            android:elevation="3dp">
+
+            <TextView
+                android:id="@+id/backButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="‹"
+                android:textColor="#33251F"
+                android:textSize="34sp"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Explore"
+                android:textColor="#D86B27"
+                android:textSize="21sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:gravity="center"
+                android:text="⌕"
+                android:textColor="#33251F"
+                android:textSize="27sp"/>
+
+        </LinearLayout>
+
+
+        <!-- SEARCH -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="12dp"
+            android:background="#FFFFFF"
+            android:elevation="3dp">
+
+            <TextView
+                android:layout_width="32dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="🔍"
+                android:textSize="18sp"/>
+
+            <EditText
+                android:id="@+id/exploreSearchInput"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="Search Sanskriti..."
+                android:singleLine="true"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:textColor="#33251F"
+                android:textColorHint="#9B8175"
+                android:textSize="15sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"/>
+
+        </LinearLayout>
+
+
+        <!-- DISCOVER -->
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:text="🛕  Temples"
-            android:textColor="#4A2112"
-            android:textSize="15sp"
-            android:background="#FFFFFF"/>
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_marginTop="22dp"
+            android:text="Discover"
+            android:textColor="#33251F"
+            android:textSize="19sp"
+            android:textStyle="bold"/>
+
+
+        <!-- CATEGORY GRID -->
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:padding="10dp">
+
+            <!-- CULTURE -->
+
+            <TextView
+                android:id="@+id/categoryCulture"
+                android:layout_width="0dp"
+                android:layout_height="125dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:text="🏛️&#10;&#10;Culture"
+                android:textColor="#3B2117"
+                android:textSize="17sp"
+                android:textStyle="bold"/>
+
+
+            <!-- HISTORY -->
+
+            <TextView
+                android:id="@+id/categoryHistory"
+                android:layout_width="0dp"
+                android:layout_height="125dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:text="📜&#10;&#10;History"
+                android:textColor="#3B2117"
+                android:textSize="17sp"
+                android:textStyle="bold"/>
+
+
+            <!-- KNOWLEDGE -->
+
+            <TextView
+                android:id="@+id/categoryKnowledge"
+                android:layout_width="0dp"
+                android:layout_height="125dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:text="📖&#10;&#10;Knowledge"
+                android:textColor="#3B2117"
+                android:textSize="17sp"
+                android:textStyle="bold"/>
+
+
+            <!-- FESTIVALS -->
+
+            <TextView
+                android:id="@+id/categoryFestivals"
+                android:layout_width="0dp"
+                android:layout_height="125dp"
+                android:layout_columnWeight="1"
+                android:layout_margin="6dp"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:text="🪔&#10;&#10;Festivals"
+                android:textColor="#3B2117"
+                android:textSize="17sp"
+                android:textStyle="bold"/>
+
+        </GridLayout>
+
+
+        <!-- MORE SANSKRITI -->
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="6dp"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:text="👑  Indian Kings &amp; History"
-            android:textColor="#4A2112"
-            android:textSize="15sp"
-            android:background="#FFFFFF"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="6dp"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:text="🕉️  Bhagavad Gita"
-            android:textColor="#4A2112"
-            android:textSize="15sp"
-            android:background="#FFFFFF"/>
-
-    </LinearLayout>
-
-</LinearLayout>
+            android:layout_height="wrap
