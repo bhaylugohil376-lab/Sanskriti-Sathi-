@@ -5,15 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFDF7"
+    android:background="#FFFDF8"
     android:fitsSystemWindows="true">
 
     <!-- TOP BAR -->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingStart="8dp"
         android:paddingEnd="16dp"
@@ -27,42 +25,38 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Back"
             android:src="@android:drawable/ic_menu_revert"
-            android:tint="#4A2112"/>
+            android:tint="#6D3218"/>
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Search Sanskriti"
-            android:textColor="#4A2112"
+            android:textColor="#D86B27"
             android:textSize="21sp"
-            android:textStyle="bold"
-            android:fontFamily="sans"/>
+            android:textStyle="bold"/>
 
     </LinearLayout>
 
-
     <!-- SEARCH BOX -->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        android:orientation="horizontal"
+        android:layout_marginEnd="16dp"
         android:gravity="center_vertical"
         android:paddingStart="14dp"
         android:paddingEnd="12dp"
-        android:background="@drawable/bg_search_box"
-        android:elevation="2dp">
+        android:background="#FFFFFF"
+        android:elevation="3dp">
 
         <TextView
             android:layout_width="32dp"
             android:layout_height="match_parent"
             android:gravity="center"
             android:text="🔍"
-            android:textSize="18sp"/>
+            android:textSize="19sp"/>
 
         <EditText
             android:id="@+id/searchInput"
@@ -70,7 +64,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="@null"
-            android:hint="Search users..."
+            android:hint="Search users, temples, history..."
             android:singleLine="true"
             android:imeOptions="actionSearch"
             android:inputType="text"
@@ -82,24 +76,20 @@
 
     </LinearLayout>
 
-
     <!-- RESULT TITLE -->
-
     <TextView
         android:id="@+id/searchResultText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
-        android:text="Search users"
-        android:textColor="#8A4B2A"
-        android:textSize="14sp"
+        android:text="Search results"
+        android:textColor="#4A2112"
+        android:textSize="15sp"
         android:textStyle="bold"/>
 
-
     <!-- RESULTS -->
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -113,21 +103,19 @@
             android:clipToPadding="false"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
-            android:paddingBottom="24dp"
-            android:overScrollMode="never"/>
+            android:paddingBottom="24dp"/>
 
         <TextView
             android:id="@+id/searchEmptyText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
             android:gravity="center"
-            android:text="Name ya username search karein."
+            android:text="Name, username ya Sanskriti section search karein."
             android:textColor="#8A6A5A"
-            android:textSize="16sp"
-            android:visibility="visible"/>
+            android:textSize="16sp"/>
 
     </FrameLayout>
 
