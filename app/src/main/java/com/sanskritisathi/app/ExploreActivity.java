@@ -24,13 +24,20 @@ public class ExploreActivity extends AppCompatActivity {
         setupBackButton();
         setupSearch();
         setupCategories();
+        setupMoreSections();
     }
 
     private void initializeViews() {
-        exploreSearchInput = findViewById(R.id.exploreSearchInput);
+        exploreSearchInput =
+                findViewById(R.id.exploreSearchInput);
     }
 
+    // =========================
+    // BACK
+    // =========================
+
     private void setupBackButton() {
+
         View backButton = findViewById(R.id.backButton);
 
         if (backButton != null) {
@@ -38,32 +45,43 @@ public class ExploreActivity extends AppCompatActivity {
         }
     }
 
+    // =========================
+    // SEARCH
+    // =========================
+
     private void setupSearch() {
 
-        if (exploreSearchInput == null) return;
+        if (exploreSearchInput == null) {
+            return;
+        }
 
         exploreSearchInput.setSingleLine(true);
-        exploreSearchInput.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        exploreSearchInput.setImeOptions(
+                EditorInfo.IME_ACTION_SEARCH
+        );
 
         exploreSearchInput.setOnEditorActionListener(
                 (v, actionId, event) -> {
 
-                    String query = exploreSearchInput
-                            .getText()
-                            .toString()
-                            .trim();
+                    String query =
+                            exploreSearchInput
+                                    .getText()
+                                    .toString()
+                                    .trim();
 
                     if (query.isEmpty()) {
+
                         Toast.makeText(
                                 this,
                                 "Search something",
                                 Toast.LENGTH_SHORT
                         ).show();
-                        return true;
-                    }
 
-                    hideKeyboard();
-                    openSearch(query);
+                    } else {
+
+                        hideKeyboard();
+                        openSearch(query);
+                    }
 
                     return true;
                 }
@@ -73,7 +91,10 @@ public class ExploreActivity extends AppCompatActivity {
     private void openSearch(String query) {
 
         Intent intent =
-                new Intent(this, SearchActivity.class);
+                new Intent(
+                        this,
+                        SearchActivity.class
+                );
 
         intent.putExtra(
                 "search_query",
@@ -82,6 +103,10 @@ public class ExploreActivity extends AppCompatActivity {
 
         startActivity(intent);
     }
+
+    // =========================
+    // MAIN CATEGORIES
+    // =========================
 
     private void setupCategories() {
 
@@ -115,11 +140,64 @@ public class ExploreActivity extends AppCompatActivity {
 
         if (view != null) {
 
-            view.setOnClickListener(v ->
-                    openActivity(targetActivity)
+            view.setClickable(true);
+
+            view.setOnClickListener(
+                    v -> openActivity(targetActivity)
             );
         }
     }
+
+    // =========================
+    // MORE SANSKRITI
+    // =========================
+
+    private void setupMoreSections() {
+
+        /*
+         * Ye IDs activity_explore.xml me add karni hongi:
+         *
+         * moreTemples
+         * moreKings
+         * moreGita
+         */
+
+        setupOptionalClick(
+                R.id.moreTemples,
+                TempleActivity.class
+        );
+
+        setupOptionalClick(
+                R.id.moreKings,
+                RajaActivity.class
+        );
+
+        setupOptionalClick(
+                R.id.moreGita,
+                GitaActivity.class
+        );
+    }
+
+    private void setupOptionalClick(
+            int viewId,
+            Class<?> targetActivity
+    ) {
+
+        View view = findViewById(viewId);
+
+        if (view != null) {
+
+            view.setClickable(true);
+
+            view.setOnClickListener(
+                    v -> openActivity(targetActivity)
+            );
+        }
+    }
+
+    // =========================
+    // OPEN ACTIVITY
+    // =========================
 
     private void openActivity(
             Class<?> activityClass
@@ -127,12 +205,13 @@ public class ExploreActivity extends AppCompatActivity {
 
         try {
 
-            startActivity(
+            Intent intent =
                     new Intent(
                             this,
                             activityClass
-                    )
-            );
+                    );
+
+            startActivity(intent);
 
         } catch (Exception e) {
 
@@ -144,9 +223,15 @@ public class ExploreActivity extends AppCompatActivity {
         }
     }
 
+    // =========================
+    // KEYBOARD
+    // =========================
+
     private void hideKeyboard() {
 
-        if (exploreSearchInput == null) return;
+        if (exploreSearchInput == null) {
+            return;
+        }
 
         InputMethodManager imm =
                 (InputMethodManager)
