@@ -1,10 +1,11 @@
 package com.sanskritisathi.app;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.content.Context;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -17,7 +18,6 @@ public class ExploreActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_explore);
 
         initializeViews();
@@ -27,57 +27,43 @@ public class ExploreActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-
-        exploreSearchInput =
-                findViewById(R.id.exploreSearchInput);
+        exploreSearchInput = findViewById(R.id.exploreSearchInput);
     }
 
-    // ---------------------------------------------------------
-    // BACK
-    // ---------------------------------------------------------
-
     private void setupBackButton() {
-
-        View backButton =
-                findViewById(R.id.backButton);
+        View backButton = findViewById(R.id.backButton);
 
         if (backButton != null) {
-
             backButton.setOnClickListener(v -> finish());
         }
     }
 
-    // ---------------------------------------------------------
-    // SEARCH
-    // ---------------------------------------------------------
-
     private void setupSearch() {
 
-        if (exploreSearchInput == null) {
-            return;
-        }
+        if (exploreSearchInput == null) return;
+
+        exploreSearchInput.setSingleLine(true);
+        exploreSearchInput.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
 
         exploreSearchInput.setOnEditorActionListener(
                 (v, actionId, event) -> {
 
-                    String query =
-                            exploreSearchInput
-                                    .getText()
-                                    .toString()
-                                    .trim();
+                    String query = exploreSearchInput
+                            .getText()
+                            .toString()
+                            .trim();
 
                     if (query.isEmpty()) {
-
                         Toast.makeText(
                                 this,
                                 "Search something",
                                 Toast.LENGTH_SHORT
                         ).show();
-
-                    } else {
-
-                        openSearch(query);
+                        return true;
                     }
+
+                    hideKeyboard();
+                    openSearch(query);
 
                     return true;
                 }
@@ -87,10 +73,7 @@ public class ExploreActivity extends AppCompatActivity {
     private void openSearch(String query) {
 
         Intent intent =
-                new Intent(
-                        this,
-                        SearchActivity.class
-                );
+                new Intent(this, SearchActivity.class);
 
         intent.putExtra(
                 "search_query",
@@ -100,67 +83,43 @@ public class ExploreActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // ---------------------------------------------------------
-    // CATEGORIES
-    // ---------------------------------------------------------
-
     private void setupCategories() {
 
-        View culture =
-                findViewById(R.id.categoryCulture);
+        setupCategory(
+                R.id.categoryCulture,
+                TempleActivity.class
+        );
 
-        if (culture != null) {
+        setupCategory(
+                R.id.categoryHistory,
+                RajaActivity.class
+        );
 
-            culture.setOnClickListener(v ->
-                    openActivity(
-                            TempleActivity.class
-                    )
-            );
-        }
+        setupCategory(
+                R.id.categoryKnowledge,
+                GitaActivity.class
+        );
 
+        setupCategory(
+                R.id.categoryFestivals,
+                DeviDevtaActivity.class
+        );
+    }
 
-        View history =
-                findViewById(R.id.categoryHistory);
+    private void setupCategory(
+            int viewId,
+            Class<?> targetActivity
+    ) {
 
-        if (history != null) {
+        View view = findViewById(viewId);
 
-            history.setOnClickListener(v ->
-                    openActivity(
-                            RajaActivity.class
-                    )
-            );
-        }
+        if (view != null) {
 
-
-        View knowledge =
-                findViewById(R.id.categoryKnowledge);
-
-        if (knowledge != null) {
-
-            knowledge.setOnClickListener(v ->
-                    openActivity(
-                            GitaActivity.class
-                    )
-            );
-        }
-
-
-        View festivals =
-                findViewById(R.id.categoryFestivals);
-
-        if (festivals != null) {
-
-            festivals.setOnClickListener(v ->
-                    openActivity(
-                            DeviDevtaActivity.class
-                    )
+            view.setOnClickListener(v ->
+                    openActivity(targetActivity)
             );
         }
     }
-
-    // ---------------------------------------------------------
-    // OPEN ACTIVITY
-    // ---------------------------------------------------------
 
     private void openActivity(
             Class<?> activityClass
@@ -168,13 +127,12 @@ public class ExploreActivity extends AppCompatActivity {
 
         try {
 
-            Intent intent =
+            startActivity(
                     new Intent(
                             this,
                             activityClass
-                    );
-
-            startActivity(intent);
+                    )
+            );
 
         } catch (Exception e) {
 
@@ -186,15 +144,9 @@ public class ExploreActivity extends AppCompatActivity {
         }
     }
 
-    // ---------------------------------------------------------
-    // KEYBOARD
-    // ---------------------------------------------------------
-
     private void hideKeyboard() {
 
-        if (exploreSearchInput == null) {
-            return;
-        }
+        if (exploreSearchInput == null) return;
 
         InputMethodManager imm =
                 (InputMethodManager)
@@ -211,15 +163,9 @@ public class ExploreActivity extends AppCompatActivity {
         }
     }
 
-    // ---------------------------------------------------------
-    // LIFECYCLE
-    // ---------------------------------------------------------
-
     @Override
     protected void onPause() {
-
         hideKeyboard();
-
         super.onPause();
     }
 }
