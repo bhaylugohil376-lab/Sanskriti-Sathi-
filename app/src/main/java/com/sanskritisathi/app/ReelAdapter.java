@@ -45,13 +45,17 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
         void onDeleteClicked(Reel reel, int position);
     }
 
-    public ReelAdapter(Context context, ReelInteractionListener listener) {
+    public ReelAdapter(
+            Context context,
+            ReelInteractionListener listener
+    ) {
         this.context = context;
         this.interactionListener = listener;
         setHasStableIds(true);
     }
 
     public void setReels(List<Reel> reels) {
+
         releaseVisiblePlayers();
 
         reelList.clear();
@@ -64,6 +68,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
     }
 
     public void removeReel(int position) {
+
         if (position < 0 || position >= reelList.size()) {
             return;
         }
@@ -74,6 +79,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
     @Override
     public long getItemId(int position) {
+
         if (position < 0 || position >= reelList.size()) {
             return RecyclerView.NO_ID;
         }
@@ -89,7 +95,8 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
     @Override
     public ReelViewHolder onCreateViewHolder(
             @NonNull ViewGroup parent,
-            int viewType) {
+            int viewType
+    ) {
 
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_reel, parent, false);
@@ -100,7 +107,8 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
     @Override
     public void onBindViewHolder(
             @NonNull ReelViewHolder holder,
-            int position) {
+            int position
+    ) {
 
         holder.bind(
                 reelList.get(position),
@@ -110,14 +118,16 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
     @Override
     public void onViewAttachedToWindow(
-            @NonNull ReelViewHolder holder) {
+            @NonNull ReelViewHolder holder
+    ) {
 
         super.onViewAttachedToWindow(holder);
     }
 
     @Override
     public void onViewDetachedFromWindow(
-            @NonNull ReelViewHolder holder) {
+            @NonNull ReelViewHolder holder
+    ) {
 
         holder.pausePlayer();
 
@@ -126,7 +136,8 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
     @Override
     public void onViewRecycled(
-            @NonNull ReelViewHolder holder) {
+            @NonNull ReelViewHolder holder
+    ) {
 
         holder.releasePlayer();
 
@@ -145,8 +156,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
         }
 
         RecyclerView rv =
-                ((ReelActivity) context)
-                        .getReelRecyclerView();
+                ((ReelActivity) context).getReelRecyclerView();
 
         if (rv == null) {
             return;
@@ -161,8 +171,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
             if (holder instanceof ReelViewHolder) {
 
-                ((ReelViewHolder) holder)
-                        .releasePlayer();
+                ((ReelViewHolder) holder).releasePlayer();
             }
         }
     }
@@ -189,69 +198,46 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
         private String preparedUrl;
 
         public ReelViewHolder(
-                @NonNull View itemView) {
+                @NonNull View itemView
+        ) {
 
             super(itemView);
 
             playerView =
-                    itemView.findViewById(
-                            R.id.playerView
-                    );
+                    itemView.findViewById(R.id.playerView);
 
             tvCaption =
-                    itemView.findViewById(
-                            R.id.tvCaption
-                    );
+                    itemView.findViewById(R.id.tvCaption);
 
             tvUsername =
-                    itemView.findViewById(
-                            R.id.tvUsername
-                    );
+                    itemView.findViewById(R.id.tvUsername);
 
             tvLikesCount =
-                    itemView.findViewById(
-                            R.id.tvLikesCount
-                    );
+                    itemView.findViewById(R.id.tvLikesCount);
 
             tvCommentsCount =
-                    itemView.findViewById(
-                            R.id.tvCommentsCount
-                    );
+                    itemView.findViewById(R.id.tvCommentsCount);
 
             tvViewsCount =
-                    itemView.findViewById(
-                            R.id.tvViewsCount
-                    );
+                    itemView.findViewById(R.id.tvViewsCount);
 
             tvErrorText =
-                    itemView.findViewById(
-                            R.id.tvErrorText
-                    );
+                    itemView.findViewById(R.id.tvErrorText);
 
             playbackProgress =
-                    itemView.findViewById(
-                            R.id.playbackProgress
-                    );
+                    itemView.findViewById(R.id.playbackProgress);
 
             btnLike =
-                    itemView.findViewById(
-                            R.id.btnLike
-                    );
+                    itemView.findViewById(R.id.btnLike);
 
             btnComment =
-                    itemView.findViewById(
-                            R.id.btnComment
-                    );
+                    itemView.findViewById(R.id.btnComment);
 
             btnShare =
-                    itemView.findViewById(
-                            R.id.btnShare
-                    );
+                    itemView.findViewById(R.id.btnShare);
 
             btnDelete =
-                    itemView.findViewById(
-                            R.id.btnDelete
-                    );
+                    itemView.findViewById(R.id.btnDelete);
 
             playerView.setShutterBackgroundColor(
                     Color.TRANSPARENT
@@ -272,7 +258,8 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
         public void bind(
                 Reel reel,
-                ReelInteractionListener listener) {
+                ReelInteractionListener listener
+        ) {
 
             releasePlayer();
 
@@ -284,9 +271,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
             }
 
             tvUsername.setText(
-                    TextUtils.isEmpty(
-                            reel.getUsername()
-                    )
+                    TextUtils.isEmpty(reel.getUsername())
                             ? "Sanskriti User"
                             : reel.getUsername()
             );
@@ -299,28 +284,19 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
             tvLikesCount.setText(
                     String.valueOf(
-                            Math.max(
-                                    0,
-                                    reel.getLikes()
-                            )
+                            Math.max(0, reel.getLikes())
                     )
             );
 
             tvCommentsCount.setText(
                     String.valueOf(
-                            Math.max(
-                                    0,
-                                    reel.getComments()
-                            )
+                            Math.max(0, reel.getComments())
                     )
             );
 
             tvViewsCount.setText(
                     String.valueOf(
-                            Math.max(
-                                    0,
-                                    reel.getViews()
-                            )
+                            Math.max(0, reel.getViews())
                     )
             );
 
@@ -330,73 +306,53 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
                             : View.GONE
             );
 
-            tvErrorText.setVisibility(
-                    View.GONE
-            );
+            tvErrorText.setVisibility(View.GONE);
 
-            playbackProgress.setVisibility(
-                    View.GONE
-            );
+            playbackProgress.setVisibility(View.GONE);
 
             updateLikeIcon();
 
             btnLike.setOnClickListener(v -> {
 
-                int p =
-                        getBindingAdapterPosition();
+                int p = getBindingAdapterPosition();
 
                 if (listener != null
                         && p != RecyclerView.NO_POSITION) {
 
-                    listener.onLikeClicked(
-                            reel,
-                            p
-                    );
+                    listener.onLikeClicked(reel, p);
                 }
             });
 
             btnComment.setOnClickListener(v -> {
 
-                int p =
-                        getBindingAdapterPosition();
+                int p = getBindingAdapterPosition();
 
                 if (listener != null
                         && p != RecyclerView.NO_POSITION) {
 
-                    listener.onCommentClicked(
-                            reel,
-                            p
-                    );
+                    listener.onCommentClicked(reel, p);
                 }
             });
 
             btnShare.setOnClickListener(v -> {
 
-                int p =
-                        getBindingAdapterPosition();
+                int p = getBindingAdapterPosition();
 
                 if (listener != null
                         && p != RecyclerView.NO_POSITION) {
 
-                    listener.onShareClicked(
-                            reel,
-                            p
-                    );
+                    listener.onShareClicked(reel, p);
                 }
             });
 
             btnDelete.setOnClickListener(v -> {
 
-                int p =
-                        getBindingAdapterPosition();
+                int p = getBindingAdapterPosition();
 
                 if (listener != null
                         && p != RecyclerView.NO_POSITION) {
 
-                    listener.onDeleteClicked(
-                            reel,
-                            p
-                    );
+                    listener.onDeleteClicked(reel, p);
                 }
             });
 
@@ -443,8 +399,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
                 return;
             }
 
-            Context ctx =
-                    itemView.getContext();
+            Context ctx = itemView.getContext();
 
             Map<String, String> headers =
                     new HashMap<>();
@@ -455,8 +410,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
             );
 
             String token =
-                    SupabaseAuthManager
-                            .getAccessToken(ctx);
+                    SupabaseAuthManager.getAccessToken(ctx);
 
             if (!TextUtils.isEmpty(token)) {
 
@@ -471,9 +425,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
                             .setConnectTimeoutMs(30000)
                             .setReadTimeoutMs(30000)
                             .setAllowCrossProtocolRedirects(true)
-                            .setDefaultRequestProperties(
-                                    headers
-                            );
+                            .setDefaultRequestProperties(headers);
 
             DefaultDataSource.Factory dataSourceFactory =
                     new DefaultDataSource.Factory(
@@ -501,67 +453,61 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
                         @Override
                         public void onPlaybackStateChanged(
-                                int state) {
+                                int state
+                        ) {
 
                             if (state ==
                                     Player.STATE_BUFFERING) {
 
-                                playbackProgress
-                                        .setVisibility(
-                                                View.VISIBLE
-                                        );
+                                playbackProgress.setVisibility(
+                                        View.VISIBLE
+                                );
 
                             } else if (state ==
                                     Player.STATE_READY) {
 
-                                playbackProgress
-                                        .setVisibility(
-                                                View.GONE
-                                        );
+                                playbackProgress.setVisibility(
+                                        View.GONE
+                                );
 
-                                tvErrorText
-                                        .setVisibility(
-                                                View.GONE
-                                        );
+                                tvErrorText.setVisibility(
+                                        View.GONE
+                                );
 
                             } else if (state ==
                                     Player.STATE_ENDED) {
 
-                                playbackProgress
-                                        .setVisibility(
-                                                View.GONE
-                                        );
+                                playbackProgress.setVisibility(
+                                        View.GONE
+                                );
                             }
                         }
 
                         @Override
                         public void onRenderedFirstFrame() {
 
-                            playbackProgress
-                                    .setVisibility(
-                                            View.GONE
-                                    );
+                            playbackProgress.setVisibility(
+                                    View.GONE
+                            );
 
-                            tvErrorText
-                                    .setVisibility(
-                                            View.GONE
-                                    );
+                            tvErrorText.setVisibility(
+                                    View.GONE
+                            );
                         }
 
                         @Override
                         public void onPlayerError(
-                                @NonNull PlaybackException error) {
+                                @NonNull PlaybackException error
+                        ) {
 
-                            playbackProgress
-                                    .setVisibility(
-                                            View.GONE
-                                    );
+                            playbackProgress.setVisibility(
+                                    View.GONE
+                            );
 
                             String url =
                                     currentReel == null
                                             ? ""
-                                            : currentReel
-                                                    .getVideoUrl();
+                                            : currentReel.getVideoUrl();
 
                             Log.e(
                                     TAG,
@@ -593,15 +539,11 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
             final String url =
                     currentReel.getVideoUrl() == null
                             ? ""
-                            : currentReel
-                                    .getVideoUrl()
-                                    .trim();
+                            : currentReel.getVideoUrl().trim();
 
             if (TextUtils.isEmpty(url)) {
 
-                showError(
-                        "Video URL missing"
-                );
+                showError("Video URL missing");
 
                 return;
             }
@@ -619,9 +561,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
             if (url.startsWith("b2://")) {
 
                 final String fileName =
-                        url.substring(
-                                "b2://".length()
-                        );
+                        url.substring("b2://".length());
 
                 B2MediaHelper.resolveUrl(
                         itemView.getContext(),
@@ -630,12 +570,12 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
                             @Override
                             public void onSuccess(
-                                    String resolvedUrl) {
+                                    String resolvedUrl
+                            ) {
 
                                 if (currentReel == null
                                         || !url.equals(
-                                        currentReel
-                                                .getVideoUrl()
+                                        currentReel.getVideoUrl()
                                 )) {
 
                                     return;
@@ -644,19 +584,18 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
                                 prepareResolvedUrl(
                                         resolvedUrl == null
                                                 ? ""
-                                                : resolvedUrl
-                                                .trim()
+                                                : resolvedUrl.trim()
                                 );
                             }
 
                             @Override
                             public void onError(
-                                    String message) {
+                                    String message
+                            ) {
 
-                                playbackProgress
-                                        .setVisibility(
-                                                View.GONE
-                                        );
+                                playbackProgress.setVisibility(
+                                        View.GONE
+                                );
 
                                 showError(message);
                             }
@@ -669,10 +608,9 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
             String playbackUrl = url;
 
             String token =
-                    SupabaseAuthManager
-                            .getAccessToken(
-                                    itemView.getContext()
-                            );
+                    SupabaseAuthManager.getAccessToken(
+                            itemView.getContext()
+                    );
 
             if (!TextUtils.isEmpty(token)
                     && playbackUrl.contains(
@@ -686,19 +624,16 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
                         );
             }
 
-            prepareResolvedUrl(
-                    playbackUrl
-            );
+            prepareResolvedUrl(playbackUrl);
         }
 
         @OptIn(markerClass = UnstableApi.class)
         private void prepareResolvedUrl(
-                String playbackUrl) {
+                String playbackUrl
+        ) {
 
             if (player == null
-                    || TextUtils.isEmpty(
-                    playbackUrl
-            )) {
+                    || TextUtils.isEmpty(playbackUrl)) {
 
                 playbackProgress.setVisibility(
                         View.GONE
@@ -711,12 +646,9 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
                 return;
             }
 
-            if (!playbackUrl.equals(
-                    preparedUrl
-            )) {
+            if (!playbackUrl.equals(preparedUrl)) {
 
-                preparedUrl =
-                        playbackUrl;
+                preparedUrl = playbackUrl;
 
                 playbackProgress.setVisibility(
                         View.VISIBLE
@@ -728,19 +660,14 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
                 player.setMediaItem(
                         MediaItem.fromUri(
-                                Uri.parse(
-                                        playbackUrl
-                                )
+                                Uri.parse(playbackUrl)
                         )
                 );
 
                 player.prepare();
             }
 
-            player.setPlayWhenReady(
-                    true
-            );
-
+            player.setPlayWhenReady(true);
             player.play();
         }
 
@@ -748,10 +675,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
             if (player != null) {
 
-                player.setPlayWhenReady(
-                        false
-                );
-
+                player.setPlayWhenReady(false);
                 player.pause();
             }
         }
@@ -764,9 +688,7 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
 
             if (player != null) {
 
-                playerView.setPlayer(
-                        null
-                );
+                playerView.setPlayer(null);
 
                 player.release();
 
@@ -777,13 +699,12 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
         }
 
         private void showError(
-                String message) {
+                String message
+        ) {
 
             if (tvErrorText != null) {
 
-                tvErrorText.setText(
-                        message
-                );
+                tvErrorText.setText(message);
 
                 tvErrorText.setVisibility(
                         View.VISIBLE
@@ -792,7 +713,3 @@ public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder
         }
     }
 }
-
-अब "ReelAdapter.java" में "error.errorCodeName" की जगह दोनों जगह "error.errorCode" है।
-
-Ab "gradle assembleDebug --stacktrace" फिर run karo.
