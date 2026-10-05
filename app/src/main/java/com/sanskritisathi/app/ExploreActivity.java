@@ -28,16 +28,11 @@ public class ExploreActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        exploreSearchInput =
-                findViewById(R.id.exploreSearchInput);
+        exploreSearchInput = findViewById(R.id.exploreSearchInput);
     }
 
-    // =========================
     // BACK
-    // =========================
-
     private void setupBackButton() {
-
         View backButton = findViewById(R.id.backButton);
 
         if (backButton != null) {
@@ -45,15 +40,10 @@ public class ExploreActivity extends AppCompatActivity {
         }
     }
 
-    // =========================
     // SEARCH
-    // =========================
-
     private void setupSearch() {
 
-        if (exploreSearchInput == null) {
-            return;
-        }
+        if (exploreSearchInput == null) return;
 
         exploreSearchInput.setSingleLine(true);
         exploreSearchInput.setImeOptions(
@@ -63,38 +53,41 @@ public class ExploreActivity extends AppCompatActivity {
         exploreSearchInput.setOnEditorActionListener(
                 (v, actionId, event) -> {
 
-                    String query =
-                            exploreSearchInput
-                                    .getText()
-                                    .toString()
-                                    .trim();
+                    if (actionId == EditorInfo.IME_ACTION_SEARCH) {
 
-                    if (query.isEmpty()) {
+                        String query = exploreSearchInput
+                                .getText()
+                                .toString()
+                                .trim();
 
-                        Toast.makeText(
-                                this,
-                                "Search something",
-                                Toast.LENGTH_SHORT
-                        ).show();
+                        if (query.isEmpty()) {
 
-                    } else {
+                            Toast.makeText(
+                                    this,
+                                    "Search something",
+                                    Toast.LENGTH_SHORT
+                            ).show();
 
-                        hideKeyboard();
-                        openSearch(query);
+                        } else {
+
+                            hideKeyboard();
+                            openSearch(query);
+                        }
+
+                        return true;
                     }
 
-                    return true;
+                    return false;
                 }
         );
     }
 
     private void openSearch(String query) {
 
-        Intent intent =
-                new Intent(
-                        this,
-                        SearchActivity.class
-                );
+        Intent intent = new Intent(
+                this,
+                SearchActivity.class
+        );
 
         intent.putExtra(
                 "search_query",
@@ -104,10 +97,7 @@ public class ExploreActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // =========================
     // MAIN CATEGORIES
-    // =========================
-
     private void setupCategories() {
 
         setupCategory(
@@ -148,19 +138,8 @@ public class ExploreActivity extends AppCompatActivity {
         }
     }
 
-    // =========================
     // MORE SANSKRITI
-    // =========================
-
     private void setupMoreSections() {
-
-        /*
-         * Ye IDs activity_explore.xml me add karni hongi:
-         *
-         * moreTemples
-         * moreKings
-         * moreGita
-         */
 
         setupOptionalClick(
                 R.id.moreTemples,
@@ -189,29 +168,27 @@ public class ExploreActivity extends AppCompatActivity {
 
             view.setClickable(true);
 
+            view.setFocusable(true);
+
             view.setOnClickListener(
                     v -> openActivity(targetActivity)
             );
         }
     }
 
-    // =========================
-    // OPEN ACTIVITY
-    // =========================
-
+    // OPEN SECTION
     private void openActivity(
             Class<?> activityClass
     ) {
 
         try {
 
-            Intent intent =
+            startActivity(
                     new Intent(
                             this,
                             activityClass
-                    );
-
-            startActivity(intent);
+                    )
+            );
 
         } catch (Exception e) {
 
@@ -223,15 +200,10 @@ public class ExploreActivity extends AppCompatActivity {
         }
     }
 
-    // =========================
     // KEYBOARD
-    // =========================
-
     private void hideKeyboard() {
 
-        if (exploreSearchInput == null) {
-            return;
-        }
+        if (exploreSearchInput == null) return;
 
         InputMethodManager imm =
                 (InputMethodManager)
