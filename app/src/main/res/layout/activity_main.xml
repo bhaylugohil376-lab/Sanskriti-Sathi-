@@ -4,40 +4,36 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDF7"
-    android:fitsSystemWindows="true"
-    android:clipToPadding="false"
->
+    android:background="#FFFDF8"
+    android:fitsSystemWindows="true">
 
-    <!-- =========================
-         TOP BAR
-         ========================= -->
+    <!-- ================= TOP BAR ================= -->
 
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="58dp"
+        android:layout_height="60dp"
         android:layout_alignParentTop="true"
         android:background="#FFFFFF"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp">
+        android:elevation="2dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp">
 
         <!-- CREATE -->
 
         <TextView
             android:id="@+id/createTopButton"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:paddingStart="4dp"
-            android:paddingEnd="12dp"
             android:text="+"
-            android:textColor="#3B2117"
-            android:textSize="28sp"
+            android:textColor="#2F211B"
+            android:textSize="30sp"
             android:textStyle="normal" />
 
         <!-- APP NAME -->
@@ -49,7 +45,7 @@
             android:layout_centerInParent="true"
             android:gravity="center"
             android:text="Sanskriti Sathi"
-            android:textColor="#D96B27"
+            android:textColor="#D86B27"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -57,25 +53,22 @@
 
         <TextView
             android:id="@+id/notificationButton"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:paddingStart="12dp"
-            android:paddingEnd="4dp"
             android:text="♡"
-            android:textColor="#3B2117"
-            android:textSize="30sp" />
+            android:textColor="#2F211B"
+            android:textSize="29sp" />
 
     </RelativeLayout>
 
 
-    <!-- =========================
-         CONTENT
-         ========================= -->
+    <!-- ================= MAIN CONTENT ================= -->
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/mainScrollView"
@@ -84,59 +77,55 @@
         android:layout_above="@id/bottomNavigation"
         android:layout_below="@id/topBar"
         android:fillViewport="true"
-        android:overScrollMode="never">
+        android:overScrollMode="never"
+        android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="4dp"
-            android:paddingBottom="12dp">
+            android:orientation="vertical">
 
-
-            <!-- =========================
-                 STORIES
-                 ========================= -->
+            <!-- ================= STORIES ================= -->
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="112dp"
+                android:background="#FFFFFF"
                 android:overScrollMode="never"
                 android:scrollbars="none">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp">
-
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp">
 
                     <!-- YOUR STORY -->
 
                     <LinearLayout
                         android:id="@+id/yourStoryButton"
-                        android:layout_width="74dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:background="?attr/selectableItemBackground"
+                        android:layout_width="78dp"
+                        android:layout_height="match_parent"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="62dp"
-                            android:layout_height="62dp"
-                            android:background="#FFF3E0">
+                            android:layout_width="66dp"
+                            android:layout_height="66dp"
+                            android:background="@drawable/bg_story_circle">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
                                 android:text="+"
-                                android:textColor="#3B2117"
-                                android:textSize="25sp" />
+                                android:textColor="#D86B27"
+                                android:textSize="28sp"
+                                android:textStyle="bold" />
 
                         </FrameLayout>
 
@@ -145,8 +134,9 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Your Story"
-                            android:textColor="#3B2117"
-                            android:textSize="11sp" />
+                            android:textColor="#33251F"
+                            android:textSize="11sp"
+                            android:maxLines="1" />
 
                     </LinearLayout>
 
@@ -155,27 +145,25 @@
 
                     <LinearLayout
                         android:id="@+id/templeStoryButton"
-                        android:layout_width="74dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:background="?attr/selectableItemBackground"
+                        android:layout_width="78dp"
+                        android:layout_height="match_parent"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="62dp"
-                            android:layout_height="62dp"
-                            android:background="#FFF3E0">
+                            android:layout_width="66dp"
+                            android:layout_height="66dp"
+                            android:background="@drawable/bg_story_circle">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
-                                android:text="T"
-                                android:textColor="#D96B27"
-                                android:textSize="20sp"
+                                android:text="ॐ"
+                                android:textColor="#D86B27"
+                                android:textSize="25sp"
                                 android:textStyle="bold" />
 
                         </FrameLayout>
@@ -185,8 +173,9 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Temples"
-                            android:textColor="#3B2117"
-                            android:textSize="11sp" />
+                            android:textColor="#33251F"
+                            android:textSize="11sp"
+                            android:maxLines="1" />
 
                     </LinearLayout>
 
@@ -195,28 +184,24 @@
 
                     <LinearLayout
                         android:id="@+id/rajaStoryButton"
-                        android:layout_width="74dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:background="?attr/selectableItemBackground"
+                        android:layout_width="78dp"
+                        android:layout_height="match_parent"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="62dp"
-                            android:layout_height="62dp"
-                            android:background="#FFF3E0">
+                            android:layout_width="66dp"
+                            android:layout_height="66dp"
+                            android:background="@drawable/bg_story_circle">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
-                                android:text="R"
-                                android:textColor="#D96B27"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:text="👑"
+                                android:textSize="24sp" />
 
                         </FrameLayout>
 
@@ -225,8 +210,9 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Raja"
-                            android:textColor="#3B2117"
-                            android:textSize="11sp" />
+                            android:textColor="#33251F"
+                            android:textSize="11sp"
+                            android:maxLines="1" />
 
                     </LinearLayout>
 
@@ -235,28 +221,24 @@
 
                     <LinearLayout
                         android:id="@+id/deviStoryButton"
-                        android:layout_width="74dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:background="?attr/selectableItemBackground"
+                        android:layout_width="78dp"
+                        android:layout_height="match_parent"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="62dp"
-                            android:layout_height="62dp"
-                            android:background="#FFF3E0">
+                            android:layout_width="66dp"
+                            android:layout_height="66dp"
+                            android:background="@drawable/bg_story_circle">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
-                                android:text="D"
-                                android:textColor="#D96B27"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:text="🪔"
+                                android:textSize="24sp" />
 
                         </FrameLayout>
 
@@ -265,8 +247,9 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Devi Devta"
-                            android:textColor="#3B2117"
-                            android:textSize="11sp" />
+                            android:textColor="#33251F"
+                            android:textSize="11sp"
+                            android:maxLines="1" />
 
                     </LinearLayout>
 
@@ -275,27 +258,24 @@
 
                     <LinearLayout
                         android:id="@+id/gitaStoryButton"
-                        android:layout_width="74dp"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
+                        android:layout_width="78dp"
+                        android:layout_height="match_parent"
                         android:clickable="true"
                         android:focusable="true"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <FrameLayout
-                            android:layout_width="62dp"
-                            android:layout_height="62dp"
-                            android:background="#FFF3E0">
+                            android:layout_width="66dp"
+                            android:layout_height="66dp"
+                            android:background="@drawable/bg_story_circle">
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:gravity="center"
-                                android:text="G"
-                                android:textColor="#D96B27"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
+                                android:text="📖"
+                                android:textSize="24sp" />
 
                         </FrameLayout>
 
@@ -304,8 +284,9 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="5dp"
                             android:text="Gita"
-                            android:textColor="#3B2117"
-                            android:textSize="11sp" />
+                            android:textColor="#33251F"
+                            android:textSize="11sp"
+                            android:maxLines="1" />
 
                     </LinearLayout>
 
@@ -314,38 +295,33 @@
             </HorizontalScrollView>
 
 
-            <!-- =========================
-                 HOME FEED
-                 ========================= -->
+            <!-- ================= FEED ================= -->
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/homeFeedRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="4dp"
                 android:nestedScrollingEnabled="false"
-                android:overScrollMode="never" />
+                android:overScrollMode="never"
+                android:scrollbars="none" />
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
 
-    <!-- =========================
-         BOTTOM NAVIGATION
-         ========================= -->
+    <!-- ================= BOTTOM NAVIGATION ================= -->
 
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="62dp"
+        android:layout_height="64dp"
         android:layout_alignParentBottom="true"
         android:background="#FFFFFF"
+        android:elevation="8dp"
         android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp">
-
+        android:orientation="horizontal">
 
         <!-- HOME -->
 
@@ -358,11 +334,10 @@
             android:clickable="true"
             android:contentDescription="Home"
             android:focusable="true"
-            android:padding="15dp"
+            android:padding="16dp"
             android:src="@drawable/ic_home" />
 
-
-        <!-- SEARCH -->
+        <!-- EXPLORE -->
 
         <ImageView
             android:id="@+id/exploreNavButton"
@@ -371,11 +346,10 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="Search"
+            android:contentDescription="Explore"
             android:focusable="true"
-            android:padding="15dp"
+            android:padding="16dp"
             android:src="@drawable/ic_explore" />
-
 
         <!-- REELS -->
 
@@ -388,11 +362,10 @@
             android:clickable="true"
             android:contentDescription="Reels"
             android:focusable="true"
-            android:padding="15dp"
+            android:padding="16dp"
             android:src="@drawable/ic_reels" />
 
-
-        <!-- CHAT -->
+        <!-- MESSAGES -->
 
         <ImageView
             android:id="@+id/chatNavButton"
@@ -401,11 +374,10 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="Chat"
+            android:contentDescription="Messages"
             android:focusable="true"
-            android:padding="15dp"
+            android:padding="16dp"
             android:src="@drawable/ic_chat" />
-
 
         <!-- PROFILE -->
 
@@ -418,7 +390,7 @@
             android:clickable="true"
             android:contentDescription="Profile"
             android:focusable="true"
-            android:padding="15dp"
+            android:padding="16dp"
             android:src="@drawable/ic_profile" />
 
     </LinearLayout>
