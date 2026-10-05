@@ -2,20 +2,26 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Internet / Supabase -->
+    <!-- ========================= -->
+    <!-- INTERNET / BACKEND -->
+    <!-- ========================= -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- Camera -->
+    <!-- ========================= -->
+    <!-- CAMERA / VIDEO -->
+    <!-- ========================= -->
     <uses-permission android:name="android.permission.CAMERA" />
-
-    <!-- Microphone for Reel/Story video recording -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- Android 13+ media access -->
+    <!-- ========================= -->
+    <!-- MEDIA - ANDROID 13+ -->
+    <!-- ========================= -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
-    <!-- Android 12 and below -->
+    <!-- ========================= -->
+    <!-- MEDIA - ANDROID 12 AND BELOW -->
+    <!-- ========================= -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -25,85 +31,76 @@
         android:hardwareAccelerated="true"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Sanskriti Sathi"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="Sanskriti Sathi"
         android:supportsRtl="true"
         android:theme="@style/Theme.SanskritiSathi">
 
-        <!-- Welcome / Launcher -->
+        <!-- ========================= -->
+        <!-- WELCOME / LAUNCHER -->
+        <!-- ========================= -->
         <activity
             android:name=".WelcomeActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
 
-        <!-- Main -->
-        <activity android:name=".MainActivity" android:exported="false" />
-        <activity android:name=".ExploreActivity" android:exported="false" />
-        <activity android:name=".ProfessionalDashboardActivity" android:exported="false" />
-        <activity android:name=".AudioSelectionActivity" android:exported="false" />
-        <activity android:name=".FiltersActivity" android:exported="false" />
+        <!-- ========================= -->
+        <!-- MAIN / HOME -->
+        <!-- ========================= -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ExploreActivity"
+            android:exported="false" />
 
         <activity
             android:name=".SearchActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <activity android:name=".NotificationsActivity" android:exported="false" />
+        <activity
+            android:name=".NotificationsActivity"
+            android:exported="false" />
 
-        <!-- Authentication -->
-        <activity android:name=".LoginActivity" android:exported="false" />
-        <activity android:name=".RegisterActivity" android:exported="false" />
-        <activity android:name=".ForgotPasswordActivity" android:exported="false" />
-        <activity android:name=".GoogleAuthActivity" android:exported="false" />
+        <!-- ========================= -->
+        <!-- CREATE / POST -->
+        <!-- ========================= -->
+        <activity
+            android:name=".PostUploadActivity"
+            android:exported="false" />
 
         <activity
-            android:name=".AuthCallbackActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+            android:name=".AudioSelectionActivity"
+            android:exported="false" />
 
-                <data
-                    android:scheme="sanskritisathi"
-                    android:host="auth"
-                    android:path="/callback" />
-            </intent-filter>
-        </activity>
+        <activity
+            android:name=".FiltersActivity"
+            android:exported="false" />
 
-        <!-- Profile -->
-        <activity android:name=".ProfileActivity" android:exported="false" />
-        <activity android:name=".MyProfileActivity" android:exported="false" />
-        <activity android:name=".SettingsActivity" android:exported="false" />
+        <!-- ========================= -->
+        <!-- STORIES -->
+        <!-- ========================= -->
+        <activity
+            android:name=".StoryActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
-        <!-- Raja -->
-        <activity android:name=".RajaActivity" android:exported="false" />
-        <activity android:name=".RajaDetailActivity" android:exported="false" />
+        <activity
+            android:name=".StoryUploadActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
-        <!-- Temple -->
-        <activity android:name=".TempleActivity" android:exported="false" />
-
-        <!-- Bhagavad Gita -->
-        <activity android:name=".GitaActivity" android:exported="false" />
-        <activity android:name=".GitaDetailActivity" android:exported="false" />
-
-        <!-- Devi Devta -->
-        <activity android:name=".DeviDevtaActivity" android:exported="false" />
-
-        <!-- RSS -->
-        <activity android:name=".RssActivity" android:exported="false" />
-
-        <!-- About -->
-        <activity android:name=".AboutActivity" android:exported="false" />
-
-        <!-- Posts -->
-        <activity android:name=".PostUploadActivity" android:exported="false" />
-
-        <!-- Reels -->
+        <!-- ========================= -->
+        <!-- REELS -->
+        <!-- ========================= -->
         <activity
             android:name=".ReelActivity"
             android:exported="false"
@@ -134,7 +131,116 @@
             android:exported="false"
             android:screenOrientation="portrait" />
 
-        <!-- Chat -->
+        <!-- ========================= -->
+        <!-- AUTHENTICATION -->
+        <!-- ========================= -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ForgotPasswordActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".GoogleAuthActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AuthCallbackActivity"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="sanskritisathi"
+                    android:host="auth"
+                    android:path="/callback" />
+
+            </intent-filter>
+
+        </activity>
+
+        <!-- ========================= -->
+        <!-- PROFILE -->
+        <!-- ========================= -->
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MyProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".UserProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProfessionalDashboardActivity"
+            android:exported="false" />
+
+        <!-- ========================= -->
+        <!-- CULTURE / KNOWLEDGE -->
+        <!-- ========================= -->
+        <activity
+            android:name=".CultureActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RajaActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RajaDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".TempleActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".GitaActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".GitaDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".DeviDevtaActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RssActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
+
+        <!-- ========================= -->
+        <!-- COMMENTS -->
+        <!-- ========================= -->
+        <activity
+            android:name=".PostCommentsActivity"
+            android:exported="false" />
+
+        <!-- ========================= -->
+        <!-- CHAT / MESSAGES -->
+        <!-- ========================= -->
         <activity
             android:name=".ChatActivity"
             android:exported="false"
@@ -142,6 +248,11 @@
 
         <activity
             android:name=".OneToOneChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".GroupChatActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
