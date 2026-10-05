@@ -1,7 +1,6 @@
 package com.sanskritisathi.app;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -17,17 +16,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-/**
- * Sanskriti Sathi main shell.
- *
- * Home
- * Explore
- * Reels
- * Messages
- * Notifications
- * Profile
- * Create / Camera
- */
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView homeFeedRecyclerView;
@@ -38,36 +26,29 @@ public class MainActivity extends AppCompatActivity {
     private static final String THEME_KEY =
             "dark_mode";
 
-    /*
-     * Camera permission launcher.
-     */
-    private final ActivityResultLauncher<String> cameraPermissionLauncher =
+    private final ActivityResultLauncher<String>
+            cameraPermissionLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.RequestPermission(),
                     granted -> {
-
                         if (granted) {
                             openCamera();
                         } else {
                             Toast.makeText(
                                     this,
-                                    "Camera permission is required to use camera.",
+                                    "Camera permission is required.",
                                     Toast.LENGTH_LONG
                             ).show();
                         }
                     }
             );
 
-    /*
-     * Camera result.
-     */
-    private final ActivityResultLauncher<Intent> cameraLauncher =
+    private final ActivityResultLauncher<Intent>
+            cameraLauncher =
             registerForActivityResult(
                     new ActivityResultContracts.StartActivityForResult(),
                     result -> {
-
                         if (result.getResultCode() == RESULT_OK) {
-
                             Toast.makeText(
                                     this,
                                     "Photo captured",
@@ -75,8 +56,8 @@ public class MainActivity extends AppCompatActivity {
                             ).show();
 
                             /*
-                             * Camera result can later be connected
-                             * to the final Post/Story/Reel editor.
+                             * Camera result ko future Post/Story
+                             * editor me connect kiya ja sakta hai.
                              */
                         }
                     }
@@ -90,37 +71,36 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        setupHomeShell();
-        setupStoryButtons();
-        setupTopCreateButton();
+        setupHomeFeed();
+        setupStories();
+        setupCreateButton();
         setupBottomNavigation();
     }
 
-    private void setupHomeShell() {
+    private void setupHomeFeed() {
 
         homeFeedRecyclerView =
-                findViewById(
-                        R.id.homeFeedRecyclerView
-                );
+                findViewById(R.id.homeFeedRecyclerView);
 
-        if (homeFeedRecyclerView != null) {
-
-            homeFeedRecyclerView.setLayoutManager(
-                    new LinearLayoutManager(this)
-            );
-
-            homeFeedRecyclerView.setHasFixedSize(false);
-
-            homeFeedRecyclerView.setAdapter(
-                    new CulturePostAdapter(
-                            this,
-                            CulturePostData.getAllPosts()
-                    )
-            );
+        if (homeFeedRecyclerView == null) {
+            return;
         }
+
+        homeFeedRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+
+        homeFeedRecyclerView.setHasFixedSize(false);
+
+        homeFeedRecyclerView.setAdapter(
+                new CulturePostAdapter(
+                        this,
+                        CulturePostData.getAllPosts()
+                )
+        );
     }
 
-    private void setupStoryButtons() {
+    private void setupStories() {
 
         setOnClick(
                 R.id.templeStoryButton,
@@ -143,30 +123,28 @@ public class MainActivity extends AppCompatActivity {
         );
     }
 
-    /*
-     * Final Create menu.
-     */
-    private void setupTopCreateButton() {
+    private void setupCreateButton() {
 
-        if (findViewById(R.id.createTopButton) != null) {
-
-            findViewById(R.id.createTopButton)
-                    .setOnClickListener(
-                            v -> showCreateOptions()
-                    );
+        if (findViewById(R.id.createTopButton) == null) {
+            return;
         }
+
+        findViewById(R.id.createTopButton)
+                .setOnClickListener(
+                        v -> showCreateOptions()
+                );
     }
 
     private void showCreateOptions() {
 
         String[] options = {
-                "📷 Camera",
-                "📝 Create Post",
-                "📸 Create Story",
-                "🎬 Create Reel"
+                "Camera",
+                "Create Post",
+                "Create Story",
+                "Create Reel"
         };
 
-        new AlertDialog.Builder(this)
+        new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Create")
                 .setItems(
                         options,
@@ -179,11 +157,8 @@ public class MainActivity extends AppCompatActivity {
                                     break;
 
                                 case 1:
-                                    startActivity(
-                                            new Intent(
-                                                    this,
-                                                    PostUploadActivity.class
-                                            )
+                                    openActivity(
+                                            PostUploadActivity.class
                                     );
                                     break;
 
@@ -192,11 +167,8 @@ public class MainActivity extends AppCompatActivity {
                                     break;
 
                                 case 3:
-                                    startActivity(
-                                            new Intent(
-                                                    this,
-                                                    ReelUploadActivity.class
-                                            )
+                                    openActivity(
+                                            ReelUploadActivity.class
                                     );
                                     break;
                             }
@@ -205,24 +177,13 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    /*
-     * Story creator placeholder.
-     *
-     * When the final StoryActivity is present,
-     * this method can directly open it.
-     */
     private void openStoryCreator() {
 
-        Toast.makeText(
-                this,
-                "Story creator",
-                Toast.LENGTH_SHORT
-        ).show();
+        openActivity(
+                StoryUploadActivity.class
+        );
     }
 
-    /*
-     * Camera permission.
-     */
     private void requestCameraPermission() {
 
         if (ContextCompat.checkSelfPermission(
@@ -240,9 +201,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /*
-     * Open Android camera.
-     */
     private void openCamera() {
 
         Intent cameraIntent =
@@ -268,9 +226,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupBottomNavigation() {
 
-        /*
-         * Home
-         */
+        // Home
+        setOnClick(
+                R.id.homeNavButton,
+                null
+        );
+
         if (findViewById(R.id.homeNavButton) != null) {
 
             findViewById(R.id.homeNavButton)
@@ -284,57 +245,31 @@ public class MainActivity extends AppCompatActivity {
                     });
         }
 
-        /*
-         * Explore
-         */
-        if (findViewById(R.id.exploreNavButton) != null) {
+        // Explore
+        setOnClick(
+                R.id.exploreNavButton,
+                ExploreActivity.class
+        );
 
-            findViewById(R.id.exploreNavButton)
-                    .setOnClickListener(v ->
-                            startActivity(
-                                    new Intent(
-                                            this,
-                                            ExploreActivity.class
-                                    )
-                            )
-                    );
-        }
+        // Reels
+        setOnClick(
+                R.id.reelsNavButton,
+                ReelActivity.class
+        );
 
-        /*
-         * Reels
-         */
-        if (findViewById(R.id.reelsNavButton) != null) {
-
-            findViewById(R.id.reelsNavButton)
-                    .setOnClickListener(v ->
-                            startActivity(
-                                    new Intent(
-                                            this,
-                                            ReelActivity.class
-                                    )
-                            )
-                    );
-        }
-
-        /*
-         * Messages
-         */
+        // Messages
         setOnClick(
                 R.id.chatNavButton,
                 ChatActivity.class
         );
 
-        /*
-         * Notifications
-         */
+        // Notifications
         setOnClick(
                 R.id.notificationButton,
                 NotificationsActivity.class
         );
 
-        /*
-         * Profile
-         */
+        // Profile
         if (findViewById(R.id.profileNavButton) != null) {
 
             findViewById(R.id.profileNavButton)
@@ -343,20 +278,14 @@ public class MainActivity extends AppCompatActivity {
                         if (!SupabaseAuthManager
                                 .isLoggedIn(this)) {
 
-                            startActivity(
-                                    new Intent(
-                                            this,
-                                            LoginActivity.class
-                                    )
+                            openActivity(
+                                    LoginActivity.class
                             );
 
                         } else {
 
-                            startActivity(
-                                    new Intent(
-                                            this,
-                                            MyProfileActivity.class
-                                    )
+                            openActivity(
+                                    MyProfileActivity.class
                             );
                         }
                     });
@@ -368,18 +297,36 @@ public class MainActivity extends AppCompatActivity {
             Class<?> targetActivity
     ) {
 
-        if (findViewById(viewId) != null) {
-
-            findViewById(viewId)
-                    .setOnClickListener(v ->
-                            startActivity(
-                                    new Intent(
-                                            this,
-                                            targetActivity
-                                    )
-                            )
-                    );
+        if (findViewById(viewId) == null) {
+            return;
         }
+
+        if (targetActivity == null) {
+            return;
+        }
+
+        findViewById(viewId)
+                .setOnClickListener(
+                        v -> openActivity(
+                                targetActivity
+                        )
+                );
+    }
+
+    private void openActivity(
+            Class<?> targetActivity
+    ) {
+
+        if (targetActivity == null) {
+            return;
+        }
+
+        startActivity(
+                new Intent(
+                        this,
+                        targetActivity
+                )
+        );
     }
 
     private void applySavedTheme() {
