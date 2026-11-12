@@ -1,31 +1,111 @@
 package com.sanskritisathi.app;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class CulturePostAdapter extends RecyclerView.Adapter<CulturePostAdapter.Holder> {
-    private final Context context; private final List<CulturePost> items;
-    public CulturePostAdapter(Context c, List<CulturePost> i){context=c;items=i;}
-    @NonNull @Override public Holder onCreateViewHolder(@NonNull ViewGroup p,int v){return new Holder(LayoutInflater.from(context).inflate(R.layout.item_culture_post,p,false));}
-    @Override public void onBindViewHolder(@NonNull Holder h,int pos){
-        CulturePost x=items.get(pos);
-        h.author.setText(x.getAuthor()); h.category.setText(x.getCategory()); h.caption.setText(x.getCaption());
-        h.likes.setText(String.valueOf(Math.max(0,x.getLikeCount()))); h.profile.setImageResource(x.getProfileImageResId()); h.image.setImageResource(x.getPostImageResId());
-        h.like.setOnClickListener(v->{x.setLiked(!x.isLiked()); x.setLikeCount(Math.max(0,x.getLikeCount()+(x.isLiked()?1:-1))); notifyItemChanged(pos);});
-        h.save.setOnClickListener(v->{x.setSaved(!x.isSaved()); h.save.setText(x.isSaved()?"🔖 Saved":"🔖 Save");});
-        h.comment.setOnClickListener(v -> android.widget.Toast.makeText(context,"Comments ready",android.widget.Toast.LENGTH_SHORT).show());
-        h.share.setOnClickListener(v -> { android.content.Intent s=new android.content.Intent(android.content.Intent.ACTION_SEND); s.setType("text/plain"); s.putExtra(android.content.Intent.EXTRA_TEXT,x.getCaption()); context.startActivity(android.content.Intent.createChooser(s,"Share Post"));});
+    private final Context context;
+    private final List<CulturePost> items = new ArrayList<>();
+
+    public CulturePostAdapter(Context context, List<CulturePost> posts) {
+        this.context = context;
+        setPosts(posts);
     }
-    @Override public int getItemCount(){return items.size();}
-    static class Holder extends RecyclerView.ViewHolder{
-        ImageView profile,image; TextView author,category,caption,likes,like,comment,share,save;
-        Holder(View v){super(v);profile=v.findViewById(R.id.postProfileImage);image=v.findViewById(R.id.postImage);author=v.findViewById(R.id.postAuthor);category=v.findViewById(R.id.postCategory);caption=v.findViewById(R.id.postCaption);likes=v.findViewById(R.id.likeCount);like=v.findViewById(R.id.likeButton);comment=v.findViewById(R.id.commentButton);share=v.findViewById(R.id.shareButton);save=v.findViewById(R.id.saveButton);}
+
+    public void setPosts(List<CulturePost> posts) {
+        items.clear();
+        if (posts != null) items.addAll(posts);
+        notifyDataSetChanged();
+    }
+
+    @NonNull
+    @Override
+    public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context)
+                .inflate(R.layout.item_culture_post, parent, false);
+        return new Holder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull Holder holder, int position) {
+        CulturePost post = items.get(position);
+
+        holder.author.setText(post.getAuthor() == null ? "Sanskriti member" : post.getAuthor());
+        holder.category.setText(post.getCategory() == null ? "Culture" : post.getCategory());
+        holder.caption.setText(post.getCaption() == null ? "" : post.getCaption());
+        holder.likes.setText(String.valueOf(Math.max(0, post.getLikeCount())));
+
+        holder.profile.setImageResource(R.drawable.icon_foreground);
+        String imageUrl = post.getImageUrl();
+        if (imageUrl != null && (imageUrl.startsWith("https://") || imageUrl.startsWith("http://"))) {
+            Glide.with(holder.image)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.icon_foreground)
+                    .error(R.drawable.icon_foreground)
+                    .centerCrop()
+                    .into(holder.image);
+        } else {
+            holder.image.setImageResource(R.drawable.icon_foreground);
+        }
+
+        // Do not simulate likes or saves locally. Enable only when the
+        // corresponding authenticated Supabase action is configured.
+        holder.like.setVisibility(View.GONE);
+        holder.save.setVisibility(View.GONE);
+
+        holder.comment.setOnClickListener(v -> {
+            if (post.getId() == null || post.getId().trim().isEmpty()) return;
+            Intent intent = new Intent(context, PostCommentsActivity.class);
+            intent.putExtra("postId", post.getId());
+            intent.putExtra("postOwnerUid", post.getAuthorUid());
+            context.startActivity(intent);
+        });
+
+        holder.share.setOnClickListener(v -> {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            String text = (post.getCaption() == null ? "" : post.getCaption());
+            if (imageUrl != null && imageUrl.startsWith("https://")) text += "\n" + imageUrl;
+            shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+            context.startActivity(Intent.createChooser(shareIntent, "Share Post"));
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
+
+    static class Holder extends RecyclerView.ViewHolder {
+        final ImageView profile;
+        final ImageView image;
+        final TextView author, category, caption, likes, like, comment, share, save;
+
+        Holder(View view) {
+            super(view);
+            profile = view.findViewById(R.id.postProfileImage);
+            image = view.findViewById(R.id.postImage);
+            author = view.findViewById(R.id.postAuthor);
+            category = view.findViewById(R.id.postCategory);
+            caption = view.findViewById(R.id.postCaption);
+            likes = view.findViewById(R.id.likeCount);
+            like = view.findViewById(R.id.likeButton);
+            comment = view.findViewById(R.id.commentButton);
+            share = view.findViewById(R.id.shareButton);
+            save = view.findViewById(R.id.saveButton);
+        }
     }
 }
