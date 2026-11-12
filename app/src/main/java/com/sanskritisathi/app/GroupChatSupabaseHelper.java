@@ -84,7 +84,7 @@ public final class GroupChatSupabaseHelper {
             try {
 
                 String username =
-                        getUsername(uid);
+                        getUsername(context, uid);
 
                 JSONObject body =
                         new JSONObject();
@@ -116,6 +116,7 @@ public final class GroupChatSupabaseHelper {
 
                 HttpURLConnection connection =
                         openConnection(
+                                context,
                                 TABLE,
                                 "POST"
                         );
@@ -210,6 +211,7 @@ public final class GroupChatSupabaseHelper {
 
                 connection =
                         openConnection(
+                                context,
                                 TABLE + "?" + query,
                                 "GET"
                         );
@@ -360,6 +362,7 @@ public final class GroupChatSupabaseHelper {
 
                 connection =
                         openConnection(
+                                context,
                                 TABLE + "?" + query,
                                 "DELETE"
                         );
@@ -417,6 +420,7 @@ public final class GroupChatSupabaseHelper {
     // =========================================================
 
     private static String getUsername(
+            Context context,
             String uid
     ) {
 
@@ -432,6 +436,7 @@ public final class GroupChatSupabaseHelper {
 
             connection =
                     openConnection(
+                            context,
                             "users?" + query,
                             "GET"
                     );
@@ -496,6 +501,7 @@ public final class GroupChatSupabaseHelper {
     // =========================================================
 
     private static HttpURLConnection openConnection(
+            Context context,
             String path,
             String method
     ) throws Exception {
@@ -521,10 +527,13 @@ public final class GroupChatSupabaseHelper {
                 SupabaseConfig.PUBLISHABLE_KEY
         );
 
+        String accessToken = SupabaseAuthManager.getAccessToken(context);
+        if (accessToken == null || accessToken.trim().isEmpty()) {
+            throw new IllegalStateException("Session expired. Please login again.");
+        }
         connection.setRequestProperty(
                 "Authorization",
-                "Bearer "
-                        + SupabaseConfig.PUBLISHABLE_KEY
+                "Bearer " + accessToken
         );
 
         connection.setRequestProperty(
