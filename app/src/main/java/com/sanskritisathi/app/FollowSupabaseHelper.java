@@ -238,18 +238,6 @@ public final class FollowSupabaseHelper {
 
                 if (code >= 200 && code < 300) {
 
-                    updateUserCount(
-                            currentUid,
-                            "following",
-                            1
-                    );
-
-                    updateUserCount(
-                            targetUid,
-                            "followers",
-                            1
-                    );
-
                     postSuccess(callback);
 
                 } else {
@@ -339,18 +327,6 @@ public final class FollowSupabaseHelper {
                         connection.getResponseCode();
 
                 if (code >= 200 && code < 300) {
-
-                    updateUserCount(
-                            currentUid,
-                            "following",
-                            -1
-                    );
-
-                    updateUserCount(
-                            targetUid,
-                            "followers",
-                            -1
-                    );
 
                     postSuccess(callback);
 
