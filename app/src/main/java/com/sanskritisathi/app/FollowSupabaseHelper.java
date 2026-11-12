@@ -26,7 +26,7 @@ public final class FollowSupabaseHelper {
     }
 
     private static final String FOLLOW_TABLE = "follows";
-    private static final String USERS_TABLE = "users";
+    private static final String USERS_TABLE = "profiles";
 
     private static final ExecutorService EXECUTOR =
             Executors.newSingleThreadExecutor();
