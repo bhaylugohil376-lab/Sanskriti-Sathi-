@@ -17,11 +17,13 @@
         android:gravity="center"
         android:padding="18dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🛕"
-            android:textSize="36sp" />
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="132dp"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="Kashi Vishwanath temple"
+            android:scaleType="centerCrop"
+            android:src="@drawable/kashi_vishwanath" />
 
         <TextView
             android:layout_width="match_parent"
