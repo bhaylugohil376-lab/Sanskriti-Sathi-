@@ -72,6 +72,8 @@ public class PostUploadActivity extends AppCompatActivity {
             return;
         }
         String caption = captionInput.getText().toString().trim();
+        final String category = String.valueOf(categorySpinner.getSelectedItem());
+        final String visibility = String.valueOf(visibilitySpinner.getSelectedItem());
         if (caption.isEmpty()) {
             Toast.makeText(this, "Caption likho.", Toast.LENGTH_SHORT).show();
             return;
@@ -123,10 +125,10 @@ public class PostUploadActivity extends AppCompatActivity {
                 JSONObject row = new JSONObject();
                 row.put("author_uid", uid);
                 row.put("author", (email == null || email.trim().isEmpty()) ? "Sanskriti User" : email.split("@")[0]);
-                row.put("category", String.valueOf(categorySpinner.getSelectedItem()));
+                row.put("category", category);
                 row.put("caption", caption);
                 row.put("image_url", publicUrl);
-                row.put("visibility", String.valueOf(visibilitySpinner.getSelectedItem()));
+                row.put("visibility", visibility);
 
                 HttpURLConnection insert = (HttpURLConnection) new URL(
                         SupabaseConfig.PROJECT_URL + "/rest/v1/posts").openConnection();
