@@ -437,7 +437,7 @@ public final class GroupChatSupabaseHelper {
             connection =
                     openConnection(
                             context,
-                            "users?" + query,
+                            "profiles?" + query,
                             "GET"
                     );
 
