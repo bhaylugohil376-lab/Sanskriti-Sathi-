@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF7ED"
+    android:background="#FFFDF7"
     android:fitsSystemWindows="true">
 
     <!-- ================= TOP BAR ================= -->
@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_alignParentTop="true"
-        android:background="#FFFFFB"
+        android:background="#FFFFFF"
         android:elevation="2dp"
         android:paddingStart="10dp"
         android:paddingEnd="10dp">
@@ -32,7 +32,7 @@
             android:focusable="true"
             android:gravity="center"
             android:text="+"
-            android:textColor="#2F211B"
+            android:textColor="#D96B27"
             android:textSize="30sp"
             android:textStyle="normal" />
 
@@ -73,7 +73,7 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:text="♡"
+            android:text="♧"
             android:textColor="#2F211B"
             android:textSize="29sp" />
 
@@ -328,7 +328,7 @@
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="66dp"
         android:layout_alignParentBottom="true"
         android:background="#FFFFFB"
         android:elevation="8dp"
@@ -376,6 +376,22 @@
             android:focusable="true"
             android:padding="16dp"
             android:src="@drawable/ic_reels" />
+
+        <!-- CREATE -->
+        <TextView
+            android:id="@+id/createNavButton"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Create"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="+"
+            android:textColor="#D96B27"
+            android:textSize="30sp"
+            android:textStyle="bold" />
 
         <!-- MESSAGES -->
 
