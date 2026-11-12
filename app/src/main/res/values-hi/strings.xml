@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_tagline">भारत की संस्कृति • ज्ञान • परंपरा</string>
+    <string name="choose_language">🌐 अपनी भाषा चुनें</string>
+    <string name="welcome_footer">एक भाषा चुनें और Sanskriti Sathi की यात्रा शुरू करें ✨</string>
+    <string name="login_subtitle">हमारी समृद्ध संस्कृति की यात्रा जारी रखने के लिए लॉगिन करें</string>
+    <string name="email_label">ईमेल या मोबाइल नंबर</string>
+    <string name="email_hint">अपना ईमेल दर्ज करें</string>
+    <string name="password_label">पासवर्ड</string>
+    <string name="password_hint">पासवर्ड दर्ज करें</string>
+    <string name="forgot_password">पासवर्ड भूल गए?</string>
+    <string name="login">लॉगिन</string>
+    <string name="create_account">नया खाता बनाएँ</string>
+    <string name="or">या</string>
+    <string name="google_continue">Google से जारी रखें</string>
+    <string name="no_account">खाता नहीं है? </string>
+    <string name="register">रजिस्टर करें</string>
+</resources>
