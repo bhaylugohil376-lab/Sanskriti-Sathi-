@@ -455,156 +455,31 @@ public final class StorySupabaseHelper {
             String storyId,
             @NonNull ActionCallback callback
     ) {
-
         if (TextUtils.isEmpty(storyId)) {
-
-            postError(
-                    callback,
-                    "Invalid Story."
-            );
-
+            postError(callback, "Invalid Story.");
             return;
         }
-
         EXECUTOR.execute(() -> {
-
             HttpURLConnection connection = null;
-
             try {
-
-                String getUrl =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/"
-                                + STORIES_TABLE
-                                + "?select=views"
-                                + "&id=eq."
-                                + encode(storyId);
-
-                connection =
-                        openConnection(
-                                getUrl,
-                                "GET",
-                                getToken(context)
-                        );
-
-                int getCode =
-                        connection.getResponseCode();
-
-                String getResponse =
-                        readResponse(
-                                connection,
-                                getCode
-                        );
-
-                connection.disconnect();
-                connection = null;
-
-                if (getCode < 200 ||
-                        getCode >= 300) {
-
-                    postError(
-                            callback,
-                            cleanError(getResponse)
-                    );
-
-                    return;
-                }
-
-                JSONArray array =
-                        new JSONArray(getResponse);
-
-                if (array.length() == 0) {
-
-                    postError(
-                            callback,
-                            "Story not found."
-                    );
-
-                    return;
-                }
-
-                int oldViews =
-                        Math.max(
-                                0,
-                                array.getJSONObject(0)
-                                        .optInt(
-                                                "views",
-                                                0
-                                        )
-                        );
-
-                int newViews =
-                        oldViews + 1;
-
-                String patchUrl =
-                        SupabaseConfig.PROJECT_URL
-                                + "/rest/v1/"
-                                + STORIES_TABLE
-                                + "?id=eq."
-                                + encode(storyId);
-
-                JSONObject body =
-                        new JSONObject();
-
-                body.put(
-                        "views",
-                        newViews
-                );
-
-                connection =
-                        openConnection(
-                                patchUrl,
-                                "PATCH",
-                                getToken(context)
-                        );
-
+                JSONObject body = new JSONObject();
+                body.put("p_story_id", storyId);
+                String rpcUrl = SupabaseConfig.PROJECT_URL
+                        + "/rest/v1/rpc/increment_story_views";
+                connection = openConnection(rpcUrl, "POST", getToken(context));
                 connection.setDoOutput(true);
-
-                connection.setRequestProperty(
-                        "Prefer",
-                        "return=minimal"
-                );
-
-                writeBody(
-                        connection,
-                        body.toString()
-                );
-
-                int code =
-                        connection.getResponseCode();
-
-                String response =
-                        readResponse(
-                                connection,
-                                code
-                        );
-
-                if (code >= 200 &&
-                        code < 300) {
-
+                writeBody(connection, body.toString());
+                int code = connection.getResponseCode();
+                String response = readResponse(connection, code);
+                if (code >= 200 && code < 300) {
                     postSuccess(callback);
-
                 } else {
-
-                    postError(
-                            callback,
-                            cleanError(response)
-                    );
+                    postError(callback, cleanError(response));
                 }
-
             } catch (Exception e) {
-
-                postError(
-                        callback,
-                        "View update failed: "
-                                + safeMessage(e)
-                );
-
+                postError(callback, "View update failed: " + safeMessage(e));
             } finally {
-
-                if (connection != null) {
-                    connection.disconnect();
-                }
+                if (connection != null) connection.disconnect();
             }
         });
     }
