@@ -10,12 +10,23 @@
     android:clipToPadding="false"
 >
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="142dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="Bhagavad Gita"
+        android:scaleType="centerCrop"
+        android:src="@drawable/gita" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="16dp"
-        android:text="📖 Bhagavad Gita"
+        android:padding="14dp"
+        android:text="Bhagavad Gita"
+        android:textColor="#3B2117"
         android:textSize="28sp"
         android:textStyle="bold" />
 
