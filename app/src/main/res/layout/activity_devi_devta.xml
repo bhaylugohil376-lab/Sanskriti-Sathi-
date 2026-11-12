@@ -30,12 +30,12 @@
             android:gravity="center"
             android:padding="20dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🕉️"
-                android:textSize="42sp"
-                android:gravity="center" />
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="132dp"
+                android:contentDescription="Goddess Durga"
+                android:scaleType="centerCrop"
+                android:src="@drawable/durga" />
 
             <TextView
                 android:layout_width="match_parent"
