@@ -1277,8 +1277,7 @@ public final class StorySupabaseHelper {
                         .getAccessToken(context);
 
         if (TextUtils.isEmpty(token)) {
-
-            return SupabaseConfig.PUBLISHABLE_KEY;
+            throw new IllegalStateException("Session expired. Please login again.");
         }
 
         return token;
