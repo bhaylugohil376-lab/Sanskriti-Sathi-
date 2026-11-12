@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.os.LocaleListCompat;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -15,6 +17,15 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences languagePrefs =
+                getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String savedLanguage = languagePrefs.getString(LANGUAGE_KEY, "");
+        if (!savedLanguage.isEmpty()) {
+            AppCompatDelegate.setApplicationLocales(
+                    LocaleListCompat.forLanguageTags(savedLanguage)
+            );
+        }
 
         // =====================================================
         // SUPABASE SESSION CHECK
@@ -28,12 +39,6 @@ public class WelcomeActivity extends AppCompatActivity {
         // =====================================================
         // LANGUAGE CHECK
         // =====================================================
-
-        SharedPreferences prefs =
-                getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-
-        String savedLanguage =
-                prefs.getString(LANGUAGE_KEY, "");
 
         // Language already selected
         if (!savedLanguage.isEmpty()) {
@@ -81,14 +86,14 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private void selectLanguage(String language) {
 
-        getSharedPreferences(
-                PREFS_NAME,
-                MODE_PRIVATE
-        )
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                 .edit()
                 .putString(LANGUAGE_KEY, language)
                 .apply();
 
+        AppCompatDelegate.setApplicationLocales(
+                LocaleListCompat.forLanguageTags(language)
+        );
         openLogin();
     }
 
