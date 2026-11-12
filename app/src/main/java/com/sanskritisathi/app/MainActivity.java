@@ -18,7 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView homeFeedRecyclerView;\n    private CulturePostAdapter homeFeedAdapter;
+    private RecyclerView homeFeedRecyclerView;
+    private CulturePostAdapter homeFeedAdapter;
 
     private static final String PREFS_NAME =
             "SanskritiSathiPrefs";
