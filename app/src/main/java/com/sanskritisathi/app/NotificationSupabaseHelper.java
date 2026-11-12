@@ -134,6 +134,7 @@ public final class NotificationSupabaseHelper {
 
                 connection =
                         openConnection(
+                                context,
                                 TABLE,
                                 "POST"
                         );
@@ -236,6 +237,7 @@ public final class NotificationSupabaseHelper {
 
                 connection =
                         openConnection(
+                                context,
                                 TABLE + "?" + query,
                                 "GET"
                         );
@@ -377,6 +379,7 @@ public final class NotificationSupabaseHelper {
 
                 connection =
                         openConnection(
+                                context,
                                 TABLE + query,
                                 "PATCH"
                         );
@@ -606,6 +609,7 @@ public final class NotificationSupabaseHelper {
     // =========================================================
 
     private static HttpURLConnection openConnection(
+            Context context,
             String path,
             String method
     ) throws Exception {
@@ -631,10 +635,13 @@ public final class NotificationSupabaseHelper {
                 SupabaseConfig.PUBLISHABLE_KEY
         );
 
+        String accessToken = SupabaseAuthManager.getAccessToken(context);
+        if (accessToken == null || accessToken.trim().isEmpty()) {
+            throw new IllegalStateException("Session expired. Please login again.");
+        }
         connection.setRequestProperty(
                 "Authorization",
-                "Bearer "
-                        + SupabaseConfig.PUBLISHABLE_KEY
+                "Bearer " + accessToken
         );
 
         connection.setRequestProperty(
