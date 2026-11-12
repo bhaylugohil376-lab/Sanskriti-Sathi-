@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_tagline">Culture • Knowledge • Tradition of India</string>
+    <string name="choose_language">🌐 Choose your language</string>
+    <string name="welcome_footer">Choose a language and begin your Sanskriti Sathi journey ✨</string>
+    <string name="login_subtitle">Login to continue your journey with our rich culture</string>
+    <string name="email_label">Email or Mobile Number</string>
+    <string name="email_hint">Enter your email</string>
+    <string name="password_label">Password</string>
+    <string name="password_hint">Enter password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="login">Login</string>
+    <string name="create_account">Create New Account</string>
+    <string name="or">OR</string>
+    <string name="google_continue">Continue with Google</string>
+    <string name="no_account">Don\'t have an account? </string>
+    <string name="register">Register</string>
+</resources>
