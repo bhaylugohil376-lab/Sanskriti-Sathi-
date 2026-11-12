@@ -364,7 +364,7 @@ public final class SupabaseAuthManager {
 
                     postError(
                             callback,
-                            parseError(response)
+                            parseAuthHttpError(responseCode, response)
                     );
                 }
 
@@ -904,6 +904,43 @@ public final class SupabaseAuthManager {
 
             return "";
         }
+    }
+
+    // =========================================================
+    // AUTH HTTP DIAGNOSTICS
+    // =========================================================
+
+    private static String parseAuthHttpError(
+            int responseCode,
+            String response
+    ) {
+
+        String message = parseError(response);
+
+        if (message == null
+                || message.trim().isEmpty()
+                || "Operation failed. Please try again.".equals(message)) {
+
+            if (responseCode == 400) {
+                return "Supabase rejected the reset request (HTTP 400). Check the email format and Auth email settings.";
+            }
+
+            if (responseCode == 401 || responseCode == 403) {
+                return "Supabase rejected the app API key (HTTP " + responseCode + "). Check the publishable key in SupabaseConfig.";
+            }
+
+            if (responseCode == 404) {
+                return "Supabase Auth endpoint was not found (HTTP 404). Check the project URL in SupabaseConfig.";
+            }
+
+            if (responseCode >= 500) {
+                return "Supabase Auth server error (HTTP " + responseCode + "). Please try again later.";
+            }
+
+            return "Password reset request failed (HTTP " + responseCode + "). Check Supabase Auth email provider and SMTP settings.";
+        }
+
+        return message;
     }
 
     // =========================================================
