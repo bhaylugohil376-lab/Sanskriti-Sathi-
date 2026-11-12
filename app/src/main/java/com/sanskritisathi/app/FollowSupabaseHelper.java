@@ -105,7 +105,7 @@ public final class FollowSupabaseHelper {
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(20000);
 
-                addHeaders(connection);
+                addHeaders(connection, context);
 
                 int code =
                         connection.getResponseCode();
@@ -187,6 +187,7 @@ public final class FollowSupabaseHelper {
 
                 boolean alreadyFollowing =
                         checkFollowingSync(
+                                context,
                                 currentUid,
                                 targetUid
                         );
@@ -197,7 +198,7 @@ public final class FollowSupabaseHelper {
                 }
 
                 boolean targetExists =
-                        userExistsSync(targetUid);
+                        userExistsSync(context, targetUid);
 
                 if (!targetExists) {
 
@@ -230,6 +231,7 @@ public final class FollowSupabaseHelper {
 
                 int code =
                         postJson(
+                                context,
                                 FOLLOW_TABLE,
                                 body
                         );
@@ -331,7 +333,7 @@ public final class FollowSupabaseHelper {
                 connection.setConnectTimeout(15000);
                 connection.setReadTimeout(20000);
 
-                addHeaders(connection);
+                addHeaders(connection, context);
 
                 int code =
                         connection.getResponseCode();
@@ -381,6 +383,7 @@ public final class FollowSupabaseHelper {
     // =========================================================
 
     private static boolean checkFollowingSync(
+            Context context,
             String followerUid,
             String followingUid
     ) throws Exception {
@@ -394,6 +397,7 @@ public final class FollowSupabaseHelper {
 
         HttpURLConnection connection =
                 openGet(
+                        context,
                         FOLLOW_TABLE,
                         query
                 );
@@ -429,6 +433,7 @@ public final class FollowSupabaseHelper {
     // =========================================================
 
     private static boolean userExistsSync(
+            Context context,
             String uid
     ) throws Exception {
 
@@ -439,6 +444,7 @@ public final class FollowSupabaseHelper {
 
         HttpURLConnection connection =
                 openGet(
+                        context,
                         USERS_TABLE,
                         query
                 );
@@ -589,7 +595,7 @@ public final class FollowSupabaseHelper {
             connection.setConnectTimeout(15000);
             connection.setReadTimeout(20000);
 
-            addHeaders(connection);
+            addHeaders(connection, context);
 
             connection.setRequestProperty(
                     "Prefer",
@@ -621,6 +627,7 @@ public final class FollowSupabaseHelper {
     // =========================================================
 
     private static int postJson(
+            Context context,
             String table,
             JSONObject body
     ) throws Exception {
@@ -643,7 +650,7 @@ public final class FollowSupabaseHelper {
             connection.setConnectTimeout(15000);
             connection.setReadTimeout(20000);
 
-            addHeaders(connection);
+            addHeaders(connection, context);
 
             connection.setRequestProperty(
                     "Prefer",
@@ -675,6 +682,7 @@ public final class FollowSupabaseHelper {
     // =========================================================
 
     private static HttpURLConnection openGet(
+            Context context,
             String table,
             String query
     ) throws Exception {
@@ -696,7 +704,7 @@ public final class FollowSupabaseHelper {
         connection.setConnectTimeout(15000);
         connection.setReadTimeout(20000);
 
-        addHeaders(connection);
+        addHeaders(connection, context);
 
         return connection;
     }
@@ -706,7 +714,8 @@ public final class FollowSupabaseHelper {
     // =========================================================
 
     private static void addHeaders(
-            HttpURLConnection connection
+            HttpURLConnection connection,
+            Context context
     ) {
 
         connection.setRequestProperty(
@@ -717,7 +726,7 @@ public final class FollowSupabaseHelper {
         connection.setRequestProperty(
                 "Authorization",
                 "Bearer "
-                        + SupabaseConfig.PUBLISHABLE_KEY
+                        + SupabaseAuthManager.getAccessToken(context)
         );
 
         connection.setRequestProperty(
