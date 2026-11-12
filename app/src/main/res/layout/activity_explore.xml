@@ -52,7 +52,7 @@
                 android:focusable="true"
                 android:gravity="center_vertical"
                 android:paddingStart="18dp"
-                android:text="👑   Kings & History"
+                android:text="👑   Kings &amp; History"
                 android:textColor="#3B2117"
                 android:textSize="16sp"
                 android:textStyle="bold" />
