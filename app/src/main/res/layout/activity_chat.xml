@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0F111A"
+    android:background="#FFFDF7"
     android:fitsSystemWindows="true"
     android:clipToPadding="false"
 >
@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:text="Sanskriti Sathi"
-            android:textColor="#FFFFFF"
+            android:textColor="#3B2117"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -56,14 +56,14 @@
                 android:id="@+id/searchBar"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:background="#1A1D2B"
+                android:background="#3B2117"
                 android:drawableStart="@drawable/ic_explore"
                 android:drawablePadding="10dp"
                 android:hint="Search"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#A0A5B5"
+                android:textColor="#3B2117"
+                android:textColorHint="#8B7164"
                 android:textSize="14sp" />
 
             <!-- STORIES SECTION HEADER -->
@@ -76,7 +76,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Stories"
-                    android:textColor="#FFFFFF"
+                    android:textColor="#3B2117"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -85,7 +85,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:text="See all"
-                    android:textColor="#E5A93C"
+                    android:textColor="#D96B27"
                     android:textSize="14sp" />
             </RelativeLayout>
 
@@ -111,7 +111,7 @@
                         <com.google.android.material.imageview.ShapeableImageView
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="#2A2D3D"
+                            android:background="#FCE8D8"
                             android:padding="16dp"
                             android:src="@drawable/ic_add_circle"
                             app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView" />
@@ -121,7 +121,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:text="Your story"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#8B7164"
                             android:textSize="11sp" />
                     </LinearLayout>
 
@@ -136,10 +136,10 @@
                             android:id="@+id/storyShiv"
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="#3B2652"
+                            android:background="#FCE8D8"
                             android:padding="2dp"
                             app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
-                            app:strokeColor="#E5A93C"
+                            app:strokeColor="#D96B27"
                             app:strokeWidth="2dp" />
 
                         <TextView
@@ -147,7 +147,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:text="Shiv"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#8B7164"
                             android:textSize="11sp" />
                     </LinearLayout>
 
@@ -162,10 +162,10 @@
                             android:id="@+id/storyTemple"
                             android:layout_width="56dp"
                             android:layout_height="56dp"
-                            android:background="#523926"
+                            android:background="#FFF1E6"
                             android:padding="2dp"
                             app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView"
-                            app:strokeColor="#E5A93C"
+                            app:strokeColor="#D96B27"
                             app:strokeWidth="2dp" />
 
                         <TextView
@@ -173,7 +173,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:text="Temple"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#8B7164"
                             android:textSize="11sp" />
                     </LinearLayout>
 
@@ -194,7 +194,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="Primary"
-                    android:textColor="#E5A93C"
+                    android:textColor="#D96B27"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -204,7 +204,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="General"
-                    android:textColor="#A0A5B5"
+                    android:textColor="#8B7164"
                     android:textSize="14sp" />
 
                 <TextView
@@ -213,7 +213,7 @@
                     android:layout_weight="1"
                     android:gravity="center"
                     android:text="Requests"
-                    android:textColor="#A0A5B5"
+                    android:textColor="#8B7164"
                     android:textSize="14sp" />
             </LinearLayout>
 
@@ -235,7 +235,7 @@
                         android:id="@+id/chatAvatar1"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="#3B2652"
+                        android:background="#FCE8D8"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView" />
 
                     <LinearLayout
@@ -250,7 +250,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Sanskriti Sathi"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#3B2117"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
@@ -259,7 +259,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="Welcome to Sanskriti Sathi"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#8B7164"
                             android:textSize="13sp" />
                     </LinearLayout>
                 </RelativeLayout>
@@ -275,7 +275,7 @@
                         android:id="@+id/chatAvatar2"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="#52263B"
+                        android:background="#FFF1E6"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.App.CircleImageView" />
 
                     <LinearLayout
@@ -290,7 +290,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Shiv Bhakt"
-                            android:textColor="#FFFFFF"
+                            android:textColor="#3B2117"
                             android:textSize="15sp"
                             android:textStyle="bold" />
 
@@ -299,7 +299,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="Jai Mahadev 🙏"
-                            android:textColor="#A0A5B5"
+                            android:textColor="#8B7164"
                             android:textSize="13sp" />
                     </LinearLayout>
                 </RelativeLayout>
@@ -318,7 +318,7 @@
         android:gravity="center"
         android:padding="12dp"
         android:text="🔒 Private &amp; secure conversations"
-        android:textColor="#A0A5B5"
+        android:textColor="#8B7164"
         android:textSize="12sp" />
 
 </RelativeLayout>
