@@ -452,6 +452,7 @@ public final class NotificationSupabaseHelper {
 
                 connection =
                         openConnection(
+                                context,
                                 TABLE + query,
                                 "PATCH"
                         );
