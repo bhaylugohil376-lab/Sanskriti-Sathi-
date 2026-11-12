@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView homeFeedRecyclerView;
+    private RecyclerView homeFeedRecyclerView;\n    private CulturePostAdapter homeFeedAdapter;
 
     private static final String PREFS_NAME =
             "SanskritiSathiPrefs";
@@ -92,11 +92,28 @@ public class MainActivity extends AppCompatActivity {
 
         homeFeedRecyclerView.setHasFixedSize(false);
 
-        homeFeedRecyclerView.setAdapter(
-                new CulturePostAdapter(
-                        this,
-                        CulturePostData.getAllPosts()
-                )
+        homeFeedAdapter = new CulturePostAdapter(
+                this,
+                new java.util.ArrayList<>()
+        );
+        homeFeedRecyclerView.setAdapter(homeFeedAdapter);
+
+        CulturePostSupabaseHelper.getPublicPosts(
+                new CulturePostSupabaseHelper.PostsCallback() {
+                    @Override
+                    public void onSuccess(java.util.List<CulturePost> posts) {
+                        homeFeedAdapter.setPosts(posts);
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        Toast.makeText(
+                                MainActivity.this,
+                                "Feed load nahi hua: " + message,
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                }
         );
     }
 
