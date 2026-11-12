@@ -101,6 +101,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupStories() {
+        setOnClick(
+                R.id.yourStoryButton,
+                StoryUploadActivity.class
+        );
+
 
         setOnClick(
                 R.id.templeStoryButton,
@@ -256,6 +261,12 @@ public class MainActivity extends AppCompatActivity {
                 R.id.reelsNavButton,
                 ReelActivity.class
         );
+
+        // Create
+        if (findViewById(R.id.createNavButton) != null) {
+            findViewById(R.id.createNavButton)
+                    .setOnClickListener(v -> showCreateOptions());
+        }
 
         // Messages
         setOnClick(
