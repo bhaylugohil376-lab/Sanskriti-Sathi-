@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0F111A"
+    android:background="#FFFDF7"
     android:clipToPadding="false"
 >
 
@@ -21,7 +21,7 @@
             android:gravity="center_vertical"
             android:paddingStart="18dp"
             android:paddingEnd="18dp"
-            android:background="#111827">
+            android:background="#3B2117">
 
             <TextView
                 android:id="@+id/backButton"
@@ -30,7 +30,7 @@
                 android:gravity="center"
                 android:text="‹"
                 android:textSize="34sp"
-                android:textColor="#FFFFFF"
+                android:textColor="#3B2117"
                 android:clickable="true"
                 android:focusable="true"/>
 
@@ -42,7 +42,7 @@
                 android:text="Settings"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"/>
+                android:textColor="#3B2117"/>
 
             <View
                 android:layout_width="48dp"
@@ -61,7 +61,7 @@
             android:text="ACCOUNT"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#FFB300"/>
+            android:textColor="#D96B27"/>
 
         <LinearLayout
             android:id="@+id/accountRow"
@@ -79,14 +79,14 @@
                 android:layout_weight="1"
                 android:text="👤  Account"
                 android:textSize="16sp"
-                android:textColor="#FFFFFF"/>
+                android:textColor="#3B2117"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="›"
                 android:textSize="25sp"
-                android:textColor="#777777"/>
+                android:textColor="#8B7164"/>
 
         </LinearLayout>
 
@@ -108,14 +108,14 @@
                 android:layout_weight="1"
                 android:text="🔔  Notifications"
                 android:textSize="16sp"
-                android:textColor="#FFFFFF"/>
+                android:textColor="#3B2117"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="›"
                 android:textSize="25sp"
-                android:textColor="#777777"/>
+                android:textColor="#8B7164"/>
 
         </LinearLayout>
 
@@ -130,7 +130,7 @@
             android:text="PRIVACY"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#FFB300"/>
+            android:textColor="#D96B27"/>
 
         <LinearLayout
             android:id="@+id/privacyRow"
@@ -148,14 +148,14 @@
                 android:layout_weight="1"
                 android:text="🔒  Privacy &amp; Security"
                 android:textSize="16sp"
-                android:textColor="#FFFFFF"/>
+                android:textColor="#3B2117"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="›"
                 android:textSize="25sp"
-                android:textColor="#777777"/>
+                android:textColor="#8B7164"/>
 
         </LinearLayout>
 
@@ -170,7 +170,7 @@
             android:text="YOUR ACTIVITY"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#FFB300"/>
+            android:textColor="#D96B27"/>
 
         <LinearLayout
             android:id="@+id/savedRow"
@@ -188,14 +188,14 @@
                 android:layout_weight="1"
                 android:text="🔖  Saved"
                 android:textSize="16sp"
-                android:textColor="#FFFFFF"/>
+                android:textColor="#3B2117"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="›"
                 android:textSize="25sp"
-                android:textColor="#777777"/>
+                android:textColor="#8B7164"/>
 
         </LinearLayout>
 
@@ -215,14 +215,14 @@
                 android:layout_weight="1"
                 android:text="📦  Archive"
                 android:textSize="16sp"
-                android:textColor="#FFFFFF"/>
+                android:textColor="#3B2117"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="›"
                 android:textSize="25sp"
-                android:textColor="#777777"/>
+                android:textColor="#8B7164"/>
 
         </LinearLayout>
 
@@ -237,7 +237,7 @@
             android:text="SUPPORT"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="#FFB300"/>
+            android:textColor="#D96B27"/>
 
         <LinearLayout
             android:id="@+id/helpRow"
@@ -255,14 +255,14 @@
                 android:layout_weight="1"
                 android:text="❓  Help"
                 android:textSize="16sp"
-                android:textColor="#FFFFFF"/>
+                android:textColor="#3B2117"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="›"
                 android:textSize="25sp"
-                android:textColor="#777777"/>
+                android:textColor="#8B7164"/>
 
         </LinearLayout>
 
@@ -278,7 +278,7 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="#FF5252"
-            android:background="#21151A"
+            android:background="#FFF1E6"
             android:clickable="true"
             android:focusable="true"/>
 
