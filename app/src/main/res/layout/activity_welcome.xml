@@ -55,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="भारत की संस्कृति • ज्ञान • परंपरा"
+                android:text="@string/welcome_tagline"
                 android:textSize="16sp"
                 android:textColor="#FFF1DC" />
 
@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="55dp"
                 android:gravity="center"
-                android:text="🌐 अपनी भाषा चुनें"
+                android:text="@string/choose_language"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF" />
@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="35dp"
                 android:gravity="center"
-                android:text="एक भाषा चुनें और Sanskriti Sathi की यात्रा शुरू करें ✨"
+                android:text="@string/welcome_footer"
                 android:textSize="14sp"
                 android:textColor="#FFF1DC" />
 
