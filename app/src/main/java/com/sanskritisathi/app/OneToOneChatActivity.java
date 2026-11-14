@@ -2,6 +2,8 @@ package com.sanskritisathi.app;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.EditText;
@@ -34,6 +36,15 @@ public class OneToOneChatActivity extends AppCompatActivity {
     private String receiverId;
     private String myId;
     private String token;
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable refreshRunnable = new Runnable() {
+        @Override public void run() {
+            if (!isFinishing() && receiverId != null && myId != null && token != null && !token.isEmpty()) {
+                loadMessages();
+                refreshHandler.postDelayed(this, 5000);
+            }
+        }
+    };
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -61,6 +72,19 @@ public class OneToOneChatActivity extends AppCompatActivity {
             loadMessages();
         }
         sendButton.setOnClickListener(v -> sendMessage());
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        if (receiverId != null && myId != null && token != null && !token.isEmpty()) {
+            refreshHandler.removeCallbacks(refreshRunnable);
+            refreshHandler.postDelayed(refreshRunnable, 5000);
+        }
+    }
+
+    @Override protected void onPause() {
+        refreshHandler.removeCallbacks(refreshRunnable);
+        super.onPause();
     }
 
     private void loadMessages() {
