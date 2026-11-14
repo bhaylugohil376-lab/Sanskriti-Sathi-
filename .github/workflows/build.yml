@@ -1,9 +1,10 @@
-name: Build Sanskriti Sathi APK
+name: Build and Emulator Test Sanskriti Sathi
 
 on:
   push:
     branches:
       - main
+      - test/android-emulator-smoke
   pull_request:
     branches:
       - main
@@ -38,3 +39,41 @@ jobs:
         with:
           name: Sanskriti-Sathi-Debug
           path: app/build/outputs/apk/debug/app-debug.apk
+
+  emulator-smoke:
+    name: Android Emulator Smoke Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run Welcome screen test on Android 15 emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: gradle connectedDebugAndroidTest --stacktrace
+
+      - name: Upload instrumented test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sanskriti-Sathi-Emulator-Test-Reports
+          path: |
+            app/build/reports/androidTests/connected/
+            app/build/outputs/androidTest-results/connected/
+          if-no-files-found: warn
