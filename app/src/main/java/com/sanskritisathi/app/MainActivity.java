@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
         homeFeedRecyclerView.setAdapter(homeFeedAdapter);
 
         CulturePostSupabaseHelper.getPublicPosts(
+                this,
                 new CulturePostSupabaseHelper.PostsCallback() {
                     @Override
                     public void onSuccess(java.util.List<CulturePost> posts) {
