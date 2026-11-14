@@ -58,8 +58,14 @@ public final class CulturePostSupabaseHelper {
     // =========================================================
 
     public static void getPublicPosts(
+            android.content.Context context,
             @NonNull PostsCallback callback
     ) {
+        String accessToken = SupabaseAuthManager.getAccessToken(context);
+        if (TextUtils.isEmpty(accessToken)) {
+            postError(callback, "Login session nahi mili. Please login again.");
+            return;
+        }
         EXECUTOR.execute(() -> {
 
             HttpURLConnection connection = null;
@@ -70,13 +76,13 @@ public final class CulturePostSupabaseHelper {
                                 + "/rest/v1/"
                                 + TABLE
                                 + "?select=*"
-                                + "&visibility=eq.Public"
                                 + "&order=created_at.desc"
                                 + "&limit=100";
 
                 connection = openConnection(
                         urlString,
-                        "GET"
+                        "GET",
+                        accessToken
                 );
 
                 int code = connection.getResponseCode();
@@ -255,7 +261,8 @@ public final class CulturePostSupabaseHelper {
 
     private static HttpURLConnection openConnection(
             String urlString,
-            String method
+            String method,
+            String accessToken
     ) throws Exception {
 
         URL url =
@@ -278,7 +285,7 @@ public final class CulturePostSupabaseHelper {
         connection.setRequestProperty(
                 "Authorization",
                 "Bearer "
-                        + SupabaseConfig.PUBLISHABLE_KEY
+                        + accessToken
         );
 
         connection.setRequestProperty(

@@ -89,9 +89,6 @@ public class ReelSupabaseHelper {
                         SupabaseConfig.PROJECT_URL
                                 + "/rest/v1/" + TABLE
                                 + "?select=*"
-                                + "&or=(visibility.eq.Public,user_id.eq."
-                                + encode(userId)
-                                + ")"
                                 + "&order=created_at.desc"
                 );
 
