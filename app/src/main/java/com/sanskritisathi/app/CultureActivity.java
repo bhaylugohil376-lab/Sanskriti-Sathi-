@@ -49,6 +49,7 @@ public class CultureActivity extends AppCompatActivity {
     private void loadPosts() {
 
         CulturePostSupabaseHelper.getPublicPosts(
+                this,
                 new CulturePostSupabaseHelper.PostsCallback() {
 
                     @Override
