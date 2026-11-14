@@ -1,6 +1,8 @@
 package com.sanskritisathi.app;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -22,6 +24,16 @@ public class GroupChatActivity extends AppCompatActivity {
 
     private final List<GroupMessage> messageList =
             new ArrayList<>();
+
+    private final Handler refreshHandler = new Handler(Looper.getMainLooper());
+    private final Runnable refreshRunnable = new Runnable() {
+        @Override public void run() {
+            if (!isFinishing() && !isDestroyed()) {
+                loadMessages();
+                refreshHandler.postDelayed(this, 5000);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +69,19 @@ public class GroupChatActivity extends AppCompatActivity {
         sendButton.setOnClickListener(
                 v -> sendMessage()
         );
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshHandler.removeCallbacks(refreshRunnable);
+        refreshHandler.postDelayed(refreshRunnable, 5000);
+    }
+
+    @Override
+    protected void onPause() {
+        refreshHandler.removeCallbacks(refreshRunnable);
+        super.onPause();
     }
 
     // =========================================================
