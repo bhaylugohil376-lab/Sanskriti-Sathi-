@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -70,23 +71,16 @@ public class SearchUserAdapter
         );
 
         holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, ProfileActivity.class);
+            intent.putExtra("user_id", user.getId());
+            intent.putExtra("username", user.getUsername());
+            context.startActivity(intent);
+        });
 
-            Intent intent =
-                    new Intent(
-                            context,
-                            ProfileActivity.class
-                    );
-
-            intent.putExtra(
-                    "user_id",
-                    user.getId()
-            );
-
-            intent.putExtra(
-                    "username",
-                    user.getUsername()
-            );
-
+        holder.messageButton.setOnClickListener(v -> {
+            Intent intent = new Intent(context, OneToOneChatActivity.class);
+            intent.putExtra("receiver_id", user.getId());
+            intent.putExtra("username", user.getDisplayName());
             context.startActivity(intent);
         });
     }
@@ -102,6 +96,7 @@ public class SearchUserAdapter
         ImageView avatar;
         TextView displayName;
         TextView username;
+        Button messageButton;
 
         UserViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -120,6 +115,8 @@ public class SearchUserAdapter
                     itemView.findViewById(
                             R.id.userUsername
                     );
+
+            messageButton = itemView.findViewById(R.id.messageUserButton);
         }
     }
 }
