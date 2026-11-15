@@ -17,6 +17,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordInput;
 
     private Button loginButton;
+    private Button registerButton;
     private Button googleSignInButton;
 
     private TextView registerTabText;
@@ -36,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
         passwordInput = findViewById(R.id.passwordInput);
 
         loginButton = findViewById(R.id.loginButton);
+        registerButton = findViewById(R.id.registerButton);
         googleSignInButton = findViewById(R.id.googleSignInButton);
 
         registerTabText = findViewById(R.id.registerTabText);
@@ -48,6 +50,10 @@ public class LoginActivity extends AppCompatActivity {
             loginButton.setOnClickListener(v -> loginUser());
         }
 
+        if (registerButton != null) {
+            registerButton.setOnClickListener(v -> openRegistration());
+        }
+
         if (forgotPasswordText != null) {
             forgotPasswordText.setOnClickListener(v -> {
                 startActivity(new Intent(
@@ -58,12 +64,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if (registerTabText != null) {
-            registerTabText.setOnClickListener(v -> {
-                startActivity(new Intent(
-                        LoginActivity.this,
-                        RegisterActivity.class
-                ));
-            });
+            registerTabText.setOnClickListener(v -> openRegistration());
         }
 
         if (googleSignInButton != null) {
@@ -118,6 +119,10 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    private void openRegistration() {
+        startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
     }
 
     private void startGoogleLogin() {
