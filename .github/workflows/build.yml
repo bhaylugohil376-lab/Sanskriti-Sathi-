@@ -55,7 +55,7 @@ jobs:
             sleep 12
             adb shell pidof com.sanskritisathi.app
             adb logcat -d -t 3000 > /tmp/sanskriti-logcat.txt
-            if grep -E 'FATAL EXCEPTION|Process: com[.]sanskriti[.]sathi[.]app|Fatal signal' /tmp/sanskriti-logcat.txt >/dev/null; then
+            if grep -E 'FATAL EXCEPTION|Process: com[.]sanskritisathi[.]app|Fatal signal' /tmp/sanskriti-logcat.txt >/dev/null; then
               echo "Fatal crash detected in app logcat"
               exit 1
             fi
