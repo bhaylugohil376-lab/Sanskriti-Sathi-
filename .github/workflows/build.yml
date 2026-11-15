@@ -58,15 +58,18 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run Welcome screen test on Android 15 emulator
+      - name: Run Welcome screen test on Android 14 emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 34
           target: google_apis
           arch: x86_64
           profile: pixel_2
+          force-avd-creation: true
           disable-animations: true
-          script: gradle connectedDebugAndroidTest --stacktrace
+          emulator-boot-timeout: 900
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: adb wait-for-device && gradle connectedDebugAndroidTest --stacktrace
 
       - name: Upload instrumented test reports
         if: always()
