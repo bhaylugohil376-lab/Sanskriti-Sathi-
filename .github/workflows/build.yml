@@ -50,7 +50,10 @@ jobs:
             adb shell monkey -p com.sanskritisathi.app 1
             sleep 12
             adb shell pidof com.sanskritisathi.app
-            adb logcat -d -t 3000 | grep -E 'FATAL EXCEPTION|AndroidRuntime' && exit 1 || true
+            if adb logcat -d -t 3000 | grep -E 'FATAL EXCEPTION|Process: com\\.sanskritisathi\\.app|Fatal signal'; then
+              echo "App crash detected in logcat"
+              exit 1
+            fi
 
       - name: Get SHA fingerprints
         run: gradle signingReport
