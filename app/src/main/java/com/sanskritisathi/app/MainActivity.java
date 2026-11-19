@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
             );
 
     @Override
+    @UnstableApi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
