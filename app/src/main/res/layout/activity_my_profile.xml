@@ -28,7 +28,7 @@
             android:contentDescription="Back"
             android:padding="12dp"
             android:src="@drawable/ic_arrow_back_profile"
-            android:tint="#FFFFFFFF" />
+            app:tint="#FFFFFFFF" />
 
         <TextView
             android:id="@+id/profileTitle"
@@ -51,7 +51,7 @@
             android:contentDescription="Settings"
             android:padding="12dp"
             android:src="@drawable/ic_settings_profile"
-            android:tint="#FFFFFFFF" />
+            app:tint="#FFFFFFFF" />
 
     </RelativeLayout>
 
@@ -282,7 +282,7 @@
             android:contentDescription="Posts"
             android:padding="14dp"
             android:src="@drawable/ic_grid_profile"
-            android:tint="#FFFFFFFF" />
+            app:tint="#FFFFFFFF" />
 
         <ImageButton
             android:id="@+id/reelsTab"
@@ -293,7 +293,7 @@
             android:contentDescription="Reels"
             android:padding="14dp"
             android:src="@drawable/ic_reels_profile"
-            android:tint="#808995" />
+            app:tint="#808995" />
 
         <ImageButton
             android:id="@+id/savedTab"
@@ -304,7 +304,7 @@
             android:contentDescription="Saved"
             android:padding="14dp"
             android:src="@drawable/ic_saved_profile"
-            android:tint="#808995" />
+            app:tint="#808995" />
 
     </LinearLayout>
 
