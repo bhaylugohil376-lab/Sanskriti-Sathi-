@@ -9,10 +9,14 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    name: Build Debug APK
+    name: Build and smoke-test APK
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -24,13 +28,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Gradle 8.7 (required by Android Gradle Plugin 8.6.1)
+      - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
 
       - name: Build APK
-        run: gradle assembleDebug --stacktrace
+        run: gradle --no-daemon assembleDebug --stacktrace
 
       - name: Install and launch on Android Emulator
         uses: reactivecircus/android-emulator-runner@v2
@@ -39,31 +43,94 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_2
-          cores: 2
-          emulator-boot-timeout: 600
-          disable-animations: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -wipe-data -camera-back none -memory 2048 -cores 2
+          cores: 4
+          emulator-boot-timeout: 900
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -wipe-data -camera-back none -memory 4096 -cores 4
           script: |
-            set -e
+            set -euo pipefail
+
             adb start-server
             adb wait-for-device
-            adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done'
-            adb install -r app/build/outputs/apk/debug/app-debug.apk
-            adb shell am force-stop com.sanskritisathi.app
-            adb shell monkey -p com.sanskritisathi.app 1
-            sleep 12
-            adb shell pidof com.sanskritisathi.app
-            adb logcat -d -t 3000 > /tmp/sanskriti-logcat.txt
-            if grep -E 'FATAL EXCEPTION|Process: com[.]sanskritisathi[.]app|Fatal signal' /tmp/sanskriti-logcat.txt >/dev/null; then
-              echo "Fatal crash detected in app logcat"
+
+            for attempt in $(seq 1 90); do
+              booted="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+              if [ "$booted" = "1" ]; then
+                break
+              fi
+              sleep 2
+            done
+
+            if [ "${booted:-}" != "1" ]; then
+              echo "Emulator did not finish booting."
+              adb devices -l || true
               exit 1
             fi
-            echo "No fatal crash found for Sanskriti Sathi"
+
+            # Wait until Android's package manager responds before installing.
+            package_manager_ready=false
+            for attempt in $(seq 1 30); do
+              if adb shell pm list packages >/dev/null 2>&1; then
+                package_manager_ready=true
+                break
+              fi
+              sleep 3
+            done
+
+            if [ "$package_manager_ready" != "true" ]; then
+              echo "Android package manager did not become ready."
+              adb logcat -d -t 2000 || true
+              exit 1
+            fi
+
+            # Recover ADB transport and retry install if the emulator briefly drops its shell.
+            installed=false
+            for attempt in $(seq 1 5); do
+              if adb install -r -t app/build/outputs/apk/debug/app-debug.apk; then
+                installed=true
+                break
+              fi
+              echo "APK install attempt $attempt failed; reconnecting ADB."
+              adb reconnect device || true
+              adb kill-server || true
+              sleep 2
+              adb start-server
+              adb wait-for-device
+              sleep 5
+            done
+
+            if [ "$installed" != "true" ]; then
+              echo "APK installation failed after 5 attempts."
+              adb devices -l || true
+              adb logcat -d -t 3000 || true
+              exit 1
+            fi
+
+            adb shell am force-stop com.sanskritisathi.app
+            adb shell monkey -p com.sanskritisathi.app 1
+            sleep 15
+
+            if ! adb shell pidof com.sanskritisathi.app >/dev/null 2>&1; then
+              echo "App process did not remain running after launch."
+              adb logcat -d -t 3000 || true
+              exit 1
+            fi
+
+            adb logcat -d -t 3000 > /tmp/sanskriti-logcat.txt
+            if grep -E 'FATAL EXCEPTION|Process: com[.]sanskritisathi[.]app|Fatal signal' /tmp/sanskriti-logcat.txt >/dev/null; then
+              echo "Fatal crash detected in app logcat."
+              cat /tmp/sanskriti-logcat.txt
+              exit 1
+            fi
+
+            echo "APK installed and app launch smoke test passed."
 
       - name: Get SHA fingerprints
-        run: gradle signingReport
+        if: success()
+        run: gradle --no-daemon signingReport
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Sanskriti-Sathi-Debug
