@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -40,6 +41,9 @@ public class GroupChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_group_chat);
+
+        TextView backButton = findViewById(R.id.groupBackButton);
+        backButton.setOnClickListener(v -> finish());
 
         groupMessagesRecyclerView =
                 findViewById(R.id.groupMessagesRecyclerView);
