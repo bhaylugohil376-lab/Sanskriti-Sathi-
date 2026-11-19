@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 @UnstableApi
-@UnstableApi
 public class ReelAdapter extends RecyclerView.Adapter<ReelAdapter.ReelViewHolder> {
 
     private static final String TAG = "ReelAdapter";
