@@ -2,6 +2,7 @@
 
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
@@ -92,7 +93,7 @@
                 android:layout_height="42dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_delete"
-                android:tint="#FFFFFF"
+                app:tint="#FFFFFF"
                 android:contentDescription="Delete Story"
                 android:visibility="gone"/>
 
@@ -103,7 +104,7 @@
                 android:layout_height="42dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
-                android:tint="#FFFFFF"
+                app:tint="#FFFFFF"
                 android:contentDescription="Close Story"/>
 
         </LinearLayout>
@@ -169,7 +170,7 @@
             android:layout_height="52dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/btn_star_big_off"
-            android:tint="#FFFFFF"
+            app:tint="#FFFFFF"
             android:contentDescription="Like Story"/>
 
         <!-- Reply -->
@@ -179,7 +180,7 @@
             android:layout_height="52dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_send"
-            android:tint="#FFFFFF"
+            app:tint="#FFFFFF"
             android:contentDescription="Reply to Story"/>
 
     </LinearLayout>
