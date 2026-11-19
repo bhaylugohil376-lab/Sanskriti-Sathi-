@@ -16,9 +16,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import androidx.media3.common.util.UnstableApi;
-
-@UnstableApi
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView homeFeedRecyclerView;
