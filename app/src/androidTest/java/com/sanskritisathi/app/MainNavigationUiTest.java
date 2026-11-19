@@ -56,7 +56,7 @@ public class MainNavigationUiTest extends InstrumentationTestCase {
                 device.wait(Until.hasObject(By.text("Create Post")), 4000));
         device.findObject(By.text("Create Post")).click();
         assertTrue("Post upload screen did not open",
-                device.wait(Until.hasObject(By.res(PACKAGE, "postDescriptionInput")), 8000));
+                device.wait(Until.hasObject(By.res(PACKAGE, "postCaptionInput")), 8000));
         device.pressBack();
 
         device.findObject(By.res(PACKAGE, "createTopButton")).click();
