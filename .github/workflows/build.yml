@@ -60,46 +60,7 @@ jobs:
           emulator-boot-timeout: 900
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -wipe-data -camera-back none -memory 4096 -cores 4
-          script: |
-            set -e
-            adb start-server
-            adb wait-for-device
-
-            # Wait for Android boot and Package Manager to become responsive.
-            for attempt in 1 2 3 4 5 6 7 8 9 10 11 12; do
-              boot_state="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\\r' || true)"
-              package_check="$(adb shell pm list packages 2>&1 || true)"
-              if [ "$boot_state" = "1" ] && ! printf '%s' "$package_check" | grep -qE 'Broken pipe|Failure calling service|error:'; then
-                echo "Android boot and Package Manager ready."
-                break
-              fi
-              echo "Waiting for Package Manager (attempt $attempt/12)..."
-              sleep 5
-            done
-            test "$(adb shell getprop sys.boot_completed | tr -d '\\r')" = "1"
-            adb shell pm list packages >/dev/null
-
-            # Retry transient emulator/package-service failures during install.
-            installed=0
-            for attempt in 1 2 3; do
-              if adb install -r -t app/build/outputs/apk/debug/app-debug.apk; then
-                installed=1
-                break
-              fi
-              echo "APK install attempt $attempt failed; reconnecting ADB and retrying..."
-              adb reconnect || true
-              adb wait-for-device
-              sleep 10
-            done
-            test "$installed" = "1"
-
-            adb shell am force-stop com.sanskritisathi.app
-            adb shell monkey -p com.sanskritisathi.app 1
-            sleep 15
-            adb shell pidof com.sanskritisathi.app >/dev/null
-            adb logcat -d -t 3000 > /tmp/sanskriti-logcat.txt
-            ! grep -E 'FATAL EXCEPTION|Process: com[.]sanskritisathi[.]app|Fatal signal' /tmp/sanskriti-logcat.txt
-            echo 'APK installed and app launch smoke test passed.'
+          script: bash .github/scripts/emulator-smoke-test.sh
 
       - name: Get SHA fingerprints
         if: always() && steps.build_apk.outcome == 'success'
