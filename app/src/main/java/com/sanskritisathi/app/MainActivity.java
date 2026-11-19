@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.OptIn;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             );
 
     @Override
-    @UnstableApi
+    @OptIn(markerClass = UnstableApi.class)
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
