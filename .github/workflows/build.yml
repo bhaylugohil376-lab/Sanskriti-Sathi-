@@ -52,14 +52,15 @@ jobs:
         if: always() && steps.build_apk.outcome == 'success'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_2
           cores: 2
           emulator-boot-timeout: 900
+          disable-spellchecker: true
           disable-animations: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -wipe-data -camera-back none -memory 4096 -cores 2
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -wipe-data -camera-back none -memory 2048 -cores 2
           script: gradle --no-daemon connectedDebugAndroidTest --stacktrace && bash .github/scripts/emulator-smoke-test.sh
 
       - name: Get SHA fingerprints
