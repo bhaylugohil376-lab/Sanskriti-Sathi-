@@ -58,7 +58,8 @@ jobs:
           profile: pixel_2
           cores: 2
           emulator-boot-timeout: 900
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -wipe-data -camera-back none -memory 2048 -cores 2
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -wipe-data -camera-back none -memory 4096 -cores 2
           script: gradle --no-daemon connectedDebugAndroidTest --stacktrace && bash .github/scripts/emulator-smoke-test.sh
 
       - name: Get SHA fingerprints
