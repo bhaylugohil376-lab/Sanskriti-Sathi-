@@ -11,8 +11,9 @@ adb wait-for-device
 ready=0
 for attempt in $(seq 1 60); do
   boot_state="$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+  package_service="$(adb shell service check package 2>&1 || true)"
   package_check="$(adb shell pm list packages 2>&1 || true)"
-  if [[ "$boot_state" == "1" ]] && ! grep -qiE 'Broken pipe|Failure calling service|error:' <<<"$package_check"; then
+  if [[ "$boot_state" == "1" ]] && grep -q "Service package: found" <<<"$package_service" && grep -q "^package:" <<<"$package_check"; then
     ready=1
     echo "Android boot and Package Manager ready."
     break
@@ -23,15 +24,17 @@ done
 [[ "$ready" == "1" ]] || { echo "Android/Package Manager did not become ready."; adb devices -l; exit 1; }
 
 installed=0
-for attempt in 1 2 3; do
-  if adb install -r -t "$APK"; then
+for attempt in 1 2 3 4 5; do
+  # Avoid ADB streaming-install instability on cold GitHub-hosted emulators.
+  if adb install --no-streaming -r -t "$APK"; then
     installed=1
     break
   fi
   echo "APK install attempt $attempt failed; reconnecting ADB..."
   adb reconnect || true
   adb wait-for-device
-  sleep 10
+  sleep 15
+  adb shell service check package || true
 done
 [[ "$installed" == "1" ]] || { echo "APK installation failed after retries."; exit 1; }
 
