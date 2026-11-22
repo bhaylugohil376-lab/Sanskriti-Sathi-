@@ -15,7 +15,7 @@ permissions:
 jobs:
   build:
     name: Build and smoke-test APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 45
 
     steps:
@@ -50,20 +50,20 @@ jobs:
 
       - name: Install and launch on Android Emulator
         if: always() && steps.build_apk.outcome == 'success'
-        timeout-minutes: 25
+        timeout-minutes: 30
         env:
           ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 5
         uses: reactivecircus/android-emulator-runner@v2.37.0
         with:
-          api-level: 35
+          api-level: 30
           target: google_apis
           arch: x86_64
           profile: pixel_2
-          cores: 4
+          cores: 2
           emulator-boot-timeout: 900
           disable-spellchecker: true
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -wipe-data -camera-back none -memory 4096
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -wipe-data -camera-back none -memory 2048
           script: gradle --no-daemon connectedDebugAndroidTest --stacktrace && bash .github/scripts/emulator-smoke-test.sh
 
       - name: Get SHA fingerprints
