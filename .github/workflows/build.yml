@@ -53,6 +53,7 @@ jobs:
         timeout-minutes: 30
         env:
           ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 5
+          ANDROID_I_WANT_MY_TCG: yes
         uses: reactivecircus/android-emulator-runner@v2.37.0
         with:
           api-level: 30
